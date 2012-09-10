@@ -1,0 +1,19 @@
+# java jdk7 JAVASE 7 puppet module 
+# installs jdk on linux based systems and window with 64 or 32 bits
+# just add the  jdk 7 files like jdk-7u7-linux-x64.rpm , jdk-7u7-windows-i586.exe or 
+# jdk-7u7-windows-x64.exe downloaded from Oracle website to the files folder of jdk7 
+# modules
+#
+# 2 parameters 
+# version like 7u7 , 7u8 etc 
+# x64 true or false 
+#
+# in site.pp add
+# node 'xxxx' {
+# 
+#  class {'jdk7':
+#   version => "7u7",
+#   x64     => "true",
+#  }
+# }
+ 
