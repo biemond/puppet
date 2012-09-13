@@ -7,24 +7,24 @@ class jdk7 ( $version =  undef , $x64 = "true" ) {
 
     case $operatingsystem {
       centos, redhat, OracleLinux, ubuntu, debian: { 
-				$installVersion   = "linux"
-				$installExtension = "rpm"
+        $installVersion   = "linux"
+        $installExtension = "rpm"
         $exeBin           = "/bin/rpm -Uvh "
         $exeBinAfter      = undef
         $path             = "/root/"
-				$check            = "/usr/java/"
-				$checkAfter       = "/bin/javac"
+        $check            = "/usr/java/"
+        $checkAfter       = "/bin/javac"
         $user             = "root"
         $group            = "root"
       }
       windows: { 
-				$installVersion   = "windows"
-				$installExtension = "exe"
+        $installVersion   = "windows"
+        $installExtension = "exe"
         $exeBin           = undef
         $exeBinAfter      = " /s ADDLOCAL=\"ToolsFeature\""
         $path             = "c:\\temp\\"
-				$check            = "c:\\Program Files\\Java\\"
-				$checkAfter       = "\\bin\\javac"
+        $check            = "c:\\Program Files\\Java\\"
+        $checkAfter       = "\\bin\\javac"
         $user             = "Administrator"
         $group            = "Administrators"
       }
@@ -39,12 +39,12 @@ class jdk7 ( $version =  undef , $x64 = "true" ) {
       $type = 'i586'
     }
 
-		if $version == undef {
-		  $jdkVersion = "7u7"
-		} else {
-		  $jdkVersion = $version
-		} 
-		 
+    if $version == undef {
+      $jdkVersion = "7u7"
+    } else {
+      $jdkVersion = $version
+    } 
+     
 
     if $jdkVersion      == "7u7" {
        $jdkfile         =  "jdk-7u7-${installVersion}-${type}.${installExtension}"

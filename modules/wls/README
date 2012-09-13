@@ -1,0 +1,6 @@
+# weblogic puppet module 
+# installs weblogic on linux based systems and window with 64 or 32 bits
+# just add the weblogic generic jar to the files folder of was 
+# modules
+
+
