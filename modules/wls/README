@@ -1,6 +1,10 @@
 # weblogic puppet module 
-# installs weblogic on linux based systems and window with 64 or 32 bits
-# just add the weblogic generic jar to the files folder of was 
-# modules
+# installs weblogic on linux and window based systems with 64 or 32 bits JDK
+# just add the weblogic generic jar to the files folder of the wls module
 
+# use it like this in site.pp
 
+ class {'wls':
+   version    => "12c",
+   versionJdk => "7u7",
+ } 

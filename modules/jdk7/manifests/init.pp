@@ -9,24 +9,26 @@ class jdk7 ( $version =  undef , $x64 = "true" ) {
       centos, redhat, OracleLinux, ubuntu, debian: { 
         $installVersion   = "linux"
         $installExtension = "rpm"
-        $exeBin           = "/bin/rpm -Uvh "
+        $exeBin           = "/bin/rpm -Uvh --replacepkgs "
         $exeBinAfter      = undef
         $path             = "/root/"
         $check            = "/usr/java/"
-        $checkAfter       = "/bin/javac"
+        $checkAfter       = "/bin"
         $user             = "root"
         $group            = "root"
+        $checkCommand     = "/bin/ls -l"
       }
       windows: { 
         $installVersion   = "windows"
         $installExtension = "exe"
         $exeBin           = undef
         $exeBinAfter      = " /s ADDLOCAL=\"ToolsFeature\""
-        $path             = "c:\\temp\\"
-        $check            = "c:\\Program Files\\Java\\"
-        $checkAfter       = "\\bin\\javac"
+        $path             = "C:\\temp\\"
+        $check            = "\"C:\\Program Files\\Java\\"
+        $checkAfter       = "\\bin\""
         $user             = "Administrator"
         $group            = "Administrators"
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c dir" 
       }
       default: { 
         fail("Unrecognized operating system") 
@@ -45,7 +47,6 @@ class jdk7 ( $version =  undef , $x64 = "true" ) {
       $jdkVersion = $version
     } 
      
-
     if $jdkVersion      == "7u7" {
        $jdkfile         =  "jdk-7u7-${installVersion}-${type}.${installExtension}"
        $fullVersion     =  "jdk1.7.0_07"
@@ -69,12 +70,13 @@ class jdk7 ( $version =  undef , $x64 = "true" ) {
         cwd     =>  "${path}",
         command =>  "${exeBin}${path}${jdkfile}${exeBinAfter}",
         require =>  File["jdk_file"],
-        creates =>  "${check}${fullVersion}${checkAfter}", 
+#        creates =>  "${check}${fullVersion}${checkAfter}",
+        unless  =>  "${checkCommand} ${check}${fullVersion}${checkAfter}",
     } 
 
-    notify {"Operating system ${operatingsystem}":}
-    notify {"jdk file ${jdkfile} type ${type}":}
-    notify {"exec command ${exeBin}${path}${jdkfile}$exeBinAfter":}
-    notify {"create command ${check}${fullVersion}${checkAfter}":}
+#    notify {"Operating system ${operatingsystem}":}
+#    notify {"jdk file ${jdkfile} type ${type}":}
+#    notify {"exec command ${exeBin}${path}${jdkfile}$exeBinAfter":}
+#    notify {"create command ${check}${fullVersion}${checkAfter}":}
 
 }
