@@ -79,7 +79,7 @@ class wls( $version =  undef , $versionJdk = undef ) {
 
         $check            = "\"C:\\Program Files\\Java\\"
         $checkAfter       = "\\bin\""
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c dir" 
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
 
         $otherPath        = "C:\\Windows\\system32;C:\\Windows"
         $execPath         = "${check}${fullJDKName}${checkAfter};${otherPath}"
@@ -161,16 +161,14 @@ class wls( $version =  undef , $versionJdk = undef ) {
      }
      windows: { 
         exec { 'installwls':
-          command     => "java -Xmx1024m -jar ${path}${wlsFile} -mode=silent -silent_xml=${path}silent.xml",
-          environment => "JAVA_HOME=${check}${fullJDKName}\"",
+          command     => "${checkCommand} java -Xmx1024m -jar ${path}${wlsFile} -mode=silent -silent_xml=${path}silent.xml",
           path        => $execPath,
           logoutput   => true,
           require     => [File[$oracleHome],File['silent.xml'],File['wls.jar']],
-          unless      => "${checkCommand} ${mdwHome}",
+          unless      => "${checkCommand} dir ${mdwHome}",
         }    
      }
    }
-   notify {"exec java -Xmx1024m -jar ${path}${wlsFile} -mode=silent -silent_xml=${path}silent.xml":}
    notify {"path ${execPath}":}
      
  }
