@@ -22,7 +22,7 @@
 # just add the weblogic generic jar to the files folder of the wls module
 # use it like this in site.pp
 
- class {'wls':
-   version    => "12c",
-   versionJdk => "7u7",
- } 
+  class {'wls::installwls':
+    version    => '12c',
+    versionJdk => '7u7',
+  }
