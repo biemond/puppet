@@ -1,11 +1,11 @@
-# java jdk7 JAVASE 7 puppet module 
+# java jdk7 JAVA SE 6/7 puppet module 
 # installs jdk on linux based systems and window with 64 or 32 bits
-# just add the  jdk 7 files like jdk-7u7-linux-x64.rpm , jdk-7u7-windows-i586.exe or 
-# jdk-7u7-windows-x64.exe downloaded from Oracle website to the files folder of jdk7 
-# modules
+# just add the jdk 6 or 7 files like jdk-6u35-linux-x64-rpm.bin, jdk-7u7-linux-x64.rpm, 
+# jdk-7u7-windows-i586.exe or jdk-7u7-windows-x64.exe downloaded from Oracle website to 
+# the files folder of jdk7 module
 #
 # 2 parameters 
-# version like 7u7 , 7u8 etc 
+# version like 6u35, 7u7 , 7u8 etc 
 # x64 true or false 
 #
 # in site.pp add
@@ -29,3 +29,58 @@ node 'xxxx' {
     version    => '12c',
     versionJdk => '7u7',
   }
+
+# example of a site.pp
+# /etc/puppet/manifests/site.pp
+
+include jdk7
+
+class wls12{
+
+  jdk7::install7{'jdk7':
+    version => "7u7",
+    x64     => "true",
+  }
+
+  class {'wls::installwls':
+    version    => '12c',
+    versionJdk => '7u7',
+  }
+}
+ 
+node default {
+}
+
+node basenode {
+}
+
+node devel inherits basenode {
+  $my_zone = "devel"
+  include wls12
+}
+
+node prod inherits basenode {
+  $my_zone = "prod"
+}
+
+node 'devagent1.alfa.local' inherits devel {
+
+}
+
+node 'win7user.localdomain' inherits prod  {
+
+  jdk7::install7{'jdk6':
+    version => "6u35",
+    x64     => "true",
+  }
+
+  jdk7::install7{'jdk7':
+    version => "7u7",
+    x64     => "true",
+  }
+
+  class {'wls::installwls':
+    version    => '12c',
+    versionJdk => '7u7',
+  }
+}

@@ -2,7 +2,7 @@
 
 define jdk7::install7( $version =  undef , $x64 = "true" ) {
 
-    notify {"install7.pp":}
+    notify {"install7.pp ${version}":}
 
     if $x64 == "true" {
       $type = 'x64'
@@ -19,8 +19,14 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
     case $operatingsystem {
       centos, redhat, OracleLinux, ubuntu, debian: { 
         $installVersion   = "linux"
-        $installExtension = "rpm"
 
+        if $version in ['6u36','6u35', '6u34', '6u33'] {
+          $installExtension = "-rpm.bin"
+       
+        } else { 
+          $installExtension = ".rpm"
+        }
+         
         $path             = "/root/"
 
         $user             = "root"
@@ -28,7 +34,7 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
       }
       windows: { 
         $installVersion   = "windows"
-        $installExtension = "exe"
+        $installExtension = ".exe"
 
         $path             = "C:\\temp\\"
 
@@ -40,17 +46,22 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
       }
     }
      
+    # determine full jdk name 
     if $jdkVersion      == "7u7" {
-       $jdkfile         =  "jdk-7u7-${installVersion}-${type}.${installExtension}"
+       $jdkfile         =  "jdk-7u7-${installVersion}-${type}${installExtension}"
        $fullVersion     =  "jdk1.7.0_07"
     } elsif $jdkVersion == "7u8" {
-       $jdkfile         =  "jdk-7u8-${installVersion}-${type}.${installExtension}"
+       $jdkfile         =  "jdk-7u8-${installVersion}-${type}${installExtension}"
        $fullVersion     =  "jdk1.7.0_08"
+    } elsif $jdkVersion == "6u35" {
+       $jdkfile         =  "jdk-6u35-${installVersion}-${type}${installExtension}"
+       $fullVersion     =  "jdk1.6.0_35"
     } else {
         fail("Unrecognized jdk version")        
     }
 
-    file {"jdk_file":
+    # download jdk to client
+    file {"jdk_file${version}":
         path   => "${path}${jdkfile}",
         ensure => present,
         source => "puppet:///modules/jdk7/${jdkfile}",
@@ -59,11 +70,13 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
         mode   => 0770,
     } 
 
-    javaexec {'jdkInstall': 
+    # install on client 
+    javaexec {"jdkexec${version}": 
+        version     => $version,
         path        => $path, 
         fullversion => $fullVersion,
         jdkfile     => $jdkfile,
-        require     => File["jdk_file"],
+        require     => File["jdk_file${version}"],
     }
 
 }
