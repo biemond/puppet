@@ -9,13 +9,16 @@
 # x64 true or false 
 #
 # in site.pp add
-# node 'xxxx' {
-# 
-  class {'jdk7':
-   version => "7u7",
-   x64     => "true",
+include jdk7
+
+node 'xxxx' {
+ 
+  jdk7::install7{'7u7':
+    version => "7u7",
+    x64     => "true",
   }
- }
+
+}
  
 # weblogic puppet module 
 # installs weblogic on linux window based systems with 64 or 32 bits JDK
