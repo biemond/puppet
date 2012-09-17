@@ -4,7 +4,6 @@ define wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $silen
 
    $javaCommand     = "java -Xmx1024m -jar"
 
-
    # install weblogic
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -26,7 +25,7 @@ define wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $silen
      windows: { 
 
         $otherPath        = "C:\\Windows\\system32;C:\\Windows"
-        $execPath         = "\"C:\\Program Files\\Java\\${fullJDKName}\\bin\";${$wls::params::otherPath}"
+        $execPath         = "\"C:\\Program Files\\Java\\${fullJDKName}\\bin\";${otherPath}"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
 
         exec { "installwls  ${wlsfile}":
