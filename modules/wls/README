@@ -4,8 +4,14 @@
 
 # use it like this in site.pp
 
-  class {'wls::installwls':
-    version    => '12c',
+include wls
+
+  wls::installwls{'wls1211':
+    version    => '1211',
     versionJdk => '7u7',
   }
 
+  wls::installwls{'11gPS5':
+    version    => '1036',
+    versionJdk => '6u35',
+  }

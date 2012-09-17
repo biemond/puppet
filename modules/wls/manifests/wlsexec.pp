@@ -13,7 +13,7 @@ define wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $silen
         $execPath         = "/usr/java/${fullJDKName}$/bin:${otherPath}"
         $checkCommand     = '/bin/ls -l'
     
-        exec { 'installwls':
+        exec { "installwls ${wlsfile}":
           command     => "${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
           path        => $execPath,
           logoutput   => true,
@@ -29,7 +29,7 @@ define wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $silen
         $execPath         = "\"C:\\Program Files\\Java\\${fullJDKName}\\bin\";${$wls::params::otherPath}"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
 
-        exec { 'installwls':
+        exec { "installwls  ${wlsfile}":
           command     => "${checkCommand} ${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
           path        => $execPath,
           logoutput   => true,

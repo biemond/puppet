@@ -14,7 +14,7 @@ define javaexec ($version = undef, $path = undef, $fullversion = undef, $jdkfile
 
            # download answer file for the installer to the client
             file {"answerfile${version}":
-              path   => "${path}answer_file.txt",
+              path   => "${path}answer_file${version}.txt",
               ensure => present,
               source => "puppet:///modules/jdk7/answer_file.txt",
               owner  => "${user}",
@@ -23,7 +23,7 @@ define javaexec ($version = undef, $path = undef, $fullversion = undef, $jdkfile
             } 
 
             exec {"jdk_install${version}": 
-              command =>  "${path}${jdkfile} < ${path}answer_file.txt",
+              command =>  "${path}${jdkfile} < ${path}answer_file${version}.txt",
               unless  =>  "/bin/ls -l /usr/java/${fullversion}/bin",
               logoutput   => true,
               require     => File["answerfile${version}"],

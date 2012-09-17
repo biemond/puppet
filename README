@@ -25,15 +25,23 @@ node 'xxxx' {
 # just add the weblogic generic jar to the files folder of the wls module
 # use it like this in site.pp
 
-  class {'wls::installwls':
-    version    => '12c',
+include wls
+
+  wls::installwls{'wls1211':
+    version    => '1211',
     versionJdk => '7u7',
+  }
+
+  wls::installwls{'11gPS5':
+    version    => '1036',
+    versionJdk => '6u35',
   }
 
 # example of a site.pp
 # /etc/puppet/manifests/site.pp
 
 include jdk7
+include wls
 
 class wls12{
 
@@ -42,9 +50,22 @@ class wls12{
     x64     => "true",
   }
 
-  class {'wls::installwls':
-    version    => '12c',
+  wls::installwls{'wls12c':
+    version    => '1211',
     versionJdk => '7u7',
+  }
+}
+
+class wls1036{
+
+  jdk7::install7{'jdk6':
+    version => "6u35",
+    x64     => "true",
+  }
+
+  wls::installwls{'11gPS5':
+    version    => '1036',
+    versionJdk => '6u35',
   }
 }
  
@@ -64,23 +85,19 @@ node prod inherits basenode {
 }
 
 node 'devagent1.alfa.local' inherits devel {
-
 }
 
 node 'win7user.localdomain' inherits prod  {
 
-  jdk7::install7{'jdk6':
-    version => "6u35",
-    x64     => "true",
-  }
+  include wls1036
 
   jdk7::install7{'jdk7':
     version => "7u7",
     x64     => "true",
   }
-
-  class {'wls::installwls':
-    version    => '12c',
+  wls::installwls{'wls1211':
+    version    => '1211',
     versionJdk => '7u7',
   }
+
 }

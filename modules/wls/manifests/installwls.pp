@@ -1,37 +1,99 @@
 # wls::installwls
 
 
-class wls::installwls( $version = undef, $versionJdk = undef )
-      inherits wls::params {
+define wls::installwls( $version = undef, $versionJdk = undef ) {
 
-    notify {"wls::installwls":}
+   notify {"wls::installwls ${version}":}
+
+   $wls1211Parameter     = "1211"
+   $wlsFile1211          = "wls1211_generic.jar" 
+   $wlsVersion1211       = "wls12c" 
+
+   $wls1036Parameter     = "1036"
+   $wlsFile1036          = "wls1036_generic.jar" 
+   $wlsVersion1036       = "wls11g" 
+
+   $wlsFileDefault      = $wlsFile1211 
+   $wlsVersionDefault   = $wlsVersion1211 
+
+
+   $jdkVersion7u7    = "7u7" 
+   $fullJDKName7u7   = "jdk1.7.0_07"
+
+   $jdkVersion7u8    = "7u8" 
+   $fullJDKName7u8   = "jdk1.7.0_08"
+
+   $jdkVersion6u35   = "6u35" 
+   $fullJDKName6u35  = "jdk1.6.0_35"
+
+
+   $jdkVersionDefault   = $jdkVersion7u7 
+
+   case $operatingsystem {
+      centos, redhat, OracleLinux, ubuntu, debian: { 
+        $path             = "/install/"
+
+        $oracleHome       = "/opt/oracle/"
+        $beaHome          = "${oracleHome}wls/"
+
+        $user             = "oracle"
+        $group            = "dba"
+     }
+      windows: { 
+        $path             = "C:\\temp\\"
+
+        $oracleHome       = "C:\\oracle\\"
+        $beaHome          = "${oracleHome}wls\\"
+
+        $user             = "Administrator"
+        $group            = "Administrators"
+      }
+      default: { 
+        fail("Unrecognized operating system") 
+      }
+   }
+
 
 
     # check weblogic version like 12c
+
     if $version == undef {
-      $wlsFile    =  $wls::params::wlsFileDefault 
-      $wlsVersion =  $wls::params::wlsVersionDefault 
+      $wlsFile    =  $wlsFileDefault 
+      $wlsVersion =  $wlsVersionDefault 
     }
-    elsif $version == $wls::params::wls12cParameter  {
-      $wlsFile    =  $wls::params::wlsFile12c 
-      $wlsVersion =  $wls::params::wlsVersion12c 
+
+    elsif $version == $wls12cParameter  {
+      $wlsFile    =  $wlsFile1211 
+      $wlsVersion =  $wlsVersion1211 
     } 
+
+    elsif $version == $wls1036Parameter  {
+      $wlsFile    =  $wlsFile1036 
+      $wlsVersion =  $wlsVersion1036 
+    } 
+
     else {
-      $wlsFile    =  $wls::params::wlsFileDefault 
-      $wlsVersion =  $wls::params::wlsVersionDefault 
+      $wlsFile    =  $wlsFileDefault 
+      $wlsVersion =  $wlsVersionDefault 
     } 
 
     if $versionJdk == undef {
-      $jdkVersion = $wls::params::jdkVersionDefault
+      $jdkVersion = $jdkVersionDefault
     } else {
       $jdkVersion = $versionJdk
     } 
      
     # is it a know jdk version like 7u7
-    if $jdkVersion      == $wls::params::jdkVersion7u7 {
-       $fullJDKName  =  $wls::params::fullJDKName7u7
-    } elsif $jdkVersion == $wls::params::jdkVersion7u8 {
-       $fullJDKName  =  $wls::params::fullJDKName7u8
+
+    if $jdkVersion      == $jdkVersion7u7 {
+       $fullJDKName  =  $fullJDKName7u7
+
+    } elsif $jdkVersion == $jdkVersion7u8 {
+       $fullJDKName  =  $fullJDKName7u8
+
+    } elsif $jdkVersion == $jdkVersion6u35 {
+       $fullJDKName  =  $fullJDKName6u35
+
     } else {
         fail("Unrecognized jdk version")        
     }
@@ -40,22 +102,24 @@ class wls::installwls( $version = undef, $versionJdk = undef )
    # for linux , create a oracle user plus a dba group
    case $operatingsystem {
       centos, redhat, OracleLinux, ubuntu, debian: { 
-
-        group { $wls::params::group : 
-            ensure => present,
+        if ! defined(Group[$group]) {
+          group { $group : 
+                  ensure => present,
+          }
         }
-        # http://raftaman.net/?p=1311 for generating password
-        user { $user : 
-            ensure     => present, 
-            groups     => $wls::params::group,
-            shell      => '/bin/bash',
-            password   => '$1$IX3YD7fb$JndzPUOGNCRYp/FG0GM1y/',  
-            home       => '/home/oracle',
-            comment    => 'This user was created by Puppet',
-            require    => Group[$wls::params::group],
-            managehome => true, 
+        if ! defined(User[$user]) {
+          # http://raftaman.net/?p=1311 for generating password
+          user { $user : 
+              ensure     => present, 
+              groups     => $group,
+              shell      => '/bin/bash',
+              password   => '$1$IX3YD7fb$JndzPUOGNCRYp/FG0GM1y/',  
+              home       => '/home/oracle',
+              comment    => 'This user was created by Puppet',
+              require    => Group[$group],
+              managehome => true, 
+          }
         }
-
      }
    }
 
@@ -72,65 +136,76 @@ class wls::installwls( $version = undef, $versionJdk = undef )
       }
    }
 
-
-   # check oracle install folder
-   file { $wls::params::path:
-     ensure  => 'directory',
-     recurse => false, 
-     owner   => $wls::params::user,
-     group   => $wls::params::group,
-     mode    => 0770,
+   if ! defined(File[$path]) {
+      # check oracle install folder
+      file { $path :
+        path    => $path,
+        ensure  => directory,
+        recurse => false, 
+        owner   => $user,
+        group   => $group,
+        mode    => 0770,
+        replace => false,
+      }
    }
+
    
    # put weblogic generic jar
-   file { 'wls.jar':
-     path    => "${wls::params::path}${wlsFile}",
+   file { "wls.jar ${version}":
+     path    => "${path}${wlsFile}",
      ensure  => present,
-     require => File[$wls::params::path],
      source  => "puppet:///modules/wls/${wlsFile}",
-     owner   => $wls::params::user,
-     group   => $wls::params::group,
-     mode    => 0550,
-   }
-
-
-   file { $wls::params::oracleHome:
-     ensure  => 'directory',
-     recurse => false, 
-     owner   => $wls::params::user,
+     owner   => $user,
      group   => $group,
-     mode    => 0770,
+     mode    => 0550,
+     require => File[$path],
+     replace => false,
    }
 
-    
-   file { $wls::params::beaHome:
-     ensure  => 'directory',
-     recurse => false, 
-     owner   => $wls::params::user,
-     group   => $wls::params::group,
-     mode    => 0770,
-     require => File[$wls::params::oracleHome],
+   if ! defined(File[$oracleHome]) {
+     file { $oracleHome:
+       path    => $oracleHome,
+       ensure  => directory,
+       recurse => false, 
+       owner   => $user,
+       group   => $group,
+       mode    => 0770,
+       replace => false,
+     }
+   }
+
+   if ! defined(File[$beaHome]) {
+     file { $beaHome:
+       path    => $beahome,
+       ensure  => directory,
+       recurse => false, 
+       owner   => $user,
+       group   => $group,
+       mode    => 0770,
+       require => File[$oracleHome],
+       replace => false,
+     }
    }
 
    # de xml used by the wls installer
-   file { 'silent.xml':
-     path    => "${wls::params::path}silent.xml",
+   file { "silent.xml ${version}":
+     path    => "${path}silent${version}.xml",
      ensure  => present,
      replace => 'yes',
-     owner   => $wls::params::user,
-     group   => $wls::params::group,
+     owner   => $user,
+     group   => $group,
      mode    => 0550,
      content => template("wls/silent.xml.erb"),
-     require => File[$wls::params::path],
+     require => File[$path],
    }
 
    # install weblogic
-   wlsexec{ 'installer':
+   wlsexec{ "installer ${version}":
       mdwHome     => $mdwHome,
       fullJDKName => $fullJDKName,
-      wlsfile     => "${wls::params::path}${wlsFile}",
-      silentfile  => "${wls::params::path}silent.xml",
-      require     => [File[$wls::params::oracleHome],File['silent.xml'],File['wls.jar']],
+      wlsfile     => "${path}${wlsFile}",
+      silentfile  => "${path}silent${version}.xml",
+      require     => [File[$oracleHome],File[$beaHome],File["silent.xml ${version}"],File["wls.jar ${version}"]],
    }
 
 }   

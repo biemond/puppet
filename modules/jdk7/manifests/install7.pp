@@ -68,6 +68,7 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
         owner  => "${user}",
         group  => "${group}",
         mode   => 0770,
+        replace => false,
     } 
 
     # install on client 
