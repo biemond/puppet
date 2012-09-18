@@ -24,6 +24,9 @@ node 'xxxx' {
 # installs weblogic on linux window based systems with 64 or 32 bits JDK
 # just add the weblogic generic jar to the files folder of the wls module
 # use it like this in site.pp
+#
+# create a weblogic domain 
+
 
 include wls
 
@@ -85,6 +88,21 @@ node prod inherits basenode {
 }
 
 node 'devagent1.alfa.local' inherits devel {
+
+  wls::wlsdomain{'testDomain':
+      wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
+      fullJDKName     => 'jdk1.7.0_07',
+      domain          => 'myTestDomain',
+      domainPath      => "/opt/oracle/wls/wls12c/admin",
+  #   AdminServerName => "AdminServer",
+  #   AdminListenAdr  => "localhost",
+  #   AdminListenPort => 7001,
+  #   user            => "weblogic",
+  #   password        => "weblogic1",
+  #   user            => "oracle",
+  #   group           => "dba",    
+  }
+
 }
 
 node 'win7user.localdomain' inherits prod  {

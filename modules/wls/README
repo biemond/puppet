@@ -1,6 +1,8 @@
 # weblogic puppet module 
 # installs weblogic on linux and window based systems with 64 or 32 bits JDK
 # just add the weblogic generic jar to the files folder of the wls module
+#  
+# create a new weblogic domain
 
 # use it like this in site.pp
 
@@ -15,3 +17,18 @@ include wls
     version    => '1036',
     versionJdk => '6u35',
   }
+
+  wls::wlsdomain{'testDomain':
+      wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
+      fullJDKName     => 'jdk1.7.0_07',
+      domain          => 'myTestDomain',
+      domainPath      => "/opt/oracle/wls/wls12c/admin",
+  #   AdminServerName => "AdminServer",
+  #   AdminListenAdr  => "localhost",
+  #   AdminListenPort => 7001,
+  #   user            => "weblogic",
+  #   password        => "weblogic1",
+  #   user            => "oracle",
+  #   group           => "dba",    
+  }
+    

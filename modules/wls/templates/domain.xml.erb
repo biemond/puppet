@@ -1,0 +1,26 @@
+
+WLHOME='<%= @wlHome %>'
+
+readTemplate(WLHOME+'/common/templates/domains/wls.jar')
+
+cd('Servers/AdminServer')
+
+# name of adminserver
+set('Name','<%= @AdminServerName %>' )
+
+# address and port
+set('ListenAddress','<%= @AdminListenAdr %>')
+set('ListenPort',<%= @AdminListenPort %>)
+
+cd('/')
+cd('Security/base_domain/User/weblogic')
+
+# weblogic user name + password
+set('Name','<%= @user %>')
+cmo.setPassword('<%= @password %>')
+
+# write path + domain name
+writeDomain('<%= @domainPath %>/<%= @domain %>')
+
+closeTemplate()
+exit()
