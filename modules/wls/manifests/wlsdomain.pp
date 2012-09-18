@@ -22,6 +22,7 @@ define wls::wlsdomain ($wlHome          = undef,
         $execPath         = "/usr/java/${fullJDKName}$/bin:${otherPath}"
         $checkCommand     = '/bin/ls -l'
         $path             = '/install/'
+        $JAVA_HOME        = "/usr/java/${fullJDKName}"
      
      }
      windows: { 
@@ -30,6 +31,7 @@ define wls::wlsdomain ($wlHome          = undef,
         $execPath         = "\"C:\\Program Files\\Java\\${fullJDKName}\\bin\";${otherPath}"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\" 
+        $JAVA_HOME        = "\"C:\\Program Files\\Java\\${fullJDKName}\""
      }
    }
 
@@ -44,7 +46,6 @@ define wls::wlsdomain ($wlHome          = undef,
      group   => $group,
      content => template("wls/domain.xml.erb"),
    }
-   
     
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -52,7 +53,9 @@ define wls::wlsdomain ($wlHome          = undef,
         exec { "execwlst ux":
           command     => "${javaCommand} ${path}domain_${domain}.py",
           path        => $execPath,
-          environment => "CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+                          "JAVA_HOME=/usr/java/${fullJDKName}",
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/../dev/urandom"],
           logoutput   => true,
           user        => $user,
           group       => $group,
@@ -65,7 +68,8 @@ define wls::wlsdomain ($wlHome          = undef,
 
         exec { "execwlst ux":
           command     => "${checkCommand} ${javaCommand} ${path}domain_${domain}.py",
-          environment => "CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+                          "JAVA_HOME=\"C:\\Program Files\\Java\\${fullJDKName}\""],
           path        => $execPath,
           logoutput   => true,
           unless      => "${checkCommand} dir ${domainPath}\\${domain}",
