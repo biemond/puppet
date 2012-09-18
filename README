@@ -1,4 +1,9 @@
-# java jdk7 JAVA SE 6/7 puppet module 
+java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
+
+weblogic puppet module, installs weblogic + domain creation 
+ToDo: total weblogic configuration. Deployments 
+
+#  java jdk7 JAVA SE 6/7 puppet module 
 # installs jdk on linux based systems and window with 64 or 32 bits
 # just add the jdk 6 or 7 files like jdk-6u35-linux-x64-rpm.bin, jdk-7u7-linux-x64.rpm, 
 # jdk-7u7-windows-i586.exe or jdk-7u7-windows-x64.exe downloaded from Oracle website to 
@@ -38,6 +43,20 @@ include wls
   wls::installwls{'11gPS5':
     version    => '1036',
     versionJdk => '6u35',
+  }
+
+  wls::wlsdomain{'testDomain':
+      wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
+      fullJDKName     => 'jdk1.7.0_07',
+      domain          => 'myTestDomain',
+      domainPath      => "/opt/oracle/wls/wls12c/admin",
+  #   AdminServerName => "AdminServer",
+  #   AdminListenAdr  => "localhost",
+  #   AdminListenPort => 7001,
+  #   user            => "weblogic",
+  #   password        => "weblogic1",
+  #   user            => "oracle",
+  #   group           => "dba",    
   }
 
 # example of a site.pp
