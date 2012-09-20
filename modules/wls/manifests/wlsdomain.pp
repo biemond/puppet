@@ -1,12 +1,13 @@
 # wlsdomain.pp 
 
 define wls::wlsdomain ($wlHome          = undef, 
-                       $fullJDKName     = undef, 
+                       $fullJDKName     = undef,
+                       $template        = "/common/templates/domains/wls.jar",
                        $domain          = undef,
                        $AdminServerName = "AdminServer",
                        $AdminListenAdr  = "localhost",
                        $AdminListenPort = 7001,
-                       $user            = "weblogic",
+                       $wlsUser         = "weblogic",
                        $password        = "weblogic1",
                        $domainPath      = undef,
                        $user            = 'oracle',
@@ -23,6 +24,7 @@ define wls::wlsdomain ($wlHome          = undef,
         $checkCommand     = '/bin/ls -l'
         $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
+        $NodeMgrMachine   = "UnixMachine"
      
      }
      windows: { 
@@ -32,6 +34,8 @@ define wls::wlsdomain ($wlHome          = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\" 
         $JAVA_HOME        = "\"C:\\Program Files\\Java\\${fullJDKName}\""
+        $NodeMgrMachine   = "Machine"
+
      }
    }
 
@@ -50,11 +54,11 @@ define wls::wlsdomain ($wlHome          = undef,
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
         
-        exec { "execwlst ux":
+        exec { "execwlst ux domain":
           command     => "${javaCommand} ${path}domain_${domain}.py",
           path        => $execPath,
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=/usr/java/${fullJDKName}",
+                          "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/../dev/urandom"],
           logoutput   => true,
           user        => $user,
@@ -66,10 +70,10 @@ define wls::wlsdomain ($wlHome          = undef,
      }
      windows: { 
 
-        exec { "execwlst ux":
+        exec { "execwlst win domain":
           command     => "${checkCommand} ${javaCommand} ${path}domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=\"C:\\Program Files\\Java\\${fullJDKName}\""],
+                          "JAVA_HOME=${JAVA_HOME}"],
           path        => $execPath,
           logoutput   => true,
           unless      => "${checkCommand} dir ${domainPath}\\${domain}",

@@ -1,6 +1,6 @@
 java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
 
-weblogic puppet module, installs weblogic + domain creation 
+weblogic puppet module, installs weblogic,configure + starts nodemanager, domain creation 
 ToDo: total weblogic configuration. Deployments 
 
 #  java jdk7 JAVA SE 6/7 puppet module 
@@ -48,16 +48,27 @@ include wls
   wls::wlsdomain{'testDomain':
       wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
       fullJDKName     => 'jdk1.7.0_07',
+  #   template        => '/common/templates/domains/wls.jar'
       domain          => 'myTestDomain',
       domainPath      => "/opt/oracle/wls/wls12c/admin",
   #   AdminServerName => "AdminServer",
   #   AdminListenAdr  => "localhost",
   #   AdminListenPort => 7001,
-  #   user            => "weblogic",
+  #   wlsUser         => "weblogic",
   #   password        => "weblogic1",
   #   user            => "oracle",
   #   group           => "dba",    
   }
+
+  wls::nodemanager{'nodemanager':
+    wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
+    fullJDKName     => 'jdk1.7.0_07',
+  # listenPort      => 5556,
+  # user            => 'oracle',
+  # group           => 'dba',
+    require         => Wls::Installwls['wls12c'],
+  }
+
 
 # example of a site.pp
 # /etc/puppet/manifests/site.pp
@@ -75,6 +86,16 @@ class wls12{
   wls::installwls{'wls12c':
     version    => '1211',
     versionJdk => '7u7',
+    require    => Jdk7::Install7['7u7'],
+  }
+
+  wls::nodemanager{'nodemanager':
+    wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
+    fullJDKName     => 'jdk1.7.0_07',
+  # listenPort      => 5556,
+  # user            => 'oracle',
+  # group           => 'dba',
+    require         => Wls::Installwls['wls12c'],
   }
 }
 
@@ -111,12 +132,13 @@ node 'devagent1.alfa.local' inherits devel {
   wls::wlsdomain{'testDomain':
       wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
       fullJDKName     => 'jdk1.7.0_07',
+  #   template        => '/common/templates/domains/wls.jar'
       domain          => 'myTestDomain',
       domainPath      => "/opt/oracle/wls/wls12c/admin",
   #   AdminServerName => "AdminServer",
   #   AdminListenAdr  => "localhost",
   #   AdminListenPort => 7001,
-  #   user            => "weblogic",
+  #   wlsUser         => "weblogic",
   #   password        => "weblogic1",
   #   user            => "oracle",
   #   group           => "dba",    

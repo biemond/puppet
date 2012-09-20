@@ -14,6 +14,9 @@ define wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $silen
     
         exec { "installwls ${wlsfile}":
           command     => "${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
+          environment => ["JAVA_VENDOR=Sun",
+                          "JAVA_HOME=/usr/java/${fullJDKName}",
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/../dev/urandom"],
           path        => $execPath,
           logoutput   => true,
           unless      => "${checkCommand} ${mdwHome}",
@@ -30,6 +33,8 @@ define wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $silen
 
         exec { "installwls  ${wlsfile}":
           command     => "${checkCommand} ${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
+          environment => ["JAVA_VENDOR=Sun",
+                          "JAVA_HOME=\"C:\\Program Files\\Java\\${fullJDKName}\""],
           path        => $execPath,
           logoutput   => true,
           unless      => "${checkCommand} dir ${mdwHome}",

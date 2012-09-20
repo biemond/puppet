@@ -1,22 +1,26 @@
 
 WLHOME='<%= @wlHome %>'
 print('Start...')
-readTemplate(WLHOME+'/common/templates/domains/wls.jar')
+readTemplate(WLHOME+'<%= @template %>')
+
+cd('/')
+create('LocalMachine', '<%= @NodeMgrMachine %>')
 
 cd('Servers/AdminServer')
 
 # name of adminserver
 set('Name','<%= @AdminServerName %>' )
+set('Machine','LocalMachine')
 
 # address and port
-set('ListenAddress','<%= @AdminListenAdr %>')
+#set('ListenAddress','<%= @AdminListenAdr %>')
 set('ListenPort',<%= @AdminListenPort %>)
 print('Set password...')
 cd('/')
 cd('Security/base_domain/User/weblogic')
 
 # weblogic user name + password
-set('Name','<%= @user %>')
+set('Name','<%= @wlsUser %>')
 cmo.setPassword('<%= @password %>')
 
 # Set domain save options:

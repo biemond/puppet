@@ -2,6 +2,8 @@
 # installs weblogic on linux and window based systems with 64 or 32 bits JDK
 # just add the weblogic generic jar to the files folder of the wls module
 #  
+# install weblogic
+# creates, configures and run nodemanager
 # create a new weblogic domain
 
 # use it like this in site.pp
@@ -21,14 +23,24 @@ include wls
   wls::wlsdomain{'testDomain':
       wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
       fullJDKName     => 'jdk1.7.0_07',
+  #   template        => '/common/templates/domains/wls.jar'
       domain          => 'myTestDomain',
       domainPath      => "/opt/oracle/wls/wls12c/admin",
   #   AdminServerName => "AdminServer",
   #   AdminListenAdr  => "localhost",
   #   AdminListenPort => 7001,
-  #   user            => "weblogic",
+  #   wlsUser         => "weblogic",
   #   password        => "weblogic1",
   #   user            => "oracle",
   #   group           => "dba",    
+  }
+
+  wls::nodemanager{'nodemanager':
+    wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
+    fullJDKName     => 'jdk1.7.0_07',
+  # listenPort      => 5556,
+  # user            => 'oracle',
+  # group           => 'dba',
+    require         => Wls::Installwls['wls12c'],
   }
     
