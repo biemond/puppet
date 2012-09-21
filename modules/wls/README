@@ -19,8 +19,8 @@ $defaultFullJDK = 'jdk1.7.0_07'
        $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
        $osTemplate   = "/common/templates/domains/wls.jar"
        $osDomainPath = "/opt/oracle/wls/wls12c/admin"
-       $user         = "Administrator"
-       $group        = "Administrators"
+       $user         = "oracle"
+       $group        = "dba"
      }
      windows: { 
        $osWlHome     = "c:\\oracle\\wls\\wls12c\\wlserver_12.1"
@@ -51,6 +51,7 @@ $defaultFullJDK = 'jdk1.7.0_07'
     group        => 'dba',    
   }
   
+  
   # install
   wls::installwls{'wls12c':
     require      => Jdk7::Install7['jdk7'],
@@ -68,7 +69,7 @@ $defaultFullJDK = 'jdk1.7.0_07'
     template     => $osTemplate,
     domain       => 'myTestDomain2',
     domainPath   => $osDomainPath,
-    require      => Wls::Installwls['wls12c']
+    require      => Wls::Installwls['wls12c'];
     
   }
 

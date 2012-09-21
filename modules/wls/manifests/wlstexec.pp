@@ -1,4 +1,14 @@
-# wlstexec.pp 
+# == Define: wls::wlstexec
+#
+# params class  
+#
+# === Parameters
+#
+# === Variables
+#
+# === Examples
+#
+# 
 
 define wls::wlstexec ($wlHome = undef, $fullJDKName = undef, $user = 'oracle', $group = 'dba' ) {
 

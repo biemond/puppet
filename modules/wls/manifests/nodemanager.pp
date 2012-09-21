@@ -1,4 +1,36 @@
-# nodemanager.pp 
+# == Define: wls::nodemanager
+#
+# install and configures nodemanager  
+#
+# === Parameters
+#
+# [*wlHome*]
+#   the weblogic home path /opt/oracle/wls/wls12c/wlserver_12.1
+#
+# [*fullJDKName*]
+#   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
+#
+# [*listenPort*]
+#   port of the nodemanager , default 5556
+#
+# [*user*]
+#   the user which runs the nodemanager on unix = oracle on windows = administrator
+#
+# [*group*]
+#   the group which runs the nodemanager on unix = dba on windows = administrators
+#
+# === Variables
+#
+# === Examples
+#
+#  wls::nodemanager{'nodemanager':
+#    wlHome       => '/opt/oracle/wls/wls12c/wlserver_12.1',
+#    fullJDKName  => 'jdk1.7.0_07',	
+#    user         => 'oracle',
+#    group        => 'dba', 
+#  }
+# 
+
 
 define wls::nodemanager($wlHome          = undef, 
                         $fullJDKName     = undef,

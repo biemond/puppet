@@ -1,5 +1,41 @@
-# wls::installwls
-
+# == Define: wls::installwls
+#
+# Downloads from file folder and install weblogic with a silent install on linux and windows servers 
+#
+# === Parameters
+#
+# [*version*]
+#   the weblogic version to be installed 1211 or 1036
+#
+# [*versionJdk*]
+#   jdk version 6u35 or 7u7 this maps to /usr/java/.. or c:\program files\
+#
+# [*user*]
+#   the user which owns the software on unix = oracle on windows = administrator
+#
+# [*group*]
+#   the group which owns the software on unix = dba on windows = administrators
+#
+# === Variables
+#
+# [*path*]
+#   path for downloading softwate on unix = /install on windows = c:\temp
+#
+# [*oracleHome*]
+#   oracle home path on unix /opt/oracle on windows = c:\oracle
+#
+# [*beaHome*]
+#   middleware home  = oracle + wls
+#
+# === Examples
+#
+#   wls::installwls{'11gPS5':
+#    version    => '1036',
+#    versionJdk => '6u35',
+#    user       => $user,
+#    group      => $group,    
+#  }
+# 
 
 define wls::installwls( $version    = undef, 
                         $versionJdk = undef,
@@ -200,7 +236,7 @@ define wls::installwls( $version    = undef,
    }
 
    # install weblogic
-   wlsexec{ "installer ${version}":
+   wls::wlstexec{ "installer ${version}":
       mdwHome     => $mdwHome,
       fullJDKName => $fullJDKName,
       wlsfile     => "${path}${wlsFile}",

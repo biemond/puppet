@@ -1,4 +1,70 @@
-# wlsdomain.pp 
+# == Define: wls::wlsdomain
+#
+# install a new weblogic domain  
+#
+# === Parameters
+#
+# [*wlHome*]
+#   the weblogic home path /opt/oracle/wls/wls12c/wlserver_12.1
+#
+# [*fullJDKName*]
+#   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
+#
+# [*template*]
+#   default weblogic domain template   
+#
+# [*domain*]
+#   the name of the domain
+#
+# [*AdminServerName*]
+#   weblogic adminserver name
+#
+# [*AdminListenAdr*]
+#   listen ip addresses for the adminserver
+#
+# [*AdminListenPort*]
+#   port for adminserver
+#
+# [*wlsUser*]
+#   weblogic username
+#
+# [*password*]
+#   weblogic password
+#
+# [*domainPath*]
+#   path for the weblogic domains
+#
+# [*user*]
+#   the user which owns the software on unix = oracle on windows = administrator
+#
+# [*group*]
+#   the group which owns the software on unix = dba on windows = administrators
+#
+# === Variables
+#
+# === Examples
+#
+# Wls::Wlsdomain {
+#   wlHome       => '/opt/oracle/wls/wls12c/wlserver_12.1',
+#   fullJDKName  => 'jdk1.7.0_07',	
+#   user         => 'oracle',
+#   group        => 'dba',    
+# }
+#
+# wls::wlsdomain{
+# 
+#   'testDomain':
+#   template     => "/common/templates/domains/wls.jar",
+#   domain       => 'myTestDomain',
+#   domainPath   => "/opt/oracle/wls/wls12c/admin";
+#
+#   'testDomain2':
+#   template     => "/common/templates/domains/wls.jar",
+#   domain       => 'myTestDomain2',
+#   domainPath   => "/opt/oracle/wls/wls12c/admin";
+# }
+# 
+# 
 
 define wls::wlsdomain ($wlHome          = undef, 
                        $fullJDKName     = undef,

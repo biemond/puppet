@@ -1,4 +1,15 @@
-# class params of module wls
+# == Define: wls::params
+#
+# params class  
+#
+# === Parameters
+#
+# === Variables
+#
+# === Examples
+#
+# 
+
 
 class wls::params {
 

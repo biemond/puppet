@@ -74,8 +74,8 @@ class wls12Unix{
        $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
        $osTemplate   = "/common/templates/domains/wls.jar"
        $osDomainPath = "/opt/oracle/wls/wls12c/admin"
-       $user         = "Administrator"
-       $group        = "Administrators"
+       $user         = "oracle"
+       $group        = "dba"
      }
      windows: { 
        $osWlHome     = "c:\\oracle\\wls\\wls12c\\wlserver_12.1"
@@ -85,7 +85,6 @@ class wls12Unix{
        $group        = "Administrators"
      }
   }
-
   # set the defaults
   Wls::Installwls {
     version      => '1211',
@@ -123,7 +122,7 @@ class wls12Unix{
     template     => $osTemplate,
     domain       => 'myTestDomain2',
     domainPath   => $osDomainPath,
-    require      => Wls::Installwls['wls12c']
+    require      => Wls::Installwls['wls12c'];
     
   }
 

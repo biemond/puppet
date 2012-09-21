@@ -1,10 +1,16 @@
-# class wls
-# init class of module wls
-
-
+# == Define: wls::wls
+#
+# WebLogic module 
+#
+# === Parameters
+#
+# === Variables
+#
+# === Examples
+#
+#
+ 
 class wls(){
-
-   notify {"wls::init":}
 
 
 }
