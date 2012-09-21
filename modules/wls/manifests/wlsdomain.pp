@@ -14,6 +14,8 @@ define wls::wlsdomain ($wlHome          = undef,
                        $group           = 'dba',
                        ) {
 
+    notify {"Domain ${domain} wlHome ${wlHome}":}
+
    $javaCommand    = "java weblogic.WLST"
 
    case $operatingsystem {
@@ -25,7 +27,19 @@ define wls::wlsdomain ($wlHome          = undef,
         $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         $NodeMgrMachine   = "UnixMachine"
-     
+
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               replace => 'yes',
+               mode    => 0555,
+               owner   => $user,
+               group   => $group,
+             }     
      }
      windows: { 
 
@@ -36,6 +50,15 @@ define wls::wlsdomain ($wlHome          = undef,
         $JAVA_HOME        = "\"C:\\Program Files\\Java\\${fullJDKName}\""
         $NodeMgrMachine   = "Machine"
 
+        Exec { path      => $execPath,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               replace => 'yes',
+               mode    => 0555,
+             }     
+
      }
    }
 
@@ -43,26 +66,17 @@ define wls::wlsdomain ($wlHome          = undef,
    # the domain.py used by the wlst
    file { "domain.py ${domain}":
      path    => "${path}domain_${domain}.py",
-     ensure  => present,
-     replace => 'yes',
-     mode    => 0555,
-     owner   => $user,
-     group   => $group,
      content => template("wls/domain.xml.erb"),
    }
     
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
         
-        exec { "execwlst ux domain":
+        exec { "execwlst ux ${domain}":
           command     => "${javaCommand} ${path}domain_${domain}.py",
-          path        => $execPath,
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/../dev/urandom"],
-          logoutput   => true,
-          user        => $user,
-          group       => $group,
           unless      => "${checkCommand} ${domainPath}/${domain}",
           require => File["domain.py ${domain}"],
         }    
@@ -70,12 +84,10 @@ define wls::wlsdomain ($wlHome          = undef,
      }
      windows: { 
 
-        exec { "execwlst win domain":
+        exec { "execwlst win ${domain}":
           command     => "${checkCommand} ${javaCommand} ${path}domain_${domain}.py",
-          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+          environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-          path        => $execPath,
-          logoutput   => true,
           unless      => "${checkCommand} dir ${domainPath}\\${domain}",
           require => File["domain.py ${domain}"],
         }    

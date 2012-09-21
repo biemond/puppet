@@ -1,7 +1,11 @@
 # wls::installwls
 
 
-define wls::installwls( $version = undef, $versionJdk = undef ) {
+define wls::installwls( $version    = undef, 
+                        $versionJdk = undef,
+                        $user       = 'oracle',
+                        $group      = 'dba',
+                      ) {
 
    notify {"wls::installwls ${version}":}
 
@@ -36,8 +40,6 @@ define wls::installwls( $version = undef, $versionJdk = undef ) {
         $oracleHome       = "/opt/oracle/"
         $beaHome          = "${oracleHome}wls/"
 
-        $user             = "oracle"
-        $group            = "dba"
      }
       windows: { 
         $path             = "C:\\temp\\"
@@ -45,8 +47,6 @@ define wls::installwls( $version = undef, $versionJdk = undef ) {
         $oracleHome       = "C:\\oracle\\"
         $beaHome          = "${oracleHome}wls\\"
 
-        $user             = "Administrator"
-        $group            = "Administrators"
       }
       default: { 
         fail("Unrecognized operating system") 

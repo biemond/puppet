@@ -9,94 +9,128 @@ ToDo: total weblogic configuration. Deployments
 # jdk-7u7-windows-i586.exe or jdk-7u7-windows-x64.exe downloaded from Oracle website to 
 # the files folder of jdk7 module
 #
-# 2 parameters 
-# version like 6u35, 7u7 , 7u8 etc 
-# x64 true or false 
-#
-# in site.pp add
-include jdk7
-
-node 'xxxx' {
- 
-  jdk7::install7{'7u7':
-    version => "7u7",
-    x64     => "true",
-  }
-
-}
  
 # weblogic puppet module 
 # installs weblogic on linux window based systems with 64 or 32 bits JDK
 # just add the weblogic generic jar to the files folder of the wls module
 # use it like this in site.pp
 #
-# create a weblogic domain 
+# create a weblogic domain, Configure & Runs NodeManager 
+
+# site.pp
+#
+ 
+import "templates"
+import "nodes"
+
+$defaultJDK     = '7u7'
+$defaultFullJDK = 'jdk1.7.0_07'
 
 
-include wls
+# nodes.pp
+#
 
-  wls::installwls{'wls1211':
-    version    => '1211',
-    versionJdk => '7u7',
-  }
+node default {
+}
 
-  wls::installwls{'11gPS5':
-    version    => '1036',
-    versionJdk => '6u35',
-  }
+node basenode {
+}
 
-  wls::wlsdomain{'testDomain':
-      wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
-      fullJDKName     => 'jdk1.7.0_07',
-  #   template        => '/common/templates/domains/wls.jar'
-      domain          => 'myTestDomain',
-      domainPath      => "/opt/oracle/wls/wls12c/admin",
-  #   AdminServerName => "AdminServer",
-  #   AdminListenAdr  => "localhost",
-  #   AdminListenPort => 7001,
-  #   wlsUser         => "weblogic",
-  #   password        => "weblogic1",
-  #   user            => "oracle",
-  #   group           => "dba",    
-  }
+node devel inherits basenode {
+  $my_zone = "devel"
+  include wls12Unix
+}
 
-  wls::nodemanager{'nodemanager':
-    wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
-    fullJDKName     => 'jdk1.7.0_07',
-  # listenPort      => 5556,
-  # user            => 'oracle',
-  # group           => 'dba',
-    require         => Wls::Installwls['wls12c'],
-  }
+node prod inherits basenode {
+  $my_zone = "prod"
+}
 
+node 'devagent1.alfa.local' inherits devel {
+}
 
-# example of a site.pp
-# /etc/puppet/manifests/site.pp
+node 'win7user.localdomain' inherits prod  {
+
+  include wls1036
+  include wls12Unix
+
+} 
+
+# templates.pp
+#
 
 include jdk7
 include wls
 
-class wls12{
+class wls12Unix{
+
 
   jdk7::install7{'jdk7':
-    version => "7u7",
+    version => $defaultJDK,
     x64     => "true",
   }
+  
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
+       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osDomainPath = "/opt/oracle/wls/wls12c/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+     }
+     windows: { 
+       $osWlHome     = "c:\\oracle\\wls\\wls12c\\wlserver_12.1"
+       $osTemplate   = "\\common\\templates\\domains\\wls.jar"
+       $osDomainPath = "c:\\oracle\\wls\\wls12c\\admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+     }
+  }
 
+  # set the defaults
+  Wls::Installwls {
+    version      => '1211',
+    versionJdk   => $defaultJDK,
+    user         => 'oracle',
+    group        => 'dba',    
+  }
+  Wls::Wlsdomain {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => 'oracle',
+    group        => 'dba',    
+  }
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => 'oracle',
+    group        => 'dba',    
+  }
+  
+  # install
   wls::installwls{'wls12c':
-    version    => '1211',
-    versionJdk => '7u7',
-    require    => Jdk7::Install7['7u7'],
+    require      => Jdk7::Install7['jdk7'],
+  }
+
+  wls::wlsdomain{
+  
+    'testDomain':
+    template     => $osTemplate,
+    domain       => 'myTestDomain',
+    domainPath   => $osDomainPath,
+    require      => Wls::Installwls['wls12c'];
+
+    'testDomain2':
+    template     => $osTemplate,
+    domain       => 'myTestDomain2',
+    domainPath   => $osDomainPath,
+    require      => Wls::Installwls['wls12c']
+    
   }
 
   wls::nodemanager{'nodemanager':
-    wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
-    fullJDKName     => 'jdk1.7.0_07',
-  # listenPort      => 5556,
-  # user            => 'oracle',
-  # group           => 'dba',
-    require         => Wls::Installwls['wls12c'],
+    require      => Wls::Installwls['wls12c'],
   }
+
 }
 
 class wls1036{
@@ -106,57 +140,23 @@ class wls1036{
     x64     => "true",
   }
 
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $user         = "Administrator"
+       $group        = "Administrators"
+     }
+  }
+
   wls::installwls{'11gPS5':
     version    => '1036',
     versionJdk => '6u35',
+    user       => $user,
+    group      => $group,    
+    require    => Jdk7::Install7['jdk6'],
   }
 }
  
-node default {
-}
-
-node basenode {
-}
-
-node devel inherits basenode {
-  $my_zone = "devel"
-  include wls12
-}
-
-node prod inherits basenode {
-  $my_zone = "prod"
-}
-
-node 'devagent1.alfa.local' inherits devel {
-
-  wls::wlsdomain{'testDomain':
-      wlHome          => '/opt/oracle/wls/wls12c/wlserver_12.1',
-      fullJDKName     => 'jdk1.7.0_07',
-  #   template        => '/common/templates/domains/wls.jar'
-      domain          => 'myTestDomain',
-      domainPath      => "/opt/oracle/wls/wls12c/admin",
-  #   AdminServerName => "AdminServer",
-  #   AdminListenAdr  => "localhost",
-  #   AdminListenPort => 7001,
-  #   wlsUser         => "weblogic",
-  #   password        => "weblogic1",
-  #   user            => "oracle",
-  #   group           => "dba",    
-  }
-
-}
-
-node 'win7user.localdomain' inherits prod  {
-
-  include wls1036
-
-  jdk7::install7{'jdk7':
-    version => "7u7",
-    x64     => "true",
-  }
-  wls::installwls{'wls1211':
-    version    => '1211',
-    versionJdk => '7u7',
-  }
-
-}
