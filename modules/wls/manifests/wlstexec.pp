@@ -19,7 +19,7 @@ define wls::wlstexec ($wlHome = undef, $fullJDKName = undef, $user = 'oracle', $
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $execPath         = "/usr/java/${fullJDKName}$/bin:${otherPath}"
+        $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
         $checkCommand     = '/bin/ls -l'
         
         exec { "execwlst ux":

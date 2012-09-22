@@ -4,17 +4,17 @@ print('Start...')
 readTemplate(WLHOME+'<%= @template %>')
 
 cd('/')
-create('LocalMachine', '<%= @NodeMgrMachine %>')
+create('LocalMachine', '<%= @nodeMgrMachine %>')
 
 cd('Servers/AdminServer')
 
 # name of adminserver
-set('Name','<%= @AdminServerName %>' )
+set('Name','<%= @adminServerName %>' )
 set('Machine','LocalMachine')
 
 # address and port
-#set('ListenAddress','<%= @AdminListenAdr %>')
-set('ListenPort',<%= @AdminListenPort %>)
+#set('ListenAddress','<%= @adminListenAdr %>')
+set('ListenPort',<%= @adminListenPort %>)
 print('Set password...')
 cd('/')
 cd('Security/base_domain/User/weblogic')

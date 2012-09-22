@@ -37,14 +37,14 @@ define wls::wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $execPath         = "/usr/java/${fullJDKName}$/bin:${otherPath}"
+        $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
         $checkCommand     = '/bin/ls -l'
     
         exec { "installwls ${wlsfile}":
           command     => "${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
           environment => ["JAVA_VENDOR=Sun",
                           "JAVA_HOME=/usr/java/${fullJDKName}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/../dev/urandom"],
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           path        => $execPath,
           logoutput   => true,
           unless      => "${checkCommand} ${mdwHome}",

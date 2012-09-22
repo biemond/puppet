@@ -236,7 +236,7 @@ define wls::installwls( $version    = undef,
    }
 
    # install weblogic
-   wls::wlstexec{ "installer ${version}":
+   wls::wlsexec{ "installer ${version}":
       mdwHome     => $mdwHome,
       fullJDKName => $fullJDKName,
       wlsfile     => "${path}${wlsFile}",

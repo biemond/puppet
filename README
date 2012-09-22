@@ -119,10 +119,11 @@ class wls12Unix{
     require      => Wls::Installwls['wls12c'];
 
     'testDomain2':
-    template     => $osTemplate,
-    domain       => 'myTestDomain2',
-    domainPath   => $osDomainPath,
-    require      => Wls::Installwls['wls12c'];
+    template        => $osTemplate,
+    domain          => 'myTestDomain2',
+    domainPath      => $osDomainPath,
+    adminListenPort => '8001',
+    require         => [ Wls::Installwls['wls12c'],Wls::Wlsdomain['testDomain']];
     
   }
 

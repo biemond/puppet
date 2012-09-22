@@ -16,13 +16,13 @@
 # [*domain*]
 #   the name of the domain
 #
-# [*AdminServerName*]
+# [*adminServerName*]
 #   weblogic adminserver name
 #
-# [*AdminListenAdr*]
+# [*adminListenAdr*]
 #   listen ip addresses for the adminserver
 #
-# [*AdminListenPort*]
+# [*adminListenPort*]
 #   port for adminserver
 #
 # [*wlsUser*]
@@ -70,9 +70,9 @@ define wls::wlsdomain ($wlHome          = undef,
                        $fullJDKName     = undef,
                        $template        = "/common/templates/domains/wls.jar",
                        $domain          = undef,
-                       $AdminServerName = "AdminServer",
-                       $AdminListenAdr  = "localhost",
-                       $AdminListenPort = 7001,
+                       $adminServerName = "AdminServer",
+                       $adminListenAdr  = "localhost",
+                       $adminListenPort = 7001,
                        $wlsUser         = "weblogic",
                        $password        = "weblogic1",
                        $domainPath      = undef,
@@ -88,11 +88,12 @@ define wls::wlsdomain ($wlHome          = undef,
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $execPath         = "/usr/java/${fullJDKName}$/bin:${otherPath}"
+        $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
         $checkCommand     = '/bin/ls -l'
         $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
-        $NodeMgrMachine   = "UnixMachine"
+        $nodeMgrMachine   = "UnixMachine"
+
 
         Exec { path      => $execPath,
                user      => $user,
@@ -114,7 +115,7 @@ define wls::wlsdomain ($wlHome          = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\" 
         $JAVA_HOME        = "\"C:\\Program Files\\Java\\${fullJDKName}\""
-        $NodeMgrMachine   = "Machine"
+        $nodeMgrMachine   = "Machine"
 
         Exec { path      => $execPath,
                logoutput => true,
@@ -140,9 +141,10 @@ define wls::wlsdomain ($wlHome          = undef,
         
         exec { "execwlst ux ${domain}":
           command     => "${javaCommand} ${path}domain_${domain}.py",
+#         command     => "env",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/../dev/urandom"],
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "${checkCommand} ${domainPath}/${domain}",
           require => File["domain.py ${domain}"],
         }    

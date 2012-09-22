@@ -44,7 +44,7 @@ define wls::nodemanager($wlHome          = undef,
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $execPath         = "/usr/java/${fullJDKName}$/bin:${otherPath}"
+        $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
         $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager'"
         $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
@@ -72,7 +72,7 @@ define wls::nodemanager($wlHome          = undef,
      }
    }
 
-   $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/../dev/urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
+   $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
 
 
     
@@ -83,7 +83,8 @@ define wls::nodemanager($wlHome          = undef,
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
-                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/linux/x86_64"],
+                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/linux/x86_64",
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "${checkCommand}",
         }    
 
