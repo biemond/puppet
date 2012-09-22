@@ -31,15 +31,20 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
 
         $user             = "root"
         $group            = "root"
+        
+        $checkInstall     =  "/bin/ls -l /usr/java/${fullversion}/bin"
       }
       windows: { 
         $installVersion   = "windows"
         $installExtension = ".exe"
 
-        $path             = "C:\\temp\\"
+        $path             = "C:/temp/"
 
         $user             = "Administrator"
         $group            = "Administrators"
+
+        $checkInstall     =  "C:\\Windows\\System32\\cmd.exe /c dir c:\\oracle\\${fullversion}"
+
       }
       default: { 
         fail("Unrecognized operating system") 
@@ -60,24 +65,50 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
         fail("Unrecognized jdk version")        
     }
 
+    case $operatingsystem {
+      centos, redhat, OracleLinux, ubuntu, debian: { 
+        $checkJdkInstall     =  "/bin/ls -l /usr/java/${fullversion}/bin"
+      }
+      windows: { 
+        $checkJdkInstall     =  "c:\\oracle\\${fullversion}\\bin\\java.exe"
+      }
+    }
+
+    # check oracle install folder
+    if ! defined(File[$path]) {
+      file { $path :
+        path    => $path,
+        ensure  => directory,
+        recurse => false, 
+        owner   => $user,
+        group   => $group,
+        mode    => 0770,
+        replace => false,
+      }
+    }
+    
     # download jdk to client
     file {"jdk_file${version}":
-        path   => "${path}${jdkfile}",
-        ensure => present,
-        source => "puppet:///modules/jdk7/${jdkfile}",
-        owner  => "${user}",
-        group  => "${group}",
-        mode   => 0770,
+        path    => "${path}${jdkfile}",
+        ensure  => present,
+        source  => "puppet:///modules/jdk7/${jdkfile}",
+        owner   => $user,
+        group   => $group,
+        mode    => 0770,
         replace => false,
+        require => File[$path],
     } 
-
-    # install on client 
-    javaexec {"jdkexec${version}": 
-        version     => $version,
-        path        => $path, 
-        fullversion => $fullVersion,
-        jdkfile     => $jdkfile,
-        require     => File["jdk_file${version}"],
-    }
+#    if !$checkJdkInstall {
+      # install on client 
+      javaexec {"jdkexec${version}": 
+          version     => $version,
+          path        => $path, 
+          fullversion => $fullVersion,
+          jdkfile     => $jdkfile,
+          user        => $user,
+          group       => $group,
+          require     => File["jdk_file${version}"],
+      }
+#    }
 
 }

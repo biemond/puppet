@@ -56,13 +56,13 @@ define wls::wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $
      windows: { 
 
         $otherPath        = "C:\\Windows\\system32;C:\\Windows"
-        $execPath         = "\"C:\\Program Files\\Java\\${fullJDKName}\\bin\";${otherPath}"
+        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;${otherPath}"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
 
         exec { "installwls  ${wlsfile}":
           command     => "${checkCommand} ${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
           environment => ["JAVA_VENDOR=Sun",
-                          "JAVA_HOME=\"C:\\Program Files\\Java\\${fullJDKName}\""],
+                          "JAVA_HOME=C:\\oracle\\${fullJDKName}"],
           path        => $execPath,
           logoutput   => true,
           unless      => "${checkCommand} dir ${mdwHome}",

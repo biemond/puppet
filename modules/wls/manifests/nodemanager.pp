@@ -60,10 +60,10 @@ define wls::nodemanager($wlHome          = undef,
      windows: { 
 
         $otherPath        = "C:\\Windows\\system32;C:\\Windows"
-        $execPath         = "\"C:\\Program Files\\Java\\${fullJDKName}\\bin\";${otherPath}"
+        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;${otherPath}"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\" 
-        $JAVA_HOME        = "\"C:\\Program Files\\Java\\${fullJDKName}\""
+        $JAVA_HOME        = "C:\\oracle\\${fullJDKName}"
 
         Exec { path      => $execPath,
                logoutput => true,
@@ -108,7 +108,7 @@ define wls::nodemanager($wlHome          = undef,
      }
      windows: { 
 
-        exec { "execwlst win domain":
+        exec { "execwlst win nodemanager":
           command     => "${checkCommand} ${javaCommand}",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],

@@ -1,6 +1,11 @@
 # javaexec 
 
-define javaexec ($version = undef, $path = undef, $fullversion = undef, $jdkfile = undef  ) {
+define javaexec ($version     = undef, 
+                 $path        = undef, 
+                 $fullversion = undef, 
+                 $jdkfile     = undef,
+                 $user        = undef,
+                 $group       = undef,) {
 
    notify {"install7.pp params ${path} ${fullversion} ${jdkfile}":}
 
@@ -17,8 +22,6 @@ define javaexec ($version = undef, $path = undef, $fullversion = undef, $jdkfile
               path   => "${path}answer_file${version}.txt",
               ensure => present,
               source => "puppet:///modules/jdk7/answer_file.txt",
-              owner  => "${user}",
-              group  => "${group}",
               mode   => 0770,
             } 
 
@@ -38,13 +41,46 @@ define javaexec ($version = undef, $path = undef, $fullversion = undef, $jdkfile
         }
      }
      windows: { 
-
+        # install jdk on default place
         exec {"jdk_install${version}": 
-           command =>  "${path}${jdkfile} /s ADDLOCAL=\"ToolsFeature\"",
-           unless  =>  "C:\\Windows\\System32\\cmd.exe /c dir \"C:\\Program Files\\Java\\${fullversion}\\bin\"",
-           logoutput   => true,
+           command    =>  "${path}${jdkfile} /s ADDLOCAL=\"ToolsFeature\"",
+           unless     =>  "C:\\Windows\\System32\\cmd.exe /c dir \"C:\\Program Files\\Java\\${fullversion}\\bin\"",
+           logoutput  => true,
         }      
-     }
+        # add oracle folder
+        if ! defined(File["c:/oracle"]) {
+          file { "c:/oracle":
+            path    => "c:/oracle",
+            ensure  => directory,
+            recurse => false, 
+            mode    => 0770,
+            replace => false,
+            owner   => $user,
+            group   => $group,
+            require => Exec ["jdk_install${version}"],
+          }
+        }
+        # move jdk to oracle folder because of space in path name
+        exec {"move jdk_install${version}": 
+           command    =>  "C:\\Windows\\System32\\cmd.exe /c xcopy \"C:\\Program Files\\Java\\${fullversion}\" c:\\oracle\\${fullversion} /e /i /h",
+           unless     =>  "C:\\Windows\\System32\\cmd.exe /c dir c:\\oracle\\${fullversion}",
+           logoutput  => true,
+           require    => File ["c:/oracle"],
+        }      
+        # set permissions on the jdk folder in the oracle folder
+        if ! defined(File["c:/oracle/${fullversion}"]) {
+          file { "c:/oracle/${fullversion}":
+            path    => "c:/oracle/${fullversion}",
+            ensure  => directory,
+            recurse => true, 
+            mode    => 0777,
+            replace => false,
+            owner   => $user,
+            group   => $group,
+            require => Exec ["move jdk_install${version}"],
+          }
+        }
+    }
    }
    
 }

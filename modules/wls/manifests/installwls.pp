@@ -78,7 +78,7 @@ define wls::installwls( $version    = undef,
 
      }
       windows: { 
-        $path             = "C:\\temp\\"
+        $path             = "C:/temp/"
 
         $oracleHome       = "C:\\oracle\\"
         $beaHome          = "${oracleHome}wls\\"

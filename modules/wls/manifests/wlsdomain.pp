@@ -111,21 +111,19 @@ define wls::wlsdomain ($wlHome          = undef,
      windows: { 
 
         $otherPath        = "C:\\Windows\\system32;C:\\Windows"
-        $execPath         = "\"C:\\Program Files\\Java\\${fullJDKName}\\bin\";${otherPath}"
+        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;${otherPath}"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = "c:\\temp\\" 
-        $JAVA_HOME        = "\"C:\\Program Files\\Java\\${fullJDKName}\""
+        $path             = "c:/temp/" 
+        $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
         $nodeMgrMachine   = "Machine"
 
         Exec { path      => $execPath,
                logoutput => true,
              }
-        File {
-               ensure  => present,
+        File { ensure  => present,
                replace => 'yes',
                mode    => 0555,
              }     
-
      }
    }
 
@@ -141,23 +139,21 @@ define wls::wlsdomain ($wlHome          = undef,
         
         exec { "execwlst ux ${domain}":
           command     => "${javaCommand} ${path}domain_${domain}.py",
-#         command     => "env",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "${checkCommand} ${domainPath}/${domain}",
-          require => File["domain.py ${domain}"],
+          require     => File["domain.py ${domain}"],
         }    
      
      }
      windows: { 
-
         exec { "execwlst win ${domain}":
           command     => "${checkCommand} ${javaCommand} ${path}domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-          unless      => "${checkCommand} dir ${domainPath}\\${domain}",
-          require => File["domain.py ${domain}"],
+#          unless      => "${checkCommand} dir ${domainPath}\\${domain}\\bin\\startWebLogic.cmd",
+          require     => File["domain.py ${domain}"],
         }    
      }
    }
