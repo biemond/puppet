@@ -87,9 +87,7 @@ define wls::wlsdomain ($wlHome          = undef,
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
-        $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
-        $checkCommand     = '/bin/ls -l'
+        $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         $nodeMgrMachine   = "UnixMachine"
@@ -110,9 +108,7 @@ define wls::wlsdomain ($wlHome          = undef,
      }
      windows: { 
 
-        $otherPath        = "C:\\Windows\\system32;C:\\Windows"
-        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;${otherPath}"
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
+        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $path             = "c:/temp/" 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
         $nodeMgrMachine   = "Machine"
@@ -142,17 +138,20 @@ define wls::wlsdomain ($wlHome          = undef,
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          unless      => "${checkCommand} ${domainPath}/${domain}",
+          unless      => "/usr/bin/test -f ${domainPath}/${domain} && echo 1 || echo 0",
           require     => File["domain.py ${domain}"],
         }    
      
      }
      windows: { 
+     
+        notify{"${domainPath}/${domain}":}
+        
         exec { "execwlst win ${domain}":
-          command     => "${checkCommand} ${javaCommand} ${path}domain_${domain}.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-#          unless      => "${checkCommand} dir ${domainPath}\\${domain}\\bin\\startWebLogic.cmd",
+          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${domainPath}/${domain}",
           require     => File["domain.py ${domain}"],
         }    
      }

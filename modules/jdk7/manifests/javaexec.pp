@@ -14,6 +14,11 @@ define javaexec ($version     = undef,
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
+        Exec { path        => $execPath,
+               unless      => "/usr/bin/test -f /usr/java/${fullversion}/bin/java  && echo 1 || echo 0",
+               logoutput   => true,
+             }
+
         # for java version 6 we need to accept the license
         if $version in ['6u36','6u35', '6u34', '6u33'] {
 
@@ -26,60 +31,59 @@ define javaexec ($version     = undef,
             } 
 
             exec {"jdk_install${version}": 
-              command =>  "${path}${jdkfile} < ${path}answer_file${version}.txt",
-              unless  =>  "/bin/ls -l /usr/java/${fullversion}/bin",
-              logoutput   => true,
+              command     => "${path}${jdkfile} < ${path}answer_file${version}.txt",
               require     => File["answerfile${version}"],
             }      
         } else { 
             # java 7 supports RPM
             exec {"jdk_install${version}": 
-              command =>  "/bin/rpm -Uvh --replacepkgs ${path}${jdkfile}",
-              unless  =>  "/bin/ls -l /usr/java/${fullversion}/bin",
-              logoutput   => true,
+              command     =>  "/bin/rpm -Uvh --replacepkgs ${path}${jdkfile}",
             }      
         }
      }
      windows: { 
+
+        # we use unxutils http://sourceforge.net/projects/unxutils/files/latest/download
+        # unzip and put it on c:\
+        $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
+
+        Exec { path       => $execPath,
+#               logoutput  => true,
+             }
+
+
         # install jdk on default place
         exec {"jdk_install${version}": 
-           command    =>  "${path}${jdkfile} /s ADDLOCAL=\"ToolsFeature\"",
-           unless     =>  "C:\\Windows\\System32\\cmd.exe /c dir \"C:\\Program Files\\Java\\${fullversion}\\bin\"",
-           logoutput  => true,
+           command    => "${path}${jdkfile} /s ADDLOCAL=\"ToolsFeature\"",
+           unless     => "C:\\Windows\\System32\\cmd.exe /c dir \"C:/Program Files/Java/${fullversion}\"",
         }      
+
         # add oracle folder
         if ! defined(File["c:/oracle"]) {
           file { "c:/oracle":
             path    => "c:/oracle",
             ensure  => directory,
             recurse => false, 
-            mode    => 0770,
-            replace => false,
             owner   => $user,
             group   => $group,
+            mode    => 0770,
+            replace => false,
             require => Exec ["jdk_install${version}"],
           }
         }
+
         # move jdk to oracle folder because of space in path name
-        exec {"move jdk_install${version}": 
-           command    =>  "C:\\Windows\\System32\\cmd.exe /c xcopy \"C:\\Program Files\\Java\\${fullversion}\" c:\\oracle\\${fullversion} /e /i /h",
-           unless     =>  "C:\\Windows\\System32\\cmd.exe /c dir c:\\oracle\\${fullversion}",
-           logoutput  => true,
+        exec {"copy jdk_install${version}": 
+           command    => "C:\\Windows\\System32\\cmd.exe /c xcopy \"C:\\Program Files\\Java\\${fullversion}\" c:\\oracle\\${fullversion} /E /I /H",
+           unless     => "C:\\Windows\\System32\\cmd.exe /c  test -e c:\\oracle\\${fullversion}",
            require    => File ["c:/oracle"],
         }      
-        # set permissions on the jdk folder in the oracle folder
-        if ! defined(File["c:/oracle/${fullversion}"]) {
-          file { "c:/oracle/${fullversion}":
-            path    => "c:/oracle/${fullversion}",
-            ensure  => directory,
-            recurse => true, 
-            mode    => 0777,
-            replace => false,
-            owner   => $user,
-            group   => $group,
-            require => Exec ["move jdk_install${version}"],
-          }
-        }
+        exec {"icacls jdk_install${version}": 
+           command    => "C:\\Windows\\System32\\cmd.exe /c icacls C:\\oracle\\${fullversion}\\* /T /C /grant Administrator:F Administrators:F",
+           require    => Exec ["copy jdk_install${version}"],
+        }      
+
+
     }
    }
    

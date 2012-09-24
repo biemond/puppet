@@ -82,7 +82,6 @@ define wls::installwls( $version    = undef,
 
         $oracleHome       = "C:\\oracle\\"
         $beaHome          = "${oracleHome}wls\\"
-
       }
       default: { 
         fail("Unrecognized operating system") 
@@ -162,14 +161,24 @@ define wls::installwls( $version    = undef,
    # set the environment related vars		
    case $operatingsystem {
       centos, redhat, OracleLinux, ubuntu, debian: { 
-        $mdwHome   = "${beaHome}${$wlsVersion}/"
+        $mdwHome     = "${beaHome}${$wlsVersion}/"
+        $checkPath   = "/opt/oracle/wls/${$wlsVersion}"
+
      }
       windows: { 
-        $mdwHome   = "${beaHome}${$wlsVersion}\\"
+        $mdwHome     = "${beaHome}${$wlsVersion}\\"
+        $checkPath   = "C:\\oracle\\wls\\${$wlsVersion}"
+
       }
       default: { 
         fail("Unrecognized operating system") 
       }
+   }
+
+   File{
+        owner   => $user,
+        group   => $group,
+        mode    => 0770,
    }
 
    if ! defined(File[$path]) {
@@ -178,9 +187,6 @@ define wls::installwls( $version    = undef,
         path    => $path,
         ensure  => directory,
         recurse => false, 
-        owner   => $user,
-        group   => $group,
-        mode    => 0770,
         replace => false,
       }
    }
@@ -191,9 +197,6 @@ define wls::installwls( $version    = undef,
      path    => "${path}${wlsFile}",
      ensure  => present,
      source  => "puppet:///modules/wls/${wlsFile}",
-     owner   => $user,
-     group   => $group,
-     mode    => 0550,
      require => File[$path],
      replace => false,
    }
@@ -203,9 +206,6 @@ define wls::installwls( $version    = undef,
        path    => $oracleHome,
        ensure  => directory,
        recurse => false, 
-       owner   => $user,
-       group   => $group,
-       mode    => 0770,
        replace => false,
      }
    }
@@ -215,9 +215,6 @@ define wls::installwls( $version    = undef,
        path    => $beahome,
        ensure  => directory,
        recurse => false, 
-       owner   => $user,
-       group   => $group,
-       mode    => 0770,
        require => File[$oracleHome],
        replace => false,
      }
@@ -228,9 +225,6 @@ define wls::installwls( $version    = undef,
      path    => "${path}silent${version}.xml",
      ensure  => present,
      replace => 'yes',
-     owner   => $user,
-     group   => $group,
-     mode    => 0550,
      content => template("wls/silent.xml.erb"),
      require => File[$path],
    }
@@ -238,6 +232,7 @@ define wls::installwls( $version    = undef,
    # install weblogic
    wls::wlsexec{ "installer ${version}":
       mdwHome     => $mdwHome,
+      checkPath   => $checkPath,
       fullJDKName => $fullJDKName,
       wlsfile     => "${path}${wlsFile}",
       silentfile  => "${path}silent${version}.xml",

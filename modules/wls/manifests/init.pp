@@ -1,9 +1,16 @@
-# = Class: jdk7
-# 
-# This class installs oracle jdk7
+# == Define: wls::wls
 #
-class jdk7 () {
+# WebLogic module 
+#
+# === Parameters
+#
+# === Variables
+#
+# === Examples
+#
+#
+ 
+class wls(){
 
-    notify {"init.pp":}
 
 }

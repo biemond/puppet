@@ -37,6 +37,7 @@ define wls::nodemanager($wlHome          = undef,
                         $listenPort      = 5556,
                         $user            = 'oracle',
                         $group           = 'dba',
+                        $serviceName     = undef,
                        ) {
 
 
@@ -59,15 +60,13 @@ define wls::nodemanager($wlHome          = undef,
      }
      windows: { 
 
-        $otherPath        = "C:\\Windows\\system32;C:\\Windows"
-        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;${otherPath}"
+        $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\" 
         $JAVA_HOME        = "C:\\oracle\\${fullJDKName}"
 
         Exec { path      => $execPath,
-               logoutput => true,
-               cwd       => "${wlHome}\\common\\nodemanager",
+               cwd       => "${wlHome}/common/nodemanager",
              }
      }
    }
@@ -90,7 +89,7 @@ define wls::nodemanager($wlHome          = undef,
 
         exec { "execwlst ux StopScriptEnabled":
           command     => "/bin/sed 's/StopScriptEnabled=false/StopScriptEnabled=true/g' nodemanager.properties",
-          unless      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager.properties",
+          unless      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager.properties  && echo 1 || echo 0",
           require     => Exec ["execwlst ux nodemanager"],
           tries       => 3,
           try_sleep   => 5,
@@ -98,21 +97,76 @@ define wls::nodemanager($wlHome          = undef,
 
         exec { "execwlst ux StartScriptEnabled":
           command     => "/bin/sed 's/StartScriptEnabled=false/StartScriptEnabled=true/g' nodemanager.properties",
-          unless      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager.properties",
+          unless      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager.properties  && echo 1 || echo 0",
           require     => Exec ["execwlst ux nodemanager"],
           tries       => 3,
           try_sleep   => 5,
         } 
-
+        exec { "execwlst ux CrashRecoveryEnabled":
+          command     => "/bin/sed 's/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g' nodemanager.properties",
+          unless      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager.properties  && echo 1 || echo 0",
+          require     => Exec ["execwlst ux nodemanager"],
+          tries       => 3,
+          try_sleep   => 5,
+        } 
      
      }
      windows: { 
 
+        exec {"icacls win nodemanager bin": 
+           command    => "${checkCommand} icacls ${wlHome}\\server\\bin\\* /T /C /grant Administrator:F Administrators:F",
+           unless     => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
+           logoutput  => true,
+        } 
+
+        exec {"icacls win nodemanager native": 
+           command    => "${checkCommand} icacls ${wlHome}\\server\\native\\* /T /C /grant Administrator:F Administrators:F",
+           unless     => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
+           logoutput  => true,
+        } 
+
         exec { "execwlst win nodemanager":
-          command     => "${checkCommand} ${javaCommand}",
+          command     => "${wlHome}\\server\\bin\\installNodeMgrSvc.cmd",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
+          require     => [Exec ["icacls win nodemanager bin"],Exec ["icacls win nodemanager native"]],
+          unless      => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
+          logoutput   => true,
         }    
+
+        service { "Oracle WebLogic NodeManager (${serviceName})":
+                enable     => true,
+                ensure     => true,
+                hasrestart => true,
+                require    => Exec ["execwlst win nodemanager"],
+        }
+
+        exec { "execwlst win StopScriptEnabled":
+          command     => "${checkCommand} sed \"s/StopScriptEnabled=false/StopScriptEnabled=true/g\" nodemanager.properties > nodemanager1.properties",
+          unless      => "${checkCommand} dir ${wlHome}/common/nodemanager/nodemanager.properties",
+          require     => Service ["Oracle WebLogic NodeManager (${serviceName})"],
+          tries       => 6,
+          try_sleep   => 5,
+          logoutput   => true,
+        }    
+
+        exec { "execwlst win StartScriptEnabled":
+          command     => "${checkCommand} sed \"s/StartScriptEnabled=false/StartScriptEnabled=true/g\" nodemanager1.properties > nodemanager2.properties",
+          unless      => "${checkCommand} dir ${wlHome}/common/nodemanager/nodemanager.properties",
+          require     => Exec[ "execwlst win StopScriptEnabled"],
+          tries       => 6,
+          try_sleep   => 5,
+          logoutput   => true,
+        } 
+        exec { "execwlst win CrashRecoveryEnabled":
+          command     => "${checkCommand} sed \"s/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g\" nodemanager2.properties > nodemanager.properties",
+          unless      => "${checkCommand} dir ${wlHome}/common/nodemanager/nodemanager.properties",
+          require     => Exec[ "execwlst win StartScriptEnabled"],
+          tries       => 6,
+          try_sleep   => 5,
+          logoutput   => true,
+        } 
+
      }
    }
 }

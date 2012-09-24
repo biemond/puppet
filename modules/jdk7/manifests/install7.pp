@@ -31,8 +31,6 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
 
         $user             = "root"
         $group            = "root"
-        
-        $checkInstall     =  "/bin/ls -l /usr/java/${fullversion}/bin"
       }
       windows: { 
         $installVersion   = "windows"
@@ -42,8 +40,6 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
 
         $user             = "Administrator"
         $group            = "Administrators"
-
-        $checkInstall     =  "C:\\Windows\\System32\\cmd.exe /c dir c:\\oracle\\${fullversion}"
 
       }
       default: { 
@@ -65,13 +61,11 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
         fail("Unrecognized jdk version")        
     }
 
-    case $operatingsystem {
-      centos, redhat, OracleLinux, ubuntu, debian: { 
-        $checkJdkInstall     =  "/bin/ls -l /usr/java/${fullversion}/bin"
-      }
-      windows: { 
-        $checkJdkInstall     =  "c:\\oracle\\${fullversion}\\bin\\java.exe"
-      }
+    File { 
+      owner   => $user,
+      group   => $group,
+      mode    => 0770,
+      replace => false,
     }
 
     # check oracle install folder
@@ -79,11 +73,6 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
       file { $path :
         path    => $path,
         ensure  => directory,
-        recurse => false, 
-        owner   => $user,
-        group   => $group,
-        mode    => 0770,
-        replace => false,
       }
     }
     
@@ -92,15 +81,11 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
         path    => "${path}${jdkfile}",
         ensure  => present,
         source  => "puppet:///modules/jdk7/${jdkfile}",
-        owner   => $user,
-        group   => $group,
-        mode    => 0770,
-        replace => false,
         require => File[$path],
     } 
-#    if !$checkJdkInstall {
-      # install on client 
-      javaexec {"jdkexec${version}": 
+
+    # install on client 
+    javaexec {"jdkexec${version}": 
           version     => $version,
           path        => $path, 
           fullversion => $fullVersion,
@@ -108,7 +93,5 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
           user        => $user,
           group       => $group,
           require     => File["jdk_file${version}"],
-      }
-#    }
-
+    }
 }

@@ -7,6 +7,10 @@
 # [*mdwHome*]
 #   the middleware home path /opt/oracle/wls/wls12c
 #
+# [*checkPath*]
+#   the middleware home path for test -f
+#
+#
 # [*fullJDKName*]
 #   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
 #
@@ -22,13 +26,18 @@
 #
 #  wls::wlsexec{'domain':
 #    mdwHome      => '/opt/oracle/wls/wls12c/wlserver_12.1',
+#    checkPath    => '/opt/oracle/wls/wls12c',
 #    fullJDKName  => 'jdk1.7.0_07',	
 #    wlsfile      => '/install/wls1211_generic.jar',
 #    silentfile   => '/install/silent.xml', 
 #  }
 # 
 
-define wls::wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $silentfile = undef  ) {
+define wls::wlsexec ( $mdwHome     = undef, 
+                      $checkPath   = undef, 
+                      $fullJDKName = undef, 
+                      $wlsfile     = undef, 
+                      $silentfile  = undef  ) {
 
    $javaCommand     = "java -Xmx1024m -jar"
 
@@ -36,10 +45,8 @@ define wls::wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
-        $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
-        $checkCommand     = '/bin/ls -l'
-    
+        $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+
         exec { "installwls ${wlsfile}":
           command     => "${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
           environment => ["JAVA_VENDOR=Sun",
@@ -47,7 +54,7 @@ define wls::wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           path        => $execPath,
           logoutput   => true,
-          unless      => "${checkCommand} ${mdwHome}",
+          unless      => "/usr/bin/test -f ${checkPath}",
           user        => $user,
           group       => $group
         }    
@@ -55,17 +62,15 @@ define wls::wlsexec ($mdwHome = undef, $fullJDKName = undef, $wlsfile = undef, $
      }
      windows: { 
 
-        $otherPath        = "C:\\Windows\\system32;C:\\Windows"
-        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;${otherPath}"
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
+        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\UnxUtils\\bin;C:\\UnxUtils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
 
         exec { "installwls  ${wlsfile}":
-          command     => "${checkCommand} ${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
           environment => ["JAVA_VENDOR=Sun",
                           "JAVA_HOME=C:\\oracle\\${fullJDKName}"],
-          path        => $execPath,
+          path        => "${execPath}",
           logoutput   => true,
-          unless      => "${checkCommand} dir ${mdwHome}",
+          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${checkPath}",
         }    
      }
    }
