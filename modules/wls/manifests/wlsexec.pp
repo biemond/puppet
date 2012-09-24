@@ -54,7 +54,8 @@ define wls::wlsexec ( $mdwHome     = undef,
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           path        => $execPath,
           logoutput   => true,
-          unless      => "/usr/bin/test -f ${checkPath}",
+#         unless      => "/usr/bin/test -e ${checkPath}",
+          creates     => "${checkPath}",
           user        => $user,
           group       => $group
         }    
@@ -70,7 +71,8 @@ define wls::wlsexec ( $mdwHome     = undef,
                           "JAVA_HOME=C:\\oracle\\${fullJDKName}"],
           path        => "${execPath}",
           logoutput   => true,
-          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${checkPath}",
+          creates     => "${checkPath}",
+#          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${checkPath}",
         }    
      }
    }

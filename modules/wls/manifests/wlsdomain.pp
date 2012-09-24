@@ -138,7 +138,8 @@ define wls::wlsdomain ($wlHome          = undef,
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          unless      => "/usr/bin/test -f ${domainPath}/${domain} && echo 1 || echo 0",
+#          unless      => "/usr/bin/test -e ${domainPath}/${domain}",
+          creates     => "${domainPath}/${domain}",
           require     => File["domain.py ${domain}"],
         }    
      
@@ -151,7 +152,8 @@ define wls::wlsdomain ($wlHome          = undef,
           command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${domainPath}/${domain}",
+#          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${domainPath}/${domain}",
+          creates     => "${domainPath}/${domain}",
           require     => File["domain.py ${domain}"],
         }    
      }
