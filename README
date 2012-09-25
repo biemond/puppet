@@ -1,6 +1,7 @@
 java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
 
-weblogic puppet module, installs weblogic,configure + starts nodemanager, domain creation 
+weblogic puppet module, installs weblogic,configure + starts nodemanager, domain creation
+starts the AdminServer for configuration 
 ToDo: total weblogic configuration. Deployments 
 
 #  java jdk7 JAVA SE 6/7 puppet module 
@@ -60,6 +61,7 @@ node 'win7user.localdomain' inherits prod  {
 
 include jdk7
 include wls
+
 class wls12{
 
 
@@ -129,8 +131,43 @@ class wls12{
     
   }
 
+  #nodemanager configuration and starting
   wls::nodemanager{'nodemanager':
-    require      => Wls::Installwls['wls12c'],
+    require      => [Wls::Wlsdomain['testDomain'],Wls::Wlsdomain['testDomain2']],
+  }
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    address      => "localhost",
+    wlsUser      => "weblogic",
+    password     => "weblogic1",
+  }
+  
+  # start AdminServers for configuration of both domains myTestDomain
+  wls::wlstexec { 
+  
+    'startAdminServer':
+     id          => 'unique1',
+     script      => 'startWlsServer.py',
+     port        => '5556',
+     params      =>  ["domain = 'myTestDomain'",
+                      "domainPath = '${osDomainPath}/myTestDomain'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Nodemanager['nodemanager'];
+
+    'startAdminServer2':
+     id          => 'unique2',
+     script      => 'startWlsServer.py',
+     port        => '5556',
+     params      =>  ["domain = 'myTestDomain2'",
+                      "domainPath = '${osDomainPath}/myTestDomain2'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Nodemanager['nodemanager'];
+
   }
 
 }

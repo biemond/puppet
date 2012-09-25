@@ -142,6 +142,12 @@ define wls::wlsdomain ($wlHome          = undef,
           creates     => "${domainPath}/${domain}",
           require     => File["domain.py ${domain}"],
         }    
+        if ! defined(Exec["domain.py ${domain}"]) {
+          exec { "domain.py ${domain}":
+           command => "rm -I ${path}domain_${domain}.py",
+           require => Exec["execwlst ux ${domain}"],
+          }
+        }
      
      }
      windows: { 
@@ -156,6 +162,12 @@ define wls::wlsdomain ($wlHome          = undef,
           creates     => "${domainPath}/${domain}",
           require     => File["domain.py ${domain}"],
         }    
+        if ! defined(Exec["domain.py ${domain}"]) {
+          exec { "domain.py ${domain}":
+           command => "C:\\Windows\\System32\\cmd.exe /c delete ${path}domain_${domain}.py",
+           require => Exec["execwlst win ${domain}"],
+          }
+        }
      }
    }
 }

@@ -3,8 +3,9 @@
 # just add the weblogic generic jar to the files folder of the wls module
 #  
 # install weblogic
-# creates, configures and run nodemanager
+# creates, configures and runs nodemanager
 # create a new weblogic domain
+# starts the AdminServer 
 
 # use it like this in site.pp
 
@@ -12,8 +13,6 @@ include wls
 
 $defaultJDK     = '7u7'
 $defaultFullJDK = 'jdk1.7.0_07'
-
-  
 
   
   case $operatingsystem {
@@ -77,8 +76,41 @@ $defaultFullJDK = 'jdk1.7.0_07'
     
   }
 
+  #nodemanager configuration and starting
   wls::nodemanager{'nodemanager':
-    require      => Wls::Installwls['wls12c'],
+    require      => [Wls::Wlsdomain['testDomain'],Wls::Wlsdomain['testDomain2']],
   }
 
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    address      => "localhost",
+    wlsUser      => "weblogic",
+    password     => "weblogic1",
+  }
+  
+  # start AdminServers for configuration of both domains myTestDomain
+  wls::wlstexec { 
+  
+    'startAdminServer':
+     id          => 'unique1',
+     script      => 'startWlsServer.py',
+     port        => '5556',
+     params      =>  ["domain = 'myTestDomain'",
+                      "domainPath = '${osDomainPath}/myTestDomain'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Nodemanager['nodemanager'];
 
+    'startAdminServer2':
+     id          => 'unique2',
+     script      => 'startWlsServer.py',
+     port        => '5556',
+     params      =>  ["domain = 'myTestDomain2'",
+                      "domainPath = '${osDomainPath}/myTestDomain2'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Nodemanager['nodemanager'];
+
+  }
