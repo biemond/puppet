@@ -1,7 +1,12 @@
 java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
 
-weblogic puppet module, installs weblogic,configure + starts nodemanager, domain creation
-starts the AdminServer for configuration 
+weblogic puppet module
+  installs weblogic
+  configure + starts nodemanager
+  domain creation
+  start the AdminServer for configuration 
+  apply bsu patch
+
 ToDo: total weblogic configuration. Deployments 
 
 #  java jdk7 JAVA SE 6/7 puppet module 
@@ -16,7 +21,6 @@ ToDo: total weblogic configuration. Deployments
 # just add the weblogic generic jar to the files folder of the wls module
 # use it like this in site.pp
 #
-# create a weblogic domain, Configure & Runs NodeManager 
 
 # site.pp
 #
@@ -47,6 +51,7 @@ node prod inherits basenode {
 }
 
 node 'devagent1.alfa.local' inherits devel {
+  include  wls1036osb
 }
 
 node 'win7user.localdomain' inherits prod  {
@@ -151,7 +156,6 @@ class wls12{
   wls::wlstexec { 
   
     'startAdminServer':
-     id          => 'unique1',
      script      => 'startWlsServer.py',
      port        => '5556',
      params      =>  ["domain = 'myTestDomain'",
@@ -160,7 +164,6 @@ class wls12{
      require     => Wls::Nodemanager['nodemanager'];
 
     'startAdminServer2':
-     id          => 'unique2',
      script      => 'startWlsServer.py',
      port        => '5556',
      params      =>  ["domain = 'myTestDomain2'",
@@ -172,30 +175,76 @@ class wls12{
 
 }
 
-class wls1036{
+class wls1036osb{
 
-  jdk7::install7{'jdk6':
-    version => "6u35",
+  jdk7::install7{'jdk7_2':
+    version => $defaultJDK,
     x64     => "true",
   }
-
+ 
   case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls11g"
+       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osDomainPath = "/opt/oracle/wls/wls11/admin"
        $user         = "oracle"
        $group        = "dba"
      }
      windows: { 
+       $osMdwHome    = "c:/opt/oracle/wls/wls11g"
+       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osDomainPath = "c:/oracle/wls/wls11g/admin"
        $user         = "Administrator"
        $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
      }
   }
 
-  wls::installwls{'11gPS5':
-    version    => '1036',
-    versionJdk => '6u35',
-    user       => $user,
-    group      => $group,    
-    require    => Jdk7::Install7['jdk6'],
+  # set the defaults
+  Wls::Installwls {
+    version      => '1036',
+    versionJdk   => $defaultJDK,
+    user         => $user,
+    group        => $group,    
   }
+  Wls::Wlsdomain {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+  }
+  
+
+  # install
+  wls::installwls{'11gPS5':
+    require      => Jdk7::Install7['jdk7_2'],
+  }
+
+  wls::bsupatch{'p13573621':
+    mdwHome      => $osMdwHome ,
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,
+    patchId      => 'KZKQ',	
+    patchFile    => 'p13573621_1036_Generic.zip',	
+    user         => $user,
+    group        => $group, 
+    require      => Wls::Installwls['11gPS5'],
+  }
+
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager11g':
+    listenPort  => '5656',
+    require     => Wls::Installwls['11gPS5'],
+  }
+
 }
- 

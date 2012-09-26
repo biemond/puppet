@@ -46,7 +46,7 @@ define wls::nodemanager($wlHome          = undef,
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
-        $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager'"
+        $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${listenPort}'"
         $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         
@@ -77,8 +77,8 @@ define wls::nodemanager($wlHome          = undef,
     
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
-        
-        exec { "execwlst ux nodemanager":
+        notify{"${title} command ${javaCommand}":}
+        exec { "execwlst ux nodemanager ${title}":
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
@@ -87,28 +87,28 @@ define wls::nodemanager($wlHome          = undef,
           unless      => "${checkCommand}",
         }    
         # wait for the nodemanager.properties file
-        exec { "execwlst ux StopScriptEnabled":
+        exec { "execwlst ux StopScriptEnabled ${title}":
           command     => "/bin/sed 's/StopScriptEnabled=false/StopScriptEnabled=true/g' nodemanager.properties > nodemanager1.properties",
           unless      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager.properties",
-          require     => Exec ["execwlst ux nodemanager"],
+          require     => Exec ["execwlst ux nodemanager ${title}"],
           tries       => 2,
           try_sleep   => 10,
         }    
 
-        exec { "execwlst ux StartScriptEnabled":
+        exec { "execwlst ux StartScriptEnabled ${title}":
           command     => "/bin/sed 's/StartScriptEnabled=false/StartScriptEnabled=true/g' nodemanager1.properties > nodemanager2.properties",
           onlyif      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager1.properties",
-          require     => Exec ["execwlst ux StopScriptEnabled"],
+          require     => Exec ["execwlst ux StopScriptEnabled ${title}"],
         } 
-        exec { "execwlst ux CrashRecoveryEnabled":
+        exec { "execwlst ux CrashRecoveryEnabled ${title}":
           command     => "/bin/sed 's/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g' nodemanager2.properties > nodemanager.properties",
           onlyif      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager2.properties",
-          require     => Exec ["execwlst ux StartScriptEnabled"],
+          require     => Exec ["execwlst ux StartScriptEnabled ${title}"],
         } 
 
         file { "${wlHome}/common/nodemanager/nodemanager1.properties":
            ensure     => absent,
-           require    => Exec ["execwlst ux CrashRecoveryEnabled"],
+           require    => Exec ["execwlst ux CrashRecoveryEnabled ${title}"],
         }
         file { "${wlHome}/common/nodemanager/nodemanager2.properties":
            ensure     => absent,
@@ -119,23 +119,23 @@ define wls::nodemanager($wlHome          = undef,
      }
      windows: { 
 
-        exec {"icacls win nodemanager bin": 
+        exec {"icacls win nodemanager bin ${title}": 
            command    => "${checkCommand} icacls ${wlHome}\\server\\bin\\* /T /C /grant Administrator:F Administrators:F",
            unless     => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
            logoutput  => false,
         } 
 
-        exec {"icacls win nodemanager native": 
+        exec {"icacls win nodemanager native ${title}": 
            command    => "${checkCommand} icacls ${wlHome}\\server\\native\\* /T /C /grant Administrator:F Administrators:F",
            unless     => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
            logoutput  => false,
         } 
 
-        exec { "execwlst win nodemanager":
+        exec { "execwlst win nodemanager ${title}":
           command     => "${wlHome}\\server\\bin\\installNodeMgrSvc.cmd",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-          require     => [Exec ["icacls win nodemanager bin"],Exec ["icacls win nodemanager native"]],
+          require     => [Exec ["icacls win nodemanager bin ${title}"],Exec ["icacls win nodemanager native ${title}"]],
           unless      => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
           logoutput   => true,
         }    
@@ -146,37 +146,37 @@ define wls::nodemanager($wlHome          = undef,
                 require    => Exec ["execwlst win nodemanager"],
         }
 
-        exec { "execwlst win StopScriptEnabled":
+        exec { "execwlst win StopScriptEnabled ${title}":
           command     => "${checkCommand} sed \"s/StopScriptEnabled=false/StopScriptEnabled=true/g\" nodemanager.properties > nodemanager1.properties",
           unless      => "${checkCommand} dir ${wlHome}/common/nodemanager/nodemanager.properties",
           creates     => "${wlHome}/common/nodemanager/nodemanager1.properties",
-          require     => [Service ["Oracle WebLogic NodeManager (${serviceName})"],Exec ["execwlst win nodemanager"]],
+          require     => [Service ["Oracle WebLogic NodeManager (${serviceName})"],Exec ["execwlst win nodemanager ${title}"]],
           tries       => 6,
           try_sleep   => 5,
           logoutput   => true,
         }    
 
-        exec { "execwlst win StartScriptEnabled":
+        exec { "execwlst win StartScriptEnabled ${title}":
           command     => "${checkCommand} sed \"s/StartScriptEnabled=false/StartScriptEnabled=true/g\" nodemanager1.properties > nodemanager2.properties",
 #          unless      => "${checkCommand} dir ${wlHome}/common/nodemanager/nodemanager.properties",
 #          onlyif      => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager1.properties",
           creates     => "${wlHome}/common/nodemanager/nodemanager2.properties",
-          require     => Exec[ "execwlst win StopScriptEnabled"],
+          require     => Exec[ "execwlst win StopScriptEnabled ${title}"],
           logoutput   => true,
         } 
-        exec { "execwlst win CrashRecoveryEnabled":
+        exec { "execwlst win CrashRecoveryEnabled ${title}":
           command     => "${checkCommand} sed \"s/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g\" nodemanager2.properties > nodemanager3.properties",
 #          unless      => "${checkCommand} dir ${wlHome}/common/nodemanager/nodemanager.properties",
 #          onlyif      => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager2.properties",
           creates     => "${wlHome}/common/nodemanager/nodemanager3.properties",
-          require     => Exec[ "execwlst win StartScriptEnabled"],
+          require     => Exec[ "execwlst win StartScriptEnabled ${title}"],
           logoutput   => true,
         } 
         file {"${wlHome}/common/nodemanager/nodemanager.properties": 
           source  => "${wlHome}/common/nodemanager/nodemanager3.properties",
           replace => true,
           ensure  => present, 
-          require => Exec[ "execwlst win CrashRecoveryEnabled"],
+          require => Exec[ "execwlst win CrashRecoveryEnabled ${title}"],
           owner   => $user,
           group   => $group,
           mode    => 0770,

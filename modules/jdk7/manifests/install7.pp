@@ -2,7 +2,7 @@
 
 define jdk7::install7( $version =  undef , $x64 = "true" ) {
 
-    notify {"install7.pp ${version}":}
+    notify {"install7.pp ${title} ${version}":}
 
     if $x64 == "true" {
       $type = 'x64'
@@ -77,21 +77,22 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
     }
     
     # download jdk to client
-    file {"jdk_file${version}":
+    if ! defined(File["${path}${jdkfile}"]) {
+     file {"${path}${jdkfile}":
         path    => "${path}${jdkfile}",
         ensure  => present,
         source  => "puppet:///modules/jdk7/${jdkfile}",
         require => File[$path],
-    } 
-
+     } 
+    }
     # install on client 
-    javaexec {"jdkexec${version}": 
+    javaexec {"jdkexec${version} ${title}": 
           version     => $version,
           path        => $path, 
           fullversion => $fullVersion,
           jdkfile     => $jdkfile,
           user        => $user,
           group       => $group,
-          require     => File["jdk_file${version}"],
+          require     => File["${path}${jdkfile}"],
     }
 }

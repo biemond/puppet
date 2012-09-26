@@ -10,8 +10,6 @@
 # [*fullJDKName*]
 #   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
 #
-# [*id*]
-#   unique for the scripting
 #
 # [*script*]
 #   wlst script
@@ -55,7 +53,6 @@
 #  # start AdminServers for configuration of both domains myTestDomain
 #  wls::wlstexec { 
 #    'startAdminServer':
-#     id          => 'unique1',
 #     script      => 'startWlsServer.py',
 #     port        => '5556',
 #     params      =>  ["domain = 'myTestDomain'",
@@ -66,7 +63,6 @@
 
 define wls::wlstexec ($wlHome      = undef, 
                       $fullJDKName = undef, 
-                      $id          = undef,
                       $script      = undef,
                       $address     = "localhost",
                       $port        = '7001',
@@ -117,9 +113,9 @@ define wls::wlstexec ($wlHome      = undef,
 
     
    # the py script used by the wlst
-   if ! defined(File["${path}${id}${script}"]) {
-    file { "${path}${id}${script}":
-      path    => "${path}${id}${script}",
+   if ! defined(File["${path}${title}${script}"]) {
+    file { "${path}${title}${script}":
+      path    => "${path}${title}${script}",
       content => template("wls/${script}.erb"),
     }
    }
@@ -127,33 +123,33 @@ define wls::wlstexec ($wlHome      = undef,
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
-        exec { "execwlst ${id}${script}":
-          command     => "${javaCommand} ${path}${script}",
+        exec { "execwlst ${title}${script}":
+          command     => "${javaCommand} ${path}${title}${script}",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          require     => File["${path}${id}${script}"],
+          require     => File["${path}${title}${script}"],
         }    
-        if ! defined(Exec["rm ${path}${id}${script}"]) {
-          exec { "rm ${path}${id}${script}":
-           command => "rm -I ${path}${id}${script}",
-           require => Exec["execwlst ${id}${script}"],
+        if ! defined(Exec["rm ${path}${title}${script}"]) {
+          exec { "rm ${path}${title}${script}":
+           command => "rm -I ${path}${title}${script}",
+           require => Exec["execwlst ${title}${script}"],
           }
         }
 
      }
      windows: { 
 
-        exec { "execwlst ${id}${script}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}${script}",
+        exec { "execwlst ${title}${script}":
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}${title}${script}",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-          require     => File["${path}${id}${script}"],
+          require     => File["${path}${title}${script}"],
         }    
-        if ! defined(Exec["rm ${path}${id}${script}"]) {
+        if ! defined(Exec["rm ${path}${title}${script}"]) {
           exec { "rm ${path}${id}${script}":
-           command => "C:\\Windows\\System32\\cmd.exe /c delete ${path}${id}${script}",
-           require => Exec["execwlst ${id}${script}"],
+           command => "C:\\Windows\\System32\\cmd.exe /c delete ${path}${title}${script}",
+           require => Exec["execwlst ${title}${script}"],
           }
         }
      }

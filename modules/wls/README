@@ -2,10 +2,13 @@
 # installs weblogic on linux and window based systems with 64 or 32 bits JDK
 # just add the weblogic generic jar to the files folder of the wls module
 #  
-# install weblogic
-# creates, configures and runs nodemanager
-# create a new weblogic domain
-# starts the AdminServer 
+weblogic puppet module
+  installs weblogic
+  configure + starts nodemanager
+  domain creation
+  start the AdminServer for configuration 
+  apply bsu patch
+
 
 # use it like this in site.pp
 
@@ -114,3 +117,15 @@ $defaultFullJDK = 'jdk1.7.0_07'
      require     => Wls::Nodemanager['nodemanager'];
 
   }
+  
+  
+  wls::bsupatch{'p13573621':
+    mdwHome      => $osMdwHome ,
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,
+    patchId      => 'KZKQ',	
+    patchFile    => 'p13573621_1036_Generic.zip',	
+    user         => $user,
+    group        => $group, 
+  }
+

@@ -57,7 +57,9 @@ define wls::wlsexec ( $mdwHome     = undef,
 #         unless      => "/usr/bin/test -e ${checkPath}",
           creates     => "${checkPath}",
           user        => $user,
-          group       => $group
+          group       => $group,
+          tries       => 2,
+          try_sleep   => 5,
         }    
      
      }
@@ -73,6 +75,8 @@ define wls::wlsexec ( $mdwHome     = undef,
           logoutput   => true,
           creates     => "${checkPath}",
 #          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${checkPath}",
+          tries       => 2,
+          try_sleep   => 5,
         }    
      }
    }
