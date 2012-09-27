@@ -6,6 +6,7 @@ weblogic puppet module
   domain creation
   start the AdminServer for configuration 
   apply bsu patch
+  install OSB 
 
 ToDo: total weblogic configuration. Deployments 
 
@@ -44,6 +45,7 @@ node basenode {
 node devel inherits basenode {
   $my_zone = "devel"
   include wls12
+  include wls1036osb
 }
 
 node prod inherits basenode {
@@ -209,6 +211,15 @@ class wls1036osb{
     user         => $user,
     group        => $group,    
   }
+
+  Wls::Installosb {
+    mdwHome      => $osMdwHome,
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+
   Wls::Wlsdomain {
     wlHome       => $osWlHome,
     fullJDKName  => $defaultFullJDK,	
@@ -229,6 +240,11 @@ class wls1036osb{
     require      => Jdk7::Install7['jdk7_2'],
   }
 
+  wls::installosb{'osbPS5':
+    osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+    require      => Wls::Installwls['11gPS5'],
+  }
+
   wls::bsupatch{'p13573621':
     mdwHome      => $osMdwHome ,
     wlHome       => $osWlHome,
@@ -237,7 +253,7 @@ class wls1036osb{
     patchFile    => 'p13573621_1036_Generic.zip',	
     user         => $user,
     group        => $group, 
-    require      => Wls::Installwls['11gPS5'],
+    require      => Wls::Installosb['osbPS5'],
   }
 
 
@@ -248,3 +264,4 @@ class wls1036osb{
   }
 
 }
+ 

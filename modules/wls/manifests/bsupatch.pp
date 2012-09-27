@@ -107,9 +107,10 @@ define wls::bsupatch($mdwHome         = undef,
          }
         }
         
-        exec { "execwlst ux nodemanager":
+        exec { "exec bsu ux ${title}":
           command     => "${mdwHome}/utils/bsu/bsu.sh ${bsuCommand}",
           require     => Exec["extract ${patchFile}"],
+          cwd     => "${mdwHome}/utils/bsu",
         }    
              
      }
@@ -124,10 +125,11 @@ define wls::bsupatch($mdwHome         = undef,
          }
         }
 
-        exec { "execwlst win nodemanager":
+        exec { "exec bsu win ${title}":
           command     => "${checkCommand} ${mdwHome}\\utils\\bsu\\bsu.bat ${bsuCommand}",
           logoutput   => true,
           require     => Exec["extract ${patchFile}"],
+          cwd         => "${mdwHome}\\utils\\bsu",
         }    
 
      }
