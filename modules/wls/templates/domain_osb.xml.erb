@@ -2,14 +2,15 @@
 WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
 
+
 print('Start...')
 readTemplate('<%= @template %>')
 
 cd('/')
 create('LocalMachine', '<%= @nodeMgrMachine %>')
 
-
 cd('/')
+
 cd('Servers/AdminServer')
 
 # name of adminserver
@@ -40,12 +41,9 @@ setOption('OverwriteDomain', 'false')
 
 print('write domain...')
 # write path + domain name
-writeDomain(DOMAIN_PATH)
+writeDomain('<%= @domainPath %>/<%= @domain %>')
 
-closeTemplate()
-
-#createBootPropertiesFile(DOMAIN_PATH+'/servers/<%= @adminServerName %>/security','<%= @wlsUser %>',<%= @password %>)
-
+#createBootPropertiesFile(DOMAIN_PATH+'/servers/osb_server1/security','<%= @wlsUser %>',<%= @password %>)
 
 print('Exiting...')
 exit()

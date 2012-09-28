@@ -5,7 +5,7 @@
 weblogic puppet module
   installs weblogic
   configure + starts nodemanager
-  domain creation
+  domain creation normal and OSB
   start the AdminServer for configuration 
   apply bsu patch
   install OSB
@@ -13,23 +13,37 @@ weblogic puppet module
 
 # use it like this in site.pp
 
-include wls
+
 
 $defaultJDK     = '7u7'
 $defaultFullJDK = 'jdk1.7.0_07'
 
+
+include jdk7
+include wls
+
+
+class wls12{
+
+
+  jdk7::install7{'jdk7':
+    version => $defaultJDK,
+    x64     => "true",
+  }
   
   case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls12c"
        $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osTemplate   = "standard"
        $osDomainPath = "/opt/oracle/wls/wls12c/admin"
        $user         = "oracle"
        $group        = "dba"
      }
      windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls12c"
        $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osTemplate   = "standard"
        $osDomainPath = "c:/oracle/wls/wls12c/admin"
        $user         = "Administrator"
        $group        = "Administrators"
@@ -46,6 +60,7 @@ $defaultFullJDK = 'jdk1.7.0_07'
   }
   Wls::Wlsdomain {
     wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
     fullJDKName  => $defaultFullJDK,	
     user         => $user,
     group        => $group,    
@@ -66,13 +81,13 @@ $defaultFullJDK = 'jdk1.7.0_07'
   wls::wlsdomain{
   
     'testDomain':
-    template     => $osTemplate,
+    wlsTemplate  => $osTemplate,
     domain       => 'myTestDomain',
     domainPath   => $osDomainPath,
     require      => Wls::Installwls['wls12c'];
 
     'testDomain2':
-    template        => $osTemplate,
+    wlsTemplate     => $osTemplate,
     domain          => 'myTestDomain2',
     domainPath      => $osDomainPath,
     adminListenPort => '8001',
@@ -100,7 +115,6 @@ $defaultFullJDK = 'jdk1.7.0_07'
   wls::wlstexec { 
   
     'startAdminServer':
-     id          => 'unique1',
      script      => 'startWlsServer.py',
      port        => '5556',
      params      =>  ["domain = 'myTestDomain'",
@@ -109,7 +123,6 @@ $defaultFullJDK = 'jdk1.7.0_07'
      require     => Wls::Nodemanager['nodemanager'];
 
     'startAdminServer2':
-     id          => 'unique2',
      script      => 'startWlsServer.py',
      port        => '5556',
      params      =>  ["domain = 'myTestDomain2'",
@@ -118,8 +131,80 @@ $defaultFullJDK = 'jdk1.7.0_07'
      require     => Wls::Nodemanager['nodemanager'];
 
   }
+
+}
+
+
+class wls1036osb{
+
+  jdk7::install7{'jdk7_2':
+    version => $defaultJDK,
+    x64     => "true",
+  }
+ 
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls11g"
+       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+       $osTemplate   = "osb"
+       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osMdwHome    = "c:/opt/oracle/wls/wls11g"
+       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+       $osTemplate   = "osb"
+       $osDomainPath = "c:/oracle/wls/wls11g/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+     }
+  }
+
+  # set the defaults
+  Wls::Installwls {
+    version      => '1036',
+    versionJdk   => $defaultJDK,
+    user         => $user,
+    group        => $group,    
+  }
+
+  Wls::Installosb {
+    mdwHome      => $osMdwHome,
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+
+  Wls::Wlsdomain {
+    wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,    
+  }
   
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+  }
   
+
+  # install
+  wls::installwls{'11gPS5':
+    require      => Jdk7::Install7['jdk7_2'],
+  }
+
+  wls::installosb{'osbPS5':
+    osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+    require      => Wls::Installwls['11gPS5'],
+  }
+
   wls::bsupatch{'p13573621':
     mdwHome      => $osMdwHome ,
     wlHome       => $osWlHome,
@@ -128,13 +213,50 @@ $defaultFullJDK = 'jdk1.7.0_07'
     patchFile    => 'p13573621_1036_Generic.zip',	
     user         => $user,
     group        => $group, 
+    require      => Wls::Installosb['osbPS5'],
   }
 
-  wls::installosb{'osbPS5':
-    mdwHome      => '/opt/oracle/wls/wls11g',
-    wlHome       => '/opt/oracle/wls/wls11g/wlserver_10.3',
-    osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
-    fullJDKName  => 'jdk1.7.0_07',	
-    user         => 'oracle',
-    group        => 'dba', 
+  # install OSB domain
+  wls::wlsdomain{
+  
+    'osbDomain':
+    wlsTemplate     => $osTemplate,
+    domain          => 'osbDomain',
+    domainPath      => $osDomainPath,
+    adminListenPort => '9001',
+    require         => Wls::Installosb['osbPS5'];
+    
   }
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager11g':
+    listenPort  => '5656',
+    require     => Wls::Installwls['11gPS5'],
+  }
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    address      => "localhost",
+    wlsUser      => "weblogic",
+    password     => "weblogic1",
+  }
+  
+  # start AdminServers for configuration of both domains myTestDomain
+  wls::wlstexec { 
+  
+    'startOSBAdminServer':
+     script      => 'startWlsServer.py',
+     port        => '5656',
+     params      =>  ["domain = 'osbDomain'",
+                      "domainPath = '${osDomainPath}/osbDomain'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Nodemanager['nodemanager11g'];
+
+  }
+
+
+}

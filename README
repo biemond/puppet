@@ -3,7 +3,7 @@ java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers
 weblogic puppet module
   installs weblogic
   configure + starts nodemanager
-  domain creation
+  domain creation normal and OSB
   start the AdminServer for configuration 
   apply bsu patch
   install OSB 
@@ -69,6 +69,7 @@ node 'win7user.localdomain' inherits prod  {
 include jdk7
 include wls
 
+
 class wls12{
 
 
@@ -79,15 +80,17 @@ class wls12{
   
   case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls12c"
        $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osTemplate   = "standard"
        $osDomainPath = "/opt/oracle/wls/wls12c/admin"
        $user         = "oracle"
        $group        = "dba"
      }
      windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls12c"
        $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osTemplate   = "standard"
        $osDomainPath = "c:/oracle/wls/wls12c/admin"
        $user         = "Administrator"
        $group        = "Administrators"
@@ -104,6 +107,7 @@ class wls12{
   }
   Wls::Wlsdomain {
     wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
     fullJDKName  => $defaultFullJDK,	
     user         => $user,
     group        => $group,    
@@ -124,13 +128,13 @@ class wls12{
   wls::wlsdomain{
   
     'testDomain':
-    template     => $osTemplate,
+    wlsTemplate  => $osTemplate,
     domain       => 'myTestDomain',
     domainPath   => $osDomainPath,
     require      => Wls::Installwls['wls12c'];
 
     'testDomain2':
-    template        => $osTemplate,
+    wlsTemplate     => $osTemplate,
     domain          => 'myTestDomain2',
     domainPath      => $osDomainPath,
     adminListenPort => '8001',
@@ -177,6 +181,7 @@ class wls12{
 
 }
 
+
 class wls1036osb{
 
   jdk7::install7{'jdk7_2':
@@ -188,15 +193,15 @@ class wls1036osb{
      centos, redhat, OracleLinux, ubuntu, debian: { 
        $osMdwHome    = "/opt/oracle/wls/wls11g"
        $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-       $osTemplate   = "/common/templates/domains/wls.jar"
-       $osDomainPath = "/opt/oracle/wls/wls11/admin"
+       $osTemplate   = "osb"
+       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
        $user         = "oracle"
        $group        = "dba"
      }
      windows: { 
        $osMdwHome    = "c:/opt/oracle/wls/wls11g"
        $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-       $osTemplate   = "/common/templates/domains/wls.jar"
+       $osTemplate   = "osb"
        $osDomainPath = "c:/oracle/wls/wls11g/admin"
        $user         = "Administrator"
        $group        = "Administrators"
@@ -222,10 +227,12 @@ class wls1036osb{
 
   Wls::Wlsdomain {
     wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
     fullJDKName  => $defaultFullJDK,	
     user         => $user,
     group        => $group,    
   }
+  
   Wls::Nodemanager {
     wlHome       => $osWlHome,
     fullJDKName  => $defaultFullJDK,	
@@ -256,12 +263,48 @@ class wls1036osb{
     require      => Wls::Installosb['osbPS5'],
   }
 
+  # install OSB domain
+  wls::wlsdomain{
+  
+    'osbDomain':
+    wlsTemplate     => $osTemplate,
+    domain          => 'osbDomain',
+    domainPath      => $osDomainPath,
+    adminListenPort => '9001',
+    require         => Wls::Installosb['osbPS5'];
+    
+  }
 
   #nodemanager configuration and starting
   wls::nodemanager{'nodemanager11g':
     listenPort  => '5656',
     require     => Wls::Installwls['11gPS5'],
   }
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    address      => "localhost",
+    wlsUser      => "weblogic",
+    password     => "weblogic1",
+  }
+  
+  # start AdminServers for configuration of both domains myTestDomain
+  wls::wlstexec { 
+  
+    'startOSBAdminServer':
+     script      => 'startWlsServer.py',
+     port        => '5656',
+     params      =>  ["domain = 'osbDomain'",
+                      "domainPath = '${osDomainPath}/osbDomain'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Nodemanager['nodemanager11g'];
+
+  }
+
 
 }
  

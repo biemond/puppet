@@ -10,7 +10,7 @@
 # [*fullJDKName*]
 #   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
 #
-# [*template*]
+# [*wlsTemplate*]
 #   default weblogic domain template   
 #
 # [*domain*]
@@ -54,21 +54,22 @@
 # wls::wlsdomain{
 # 
 #   'testDomain':
-#   template     => "/common/templates/domains/wls.jar",
+#   wlsTemplate  => "standard",
 #   domain       => 'myTestDomain',
 #   domainPath   => "/opt/oracle/wls/wls12c/admin";
 #
 #   'testDomain2':
-#   template     => "/common/templates/domains/wls.jar",
+#   wlsTemplate  => "standard",
 #   domain       => 'myTestDomain2',
 #   domainPath   => "/opt/oracle/wls/wls12c/admin";
 # }
 # 
 # 
 
-define wls::wlsdomain ($wlHome          = undef, 
+define wls::wlsdomain ($wlHome          = undef,
+                       $mdwHome         = undef,
                        $fullJDKName     = undef,
-                       $template        = "/common/templates/domains/wls.jar",
+                       $wlsTemplate     = "standard",
                        $domain          = undef,
                        $adminServerName = "AdminServer",
                        $adminListenAdr  = "localhost",
@@ -83,6 +84,26 @@ define wls::wlsdomain ($wlHome          = undef,
     notify {"Domain ${domain} wlHome ${wlHome}":}
 
    $javaCommand    = "java weblogic.WLST"
+   
+   $template             = "${wlHome}/common/templates/domains/wls.jar"
+   $templateOSB          = "${mdwHome}/Oracle_OSB1/common/templates/applications/wlsb.jar"
+   $templateSOAAdapters  = "${mdwHome}/Oracle_OSB1/common/templates/applications/oracle.soa.common.adapters_template_11.1.1.jar"
+   $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
+   $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
+   
+   if $wlsTemplate == 'standard' {
+
+      $templateFile  = "wls/domain.xml.erb"
+
+   } elsif $wlsTemplate == 'osb' {
+
+      $templateFile  = "wls/domain_osb.xml.erb"
+
+   } else {
+
+      $templateFile  = "wls/domain.xml.erb"
+   } 
+   
 
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -127,7 +148,7 @@ define wls::wlsdomain ($wlHome          = undef,
    # the domain.py used by the wlst
    file { "domain.py ${domain}":
      path    => "${path}domain_${domain}.py",
-     content => template("wls/domain.xml.erb"),
+     content => template($templateFile),
    }
     
    case $operatingsystem {
