@@ -18,10 +18,11 @@ weblogic puppet module
 $defaultJDK     = '7u7'
 $defaultFullJDK = 'jdk1.7.0_07'
 
+# templates.pp
+#
 
 include jdk7
 include wls
-
 
 class wls12{
 
@@ -78,27 +79,29 @@ class wls12{
     require      => Jdk7::Install7['jdk7'],
   }
 
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager':
+    require      => Wls::Installwls['wls12c'],
+  }
+
   wls::wlsdomain{
   
     'testDomain':
     wlsTemplate  => $osTemplate,
     domain       => 'myTestDomain',
     domainPath   => $osDomainPath,
-    require      => Wls::Installwls['wls12c'];
+    require      => Wls::Nodemanager['nodemanager'];
 
     'testDomain2':
     wlsTemplate     => $osTemplate,
     domain          => 'myTestDomain2',
     domainPath      => $osDomainPath,
     adminListenPort => '8001',
-    require         => Wls::Installwls['wls12c'];
+    require         => Wls::Nodemanager['nodemanager'];
     
   }
 
-  #nodemanager configuration and starting
-  wls::nodemanager{'nodemanager':
-    require      => [Wls::Wlsdomain['testDomain'],Wls::Wlsdomain['testDomain2']],
-  }
+
 
   # default parameters for the wlst scripts
   Wls::Wlstexec {
@@ -117,23 +120,22 @@ class wls12{
     'startAdminServer':
      script      => 'startWlsServer.py',
      port        => '5556',
-     params      =>  ["domain = 'myTestDomain'",
+     params      =>  ["domain     = 'testDomain'",
                       "domainPath = '${osDomainPath}/myTestDomain'",
-                      "wlsServer = 'AdminServer'"],
-     require     => Wls::Nodemanager['nodemanager'];
+                      "wlsServer  = 'AdminServer'"],
+     require     => Wls::Wlsdomain['testDomain'];
 
     'startAdminServer2':
      script      => 'startWlsServer.py',
      port        => '5556',
-     params      =>  ["domain = 'myTestDomain2'",
+     params      =>  ["domain     = 'myTestDomain2'",
                       "domainPath = '${osDomainPath}/myTestDomain2'",
-                      "wlsServer = 'AdminServer'"],
-     require     => Wls::Nodemanager['nodemanager'];
+                      "wlsServer  = 'AdminServer'"],
+     require     => Wls::Wlsdomain['testDomain2'];
 
   }
 
 }
-
 
 class wls1036osb{
 
@@ -216,6 +218,13 @@ class wls1036osb{
     require      => Wls::Installosb['osbPS5'],
   }
 
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager11g':
+    listenPort  => '5656',
+    require     => Wls::Installosb['osbPS5'],
+  }
+
   # install OSB domain
   wls::wlsdomain{
   
@@ -224,15 +233,11 @@ class wls1036osb{
     domain          => 'osbDomain',
     domainPath      => $osDomainPath,
     adminListenPort => '9001',
-    require         => Wls::Installosb['osbPS5'];
+    nodemanagerPort => '5656',
+    require         => Wls::Nodemanager['nodemanager11g'];
     
   }
 
-  #nodemanager configuration and starting
-  wls::nodemanager{'nodemanager11g':
-    listenPort  => '5656',
-    require     => Wls::Installwls['11gPS5'],
-  }
 
   # default parameters for the wlst scripts
   Wls::Wlstexec {
@@ -254,9 +259,10 @@ class wls1036osb{
      params      =>  ["domain = 'osbDomain'",
                       "domainPath = '${osDomainPath}/osbDomain'",
                       "wlsServer = 'AdminServer'"],
-     require     => Wls::Nodemanager['nodemanager11g'];
+     require     => Wls::Wlsdomain['osbDomain'];
 
   }
 
 
 }
+ 

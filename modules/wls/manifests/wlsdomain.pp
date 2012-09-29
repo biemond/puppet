@@ -73,7 +73,8 @@ define wls::wlsdomain ($wlHome          = undef,
                        $domain          = undef,
                        $adminServerName = "AdminServer",
                        $adminListenAdr  = "localhost",
-                       $adminListenPort = 7001,
+                       $adminListenPort = '7001',
+                       $nodemanagerPort = '5556',
                        $wlsUser         = "weblogic",
                        $password        = "weblogic1",
                        $domainPath      = undef,
@@ -146,7 +147,7 @@ define wls::wlsdomain ($wlHome          = undef,
 
     
    # the domain.py used by the wlst
-   file { "domain.py ${domain}":
+   file { "domain.py ${domain} ${title}":
      path    => "${path}domain_${domain}.py",
      content => template($templateFile),
    }
@@ -154,21 +155,46 @@ define wls::wlsdomain ($wlHome          = undef,
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
         
-        exec { "execwlst ux ${domain}":
+        exec { "execwlst ux ${domain} ${title}":
           command     => "${javaCommand} ${path}domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-#          unless      => "/usr/bin/test -e ${domainPath}/${domain}",
+          unless      => "/usr/bin/test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
-          require     => File["domain.py ${domain}"],
+          require     => File["domain.py ${domain} ${title}"],
         }    
-        if ! defined(Exec["domain.py ${domain}"]) {
-          exec { "domain.py ${domain}":
-           command => "rm -I ${path}domain_${domain}.py",
-           require => Exec["execwlst ux ${domain}"],
-          }
+
+        exec { "domain.py ${domain} ${title}":
+           command     => "rm -I ${path}domain_${domain}.py",
+           subscribe   => Exec["execwlst ux ${domain} ${title}"],
+           refreshonly => true
         }
+
+        # kill the nodemanager 
+        exec { "execwlst ux kill nodemanager ${title}":
+          command     => "/bin/kill -9 `/bin/ps -ef | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | /bin/grep -i ${nodemanagerPort} | awk {'print \$2'} | head -1`",
+          onlyif      => "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${nodemanagerPort}'",
+          subscribe   => Exec["execwlst ux ${domain} ${title}"],
+          refreshonly => true
+        }    
+
+        $javaNodeCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -DListenPort=${nodemanagerPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
+
+        # start the nodemanager
+        exec { "execwlst ux start nodemanager ${title}":
+          command     => "/usr/bin/nohup ${javaNodeCommand} &",
+          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+                          "JAVA_HOME=${JAVA_HOME}",
+                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/linux/x86_64",
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+          unless      =>  "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${nodemanagerPort}'",
+          cwd         => "${wlHome}/common/nodemanager",
+          subscribe   => Exec["execwlst ux kill nodemanager ${title}"],
+          refreshonly => true
+        }    
+
+
      
      }
      windows: { 

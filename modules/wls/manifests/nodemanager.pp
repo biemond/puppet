@@ -77,7 +77,7 @@ define wls::nodemanager($wlHome          = undef,
     
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
-        notify{"${title} command ${javaCommand}":}
+
         exec { "execwlst ux nodemanager ${title}":
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
@@ -86,6 +86,7 @@ define wls::nodemanager($wlHome          = undef,
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "${checkCommand}",
         }    
+
         # wait for the nodemanager.properties file
         exec { "execwlst ux StopScriptEnabled ${title}":
           command     => "/bin/sed 's/StopScriptEnabled=false/StopScriptEnabled=true/g' nodemanager.properties > nodemanager1.properties",
@@ -98,21 +99,24 @@ define wls::nodemanager($wlHome          = undef,
         exec { "execwlst ux StartScriptEnabled ${title}":
           command     => "/bin/sed 's/StartScriptEnabled=false/StartScriptEnabled=true/g' nodemanager1.properties > nodemanager2.properties",
           onlyif      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager1.properties",
-          require     => Exec ["execwlst ux StopScriptEnabled ${title}"],
+          subscribe   => Exec ["execwlst ux StopScriptEnabled ${title}"],
+          refreshonly => true,
         } 
         exec { "execwlst ux CrashRecoveryEnabled ${title}":
           command     => "/bin/sed 's/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g' nodemanager2.properties > nodemanager.properties",
           onlyif      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager2.properties",
-          require     => Exec ["execwlst ux StartScriptEnabled ${title}"],
+          subscribe   => Exec ["execwlst ux StartScriptEnabled ${title}"],
+          refreshonly => true,
         } 
 
+        # delete old files used by sed
         file { "${wlHome}/common/nodemanager/nodemanager1.properties":
            ensure     => absent,
            require    => Exec ["execwlst ux CrashRecoveryEnabled ${title}"],
         }
         file { "${wlHome}/common/nodemanager/nodemanager2.properties":
            ensure     => absent,
-           require    => File["${wlHome}/common/nodemanager/nodemanager1.properties"],
+           require  => File["${wlHome}/common/nodemanager/nodemanager1.properties"],
         }
 
              
@@ -181,14 +185,7 @@ define wls::nodemanager($wlHome          = undef,
           group   => $group,
           mode    => 0770,
         }
-        if ! defined(Service["Oracle WebLogic NodeManager (${serviceName})"]) {
-          service { "Oracle WebLogic NodeManager (${serviceName})":
-                enable     => true,
-                ensure     => true,
-                restart    => true,
-                require    => File ["${wlHome}/common/nodemanager/nodemanager.properties"],
-          }
-        }
+
      }
    }
 }
