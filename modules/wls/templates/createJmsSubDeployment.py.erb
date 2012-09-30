@@ -1,0 +1,33 @@
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+                                
+#target, subName, jmsModuleName,targetType
+<% params.each do |param| -%>   
+<%= param %>                    
+<% end -%>                      
+
+            
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+
+
+print "subName: ", subName, "target: ", target, " targetType: ",targetType, " jmsModule: ", jmsModuleName
+
+edit()
+startEdit()
+
+try:
+    cd('/')
+    cd('/SystemResources/'+jmsModuleName)
+    cmo.createSubDeployment(subName)
+    cd('/SystemResources/'+jmsModuleName+'/SubDeployments/'+subName)
+    set('Targets',jarray.array([ObjectName('com.bea:Name='+target+',Type='+targetType)], ObjectName))
+
+    save()
+    activate()          
+except:
+    print "Unexpected error:", sys.exc_info()[0]
+    undo('true','y')
+    stopEdit('y')

@@ -43,6 +43,31 @@ print('write domain...')
 # write path + domain name
 writeDomain('<%= @domainPath %>/<%= @domain %>')
 
+closeTemplate()
+
+readDomain(DOMAIN_PATH)
+setOption( "AppDir", DOMAIN_PATH+'/applications' )
+addTemplate('<%= @templateOSB %>')
+
+dumpStack();
+updateDomain()
+
+closeDomain();
+readDomain(DOMAIN_PATH)
+
+setOption( "AppDir", DOMAIN_PATH+'/applications' )
+
+cd('Servers/osb_server1')
+set('Machine','LocalMachine')
+
+#cd('/SecurityConfiguration/<%= @domain %>')
+#set('NodeManagerUsername', '<%= @wlsUser %>')
+#set('NodeManagerPassword', '<%= @password %>')
+
+dumpStack();
+updateDomain()
+closeDomain()
+
 #createBootPropertiesFile(DOMAIN_PATH+'/servers/osb_server1/security','<%= @wlsUser %>',<%= @password %>)
 
 print('Exiting...')

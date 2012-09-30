@@ -195,10 +195,11 @@ define wls::installwls( $version    = undef,
    # put weblogic generic jar
    file { "wls.jar ${version}":
      path    => "${path}${wlsFile}",
-     ensure  => present,
+     ensure  => file,
      source  => "puppet:///modules/wls/${wlsFile}",
      require => File[$path],
      replace => false,
+     backup  => false,
    }
 
    if ! defined(File[$oracleHome]) {

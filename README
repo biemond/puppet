@@ -6,7 +6,13 @@ weblogic puppet module
   domain creation normal and OSB
   start the AdminServer for configuration 
   apply bsu patch
-  install OSB 
+  install OSB
+  create File Persistence Store
+  create JMS Server
+  create JMS Module
+  create JMS subdeployment
+  create JMS connection factory
+  create JMS queue or topic
 
 ToDo: total weblogic configuration. Deployments 
 
@@ -69,118 +75,8 @@ node 'win7user.localdomain' inherits prod  {
 include jdk7
 include wls
 
-class wls12{
 
 
-  jdk7::install7{'jdk7':
-    version => $defaultJDK,
-    x64     => "true",
-  }
-  
-  case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
-       $osMdwHome    = "/opt/oracle/wls/wls12c"
-       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "standard"
-       $osDomainPath = "/opt/oracle/wls/wls12c/admin"
-       $user         = "oracle"
-       $group        = "dba"
-     }
-     windows: { 
-       $osMdwHome    = "c:/oracle/wls/wls12c"
-       $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "standard"
-       $osDomainPath = "c:/oracle/wls/wls12c/admin"
-       $user         = "Administrator"
-       $group        = "Administrators"
-       $serviceName  = "C_oracle_wls_wls12c_wlserver_12.1"
-     }
-  }
-
-  # set the defaults
-  Wls::Installwls {
-    version      => '1211',
-    versionJdk   => $defaultJDK,
-    user         => $user,
-    group        => $group,    
-  }
-  Wls::Wlsdomain {
-    wlHome       => $osWlHome,
-    mdwHome      => $osMdwHome,
-    fullJDKName  => $defaultFullJDK,	
-    user         => $user,
-    group        => $group,    
-  }
-  Wls::Nodemanager {
-    wlHome       => $osWlHome,
-    fullJDKName  => $defaultFullJDK,	
-    user         => $user,
-    group        => $group,
-    serviceName  => $serviceName,  
-  }
-  
-  # install
-  wls::installwls{'wls12c':
-    require      => Jdk7::Install7['jdk7'],
-  }
-
-  #nodemanager configuration and starting
-  wls::nodemanager{'nodemanager':
-    require      => Wls::Installwls['wls12c'],
-  }
-
-  wls::wlsdomain{
-  
-    'testDomain':
-    wlsTemplate  => $osTemplate,
-    domain       => 'myTestDomain',
-    domainPath   => $osDomainPath,
-    require      => Wls::Nodemanager['nodemanager'];
-
-    'testDomain2':
-    wlsTemplate     => $osTemplate,
-    domain          => 'myTestDomain2',
-    domainPath      => $osDomainPath,
-    adminListenPort => '8001',
-    require         => Wls::Nodemanager['nodemanager'];
-    
-  }
-
-
-
-  # default parameters for the wlst scripts
-  Wls::Wlstexec {
-    wlHome       => $osWlHome,
-    fullJDKName  => $defaultFullJDK,	
-    user         => $user,
-    group        => $group,
-    address      => "localhost",
-    wlsUser      => "weblogic",
-    password     => "weblogic1",
-  }
-  
-  # start AdminServers for configuration of both domains myTestDomain
-  wls::wlstexec { 
-  
-    'startAdminServer':
-     script      => 'startWlsServer.py',
-     port        => '5556',
-     params      =>  ["domain     = 'testDomain'",
-                      "domainPath = '${osDomainPath}/myTestDomain'",
-                      "wlsServer  = 'AdminServer'"],
-     require     => Wls::Wlsdomain['testDomain'];
-
-    'startAdminServer2':
-     script      => 'startWlsServer.py',
-     port        => '5556',
-     params      =>  ["domain     = 'myTestDomain2'",
-                      "domainPath = '${osDomainPath}/myTestDomain2'",
-                      "wlsServer  = 'AdminServer'"],
-     require     => Wls::Wlsdomain['testDomain2'];
-
-  }
-
-}
 
 class wls1036osb{
 
@@ -308,6 +204,265 @@ class wls1036osb{
 
   }
 
+  # create file persistence store for osb_server1 
+  wls::wlstexec { 
+  
+    'createFilePersistenceStoreOSBServer':
+     script      => 'createFilePersistenceStore.py',
+     port        => '9001',
+     params      =>  ["fileStoreName = 'jmsModuleFilePersistence'",
+                      "serverTarget  = 'osb_server1'"],
+     require     => Wls::Wlstexec['startOSBAdminServer'];
+
+  }
+  
+  # create jms server for osb_server1 
+  wls::wlstexec { 
+  
+    'createJmsServerOSBServer':
+     script      => 'createJmsServer.py',
+     port        => '9001',
+     params      =>  ["storeName      = 'jmsModuleFilePersistence'",
+                      "serverTarget   = 'osb_server1'",
+                      "jmsServerName  = 'jmsServer'",
+                      "storeType      = 'file'",
+                      ],
+     require     => Wls::Wlstexec['createFilePersistenceStoreOSBServer'];
+  }
+
+  # create jms module for osb_server1 
+  wls::wlstexec { 
+  
+    'createJmsModuleOSBServer':
+     script      => 'createJmsModule.py',
+     port        => '9001',
+     params      =>  ["target         = 'osb_server1'",
+                      "jmsModuleName  = 'jmsModule'",
+                      "targetType     = 'Server'",
+                      ],
+     require     => Wls::Wlstexec['createFilePersistenceStoreOSBServer'];
+  }
+
+
+  # create jms subdeployment for jms module 
+  wls::wlstexec { 
+  
+    'createJmsSubDeploymentWLSforJmsModule':
+     script      => 'createJmsSubDeployment.py',
+     port        => '9001',
+     params      =>  ["target         = 'osb_server1'",
+                      "jmsModuleName  = 'jmsModule'",
+                      "subName        = 'wlsServer'",
+                      "targetType     = 'Server'"
+                      ],
+     require     => Wls::Wlstexec['createJmsModuleOSBServer'];
+  }
+
+  # create jms subdeployment for jms module 
+  wls::wlstexec { 
+  
+    'createJmsSubDeploymentWLSforJmsModule2':
+     script      => 'createJmsSubDeployment.py',
+     port        => '9001',
+     params      =>  ["target         = 'jmsServer'",
+                      "jmsModuleName  = 'jmsModule'",
+                      "subName        = 'JmsServer'",
+                      "targetType     = 'JMSServer'"
+                      ],
+     require     => Wls::Wlstexec['createJmsSubDeploymentWLSforJmsModule'];
+  }
+
+  # create jms connection factory for jms module 
+  wls::wlstexec { 
+  
+    'createJmsConnectionFactoryforJmsModule':
+     script      => 'createJmsConnectionFactory.py',
+     port        => '9001',
+     params      =>  ["subDeploymentName = 'wlsServer'",
+                      "jmsModuleName     = 'jmsModule'",
+                      "cfName            = 'cf'",
+                      "cfJNDIName        = 'jms/cf'",
+                      "transacted        = 'false'",
+                      "timeout           = 'xxxx'"
+                      ],
+     require     => Wls::Wlstexec['createJmsSubDeploymentWLSforJmsModule2'];
+  }
+
+
+  # create jms error Queue for jms module 
+  wls::wlstexec { 
+  
+    'createJmsErrorQueueforJmsModule':
+     script      => 'createJmsQueueOrTopic.py',
+     port        => '9001',
+     params      =>  ["subDeploymentName = 'JmsServer'",
+                      "jmsModuleName     = 'jmsModule'",
+                      "jmsName           = 'ErrorQueue'",
+                      "jmsJNDIName       = 'jms/ErrorQueue'",
+                      "jmsType           = 'queue'",
+                      "distributed       = 'false'",
+                      "balancingPolicy   = 'xxxxx'",
+                      "useRedirect       = 'false'",
+                      "limit             = 'xxxxx'",
+                      "policy            = 'xxxxx'",
+                      "errorObject       = 'xxxxx'"
+                      ],
+     require     => Wls::Wlstexec['createJmsConnectionFactoryforJmsModule'];
+  }
+
+  # create jms Queue for jms module 
+  wls::wlstexec { 
+  
+    'createJmsQueueforJmsModule':
+     script      => 'createJmsQueueOrTopic.py',
+     port        => '9001',
+     params      =>  ["subDeploymentName   = 'JmsServer'",
+                      "jmsModuleName       = 'jmsModule'",
+                      "jmsName             = 'Queue1'",
+                      "jmsJNDIName         = 'jms/Queue1'",
+                      "jmsType             = 'queue'",
+                      "distributed         = 'false'",
+                      "balancingPolicy     = 'xxxxx'",
+                      "useRedirect         = 'true'",
+                      "limit               = '3'",
+                      "policy              = 'Redirect'",
+                      "errorObject         = 'ErrorQueue'"
+                      ],
+     require     => Wls::Wlstexec['createJmsErrorQueueforJmsModule'];
+  }
+
+  # create jms Topic for jms module 
+  wls::wlstexec { 
+  
+    'createJmsTopicforJmsModule':
+     script      => 'createJmsQueueOrTopic.py',
+     port        => '9001',
+     params      =>  ["subDeploymentName   = 'JmsServer'",
+                      "jmsModuleName       = 'jmsModule'",
+                      "jmsName             = 'Topic1'",
+                      "jmsJNDIName         = 'jms/Topic1'",
+                      "jmsType             = 'topic'",
+                      "distributed         = 'false'",
+                      "balancingPolicy     = 'xxxxx'",
+                      "useRedirect         = 'false'",
+                      "limit               = 'xxxxx'",
+                      "policy              = 'xxxxx'",
+                      "errorObject         = 'xxxxx'"
+                      ],
+     require     => Wls::Wlstexec['createJmsQueueforJmsModule'];
+  }
 
 }
+
+class wls12{
+
+
+  jdk7::install7{'jdk7':
+    version => $defaultJDK,
+    x64     => "true",
+  }
   
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls12c"
+       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
+       $osTemplate   = "standard"
+       $osDomainPath = "/opt/oracle/wls/wls12c/admin"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls12c"
+       $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
+       $osTemplate   = "standard"
+       $osDomainPath = "c:/oracle/wls/wls12c/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls12c_wlserver_12.1"
+     }
+  }
+
+  # set the defaults
+  Wls::Installwls {
+    version      => '1211',
+    versionJdk   => $defaultJDK,
+    user         => $user,
+    group        => $group,    
+  }
+  Wls::Wlsdomain {
+    wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+  }
+  
+  # install
+  wls::installwls{'wls12c':
+    require      => Jdk7::Install7['jdk7'],
+  }
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager':
+    require      => Wls::Installwls['wls12c'],
+  }
+
+  wls::wlsdomain{
+  
+    'testDomain':
+    wlsTemplate  => $osTemplate,
+    domain       => 'myTestDomain',
+    domainPath   => $osDomainPath,
+    require      => Wls::Nodemanager['nodemanager'];
+
+    'testDomain2':
+    wlsTemplate     => $osTemplate,
+    domain          => 'myTestDomain2',
+    domainPath      => $osDomainPath,
+    adminListenPort => '8001',
+    require         => Wls::Nodemanager['nodemanager'];
+    
+  }
+
+
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,
+    address      => "localhost",
+    wlsUser      => "weblogic",
+    password     => "weblogic1",
+  }
+  
+  # start AdminServers for configuration of both domains myTestDomain
+  wls::wlstexec { 
+  
+    'startAdminServer':
+     script      => 'startWlsServer.py',
+     port        => '5556',
+     params      =>  ["domain     = 'testDomain'",
+                      "domainPath = '${osDomainPath}/myTestDomain'",
+                      "wlsServer  = 'AdminServer'"],
+     require     => Wls::Wlsdomain['testDomain'];
+
+    'startAdminServer2':
+     script      => 'startWlsServer.py',
+     port        => '5556',
+     params      =>  ["domain     = 'myTestDomain2'",
+                      "domainPath = '${osDomainPath}/myTestDomain2'",
+                      "wlsServer  = 'AdminServer'"],
+     require     => Wls::Wlsdomain['testDomain2'];
+
+  }
+
+} 

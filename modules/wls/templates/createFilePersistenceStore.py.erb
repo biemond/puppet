@@ -1,0 +1,26 @@
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+                                
+#fileStoreName, serverTarget  
+<% params.each do |param| -%>   
+<%= param %>                    
+<% end -%>                      
+
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+edit()
+startEdit()
+
+try:
+    cd('/')
+    cmo.createFileStore(fileStoreName)
+    cd('/FileStores/'+fileStoreName)
+    set('Targets', jarray.array([ObjectName('com.bea:Name='+serverTarget+',Type=Server')], ObjectName))
+    save()
+    activate()          
+except:
+    print "Unexpected error:", sys.exc_info()[0]
+    undo('true','y')
+    stopEdit('y')
