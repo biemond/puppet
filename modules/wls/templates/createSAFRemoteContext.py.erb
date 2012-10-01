@@ -1,0 +1,37 @@
+
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+
+       
+#jmsModuleName, desName, desUsername,desPassword,desUrl
+<% params.each do |param| -%>   
+<%= param %>                    
+<% end -%>                      
+
+            
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+
+
+edit()
+startEdit()
+
+try:
+    cd('/')
+    cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName)
+    cmo.createSAFRemoteContext(desName)
+    
+    cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+'/SAFRemoteContexts/'+desName+'/SAFLoginContext/'+desName)
+    cmo.setLoginURL(desUrl)
+    if desUsername != "xxxx":
+        cmo.setUsername(desUsername)
+        cmo.setPassword(desPassword)
+    
+    save()
+    activate()          
+except:
+    print "Unexpected error:", sys.exc_info()[0]
+    undo('true','y')
+    stopEdit('y')

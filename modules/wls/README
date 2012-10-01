@@ -4,17 +4,36 @@
 #  
 weblogic puppet module
   installs weblogic
+  installs OSB
+
   configure + starts nodemanager
-  domain creation normal and OSB
+
+  domain creation normal
+  domain OSB creation
+
   start the AdminServer for configuration 
+
   apply bsu patch
-  install OSB
-  create File Persistence Store
+
+  create File or JDBC Persistence Store
+
   create JMS Server
   create JMS Module
   create JMS subdeployment
   create JMS connection factory
   create JMS queue or topic
+
+  create users with group
+
+  create SAF agents 
+  create SAF Remote Destinations
+  create SAf imported Destinations
+  create SAF objects
+
+  create Foreign Servers
+  create Foreign Servers entries
+
+  run every wlst script with the flexible wlst define
 
 # use it like this in site.pp
 
@@ -158,6 +177,63 @@ class wls1036osb{
 
   }
 
+  # create jdbc datasource for osb_server1 
+  wls::wlstexec { 
+  
+    'createJdbcDatasourceHr':
+     script      => 'createJdbcDatasource.py',
+     port        => '9001',
+     params      =>  ["dsName                      = 'hrDS'",
+                      "jdbcDatasourceTargets       = 'AdminServer,osb_server1'",
+                      "dsJNDIName                  = 'jdbc/hrDS'",
+                      "dsDriverName                = 'oracle.jdbc.xa.client.OracleXADataSource'",
+                      "dsURL                       = 'jdbc:oracle:thin:@master.alfa.local:1521/XE'",
+                      "dsUserName                  = 'hr'",
+                      "dsPassword                  = 'hr'",
+                      "datasourceTargetType        = 'Server'",
+                      "globalTransactionsProtocol  = 'xxxx'"
+                      ],
+     require     => Wls::Wlstexec['startOSBAdminServer'];
+
+  }
+
+  # create jdbc jms datasource for jms server 
+  wls::wlstexec { 
+  
+    'createJdbcDatasourceJms':
+     script      => 'createJdbcDatasource.py',
+     port        => '9001',
+     params      =>  ["dsName                      = 'jmsDS'",
+                      "jdbcDatasourceTargets       = 'AdminServer,osb_server1'",
+                      "dsJNDIName                  = 'jdbc/jmsDS'",
+                      "dsDriverName                = 'oracle.jdbc.OracleDriver'",
+                      "dsURL                       = 'jdbc:oracle:thin:@master.alfa.local:1521/XE'",
+                      "dsUserName                  = 'jms'",
+                      "dsPassword                  = 'jms'",
+                      "datasourceTargetType        = 'Server'",
+                      "globalTransactionsProtocol  = 'None'"
+                      ],
+     require     => Wls::Wlstexec['createJdbcDatasourceHr'];
+
+  }
+
+  # create jdbc persistence store for jmsmodule 
+  wls::wlstexec { 
+  
+    'createJdbcPersistenceStoreOSBServer':
+     script      => 'createJdbcPersistenceStore.py',
+     port        => '9001',
+     params      =>  ["jdbcStoreName = 'jmsModuleJdbcPersistence'",
+                      "serverTarget  = 'osb_server1'",
+                      "prefix        = 'jms1'",
+                      "datasource    = 'jmsDS'"
+                     
+                      ],
+     require     => Wls::Wlstexec['createJdbcDatasourceJms'];
+
+  }
+
+
   # create file persistence store for osb_server1 
   wls::wlstexec { 
   
@@ -166,7 +242,7 @@ class wls1036osb{
      port        => '9001',
      params      =>  ["fileStoreName = 'jmsModuleFilePersistence'",
                       "serverTarget  = 'osb_server1'"],
-     require     => Wls::Wlstexec['startOSBAdminServer'];
+     require     => Wls::Wlstexec['createJdbcPersistenceStoreOSBServer'];
 
   }
   
@@ -184,6 +260,20 @@ class wls1036osb{
      require     => Wls::Wlstexec['createFilePersistenceStoreOSBServer'];
   }
 
+  # create jms server for osb_server1 
+  wls::wlstexec { 
+  
+    'createJmsServerOSBServer2':
+     script      => 'createJmsServer.py',
+     port        => '9001',
+     params      =>  ["storeName      = 'jmsModuleJdbcPersistence'",
+                      "serverTarget   = 'osb_server1'",
+                      "jmsServerName  = 'jmsServer2'",
+                      "storeType      = 'jdbc'",
+                      ],
+     require     => Wls::Wlstexec['createJmsServerOSBServer'];
+  }
+
   # create jms module for osb_server1 
   wls::wlstexec { 
   
@@ -194,7 +284,7 @@ class wls1036osb{
                       "jmsModuleName  = 'jmsModule'",
                       "targetType     = 'Server'",
                       ],
-     require     => Wls::Wlstexec['createFilePersistenceStoreOSBServer'];
+     require     => Wls::Wlstexec['createJmsServerOSBServer2'];
   }
 
 
@@ -211,6 +301,7 @@ class wls1036osb{
                       ],
      require     => Wls::Wlstexec['createJmsModuleOSBServer'];
   }
+
 
   # create jms subdeployment for jms module 
   wls::wlstexec { 
@@ -305,6 +396,21 @@ class wls1036osb{
                       ],
      require     => Wls::Wlstexec['createJmsQueueforJmsModule'];
   }
+
+  # create user and group 
+  wls::wlstexec { 
+  
+    'createUserAndGroups':
+     script      => 'createUsersAndGroups.py',
+     port        => '9001',
+     params      =>  ["userPassword   = 'Welcome01'",
+                      "allUsers       = 'user1,user2'",
+                      "group          = 'superuser'"
+                      ],
+     require     => Wls::Wlstexec['createJmsTopicforJmsModule'];
+  }
+
+  
 
 }
 

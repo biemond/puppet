@@ -1,0 +1,36 @@
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+                                
+#serverTarget, serviceType, storeType,storeName,safName
+<% params.each do |param| -%>   
+<%= param %>                    
+<% end -%>                      
+
+            
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+
+edit()
+startEdit()
+
+try:
+    cd('/')
+    cmo.createSAFAgent(safName)
+    cd('/SAFAgents/'+safName)
+
+    if storeType == "file":
+        cmo.setStore(getMBean('/FileStores/'+storeName))
+    else:
+        cmo.setStore(getMBean('/JDBCStores/'+storeName))
+
+    set('Targets', jarray.array([ObjectName('com.bea:Name='+serverTarget+',Type=Server')], ObjectName))
+    cmo.setServiceType(serviceType)
+
+    save()
+    activate()          
+except:
+    print "Unexpected error:", sys.exc_info()[0]
+    undo('true','y')
+    stopEdit('y')

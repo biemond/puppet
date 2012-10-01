@@ -1,0 +1,31 @@
+
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+
+       
+#userPassword, allUsers, group
+<% params.each do |param| -%>   
+<%= param %>                    
+<% end -%>                      
+
+            
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+
+
+print 'lookup DefaultAuthenticator' 
+
+
+users=String(allUsers).split(",")
+
+atnr=cmo.getSecurityConfiguration().getDefaultRealm().lookupAuthenticationProvider('DefaultAuthenticator')
+
+print 'create group'
+atnr.createGroup(group,group)
+
+for user in users:        
+  print 'create user: ',user
+  atnr.createUser(user,userPassword,user)
+  atnr.addMemberToGroup(group,user)

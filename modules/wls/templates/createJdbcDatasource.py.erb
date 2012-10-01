@@ -1,0 +1,67 @@
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+                                
+#dsName, jdbcDatasourceTargets, dsJNDIName,dsDriverName,dsURL,dsUserName,dsPassword,datasourceTargetType,globalTransactionsProtocol
+<% params.each do |param| -%>   
+<%= param %>                    
+<% end -%>                      
+
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+
+print "datasource " +dsName
+
+datasourceTargets=String(jdbcDatasourceTargets).split(",")
+for datasourceTarget in datasourceTargets:
+  print "Datasource Target",datasourceTarget
+
+print "dsJNDIName " +dsJNDIName
+print "dsDriverName " +dsDriverName
+print "dsUserName " +dsUserName
+
+
+edit()
+startEdit()
+
+try:
+      cd('/')
+      cmo.createJDBCSystemResource(dsName)
+      cd('/JDBCSystemResources/' + dsName + '/JDBCResource/' + dsName)
+      cmo.setName(dsName)
+
+      cd('/JDBCSystemResources/' + dsName + '/JDBCResource/' + dsName + '/JDBCDataSourceParams/' + dsName )
+      set('JNDINames',jarray.array([String('jdbc/' + dsName )], String))
+
+      cd('/JDBCSystemResources/' + dsName + '/JDBCResource/' + dsName + '/JDBCDriverParams/' + dsName )
+      cmo.setUrl(dsURL)
+      cmo.setDriverName( dsDriverName )
+      cmo.setPassword(dsPassword)
+
+      cd('/JDBCSystemResources/' + dsName + '/JDBCResource/' + dsName + '/JDBCConnectionPoolParams/' + dsName )
+      cmo.setTestTableName('SQL SELECT 1 FROM DUAL')
+      cd('/JDBCSystemResources/' + dsName + '/JDBCResource/' + dsName + '/JDBCDriverParams/' + dsName + '/Properties/' + dsName )
+      cmo.createProperty('user')
+
+      cd('/JDBCSystemResources/' + dsName + '/JDBCResource/' + dsName + '/JDBCDriverParams/' + dsName + '/Properties/' + dsName + '/Properties/user')
+      cmo.setValue(dsUserName)
+
+      if globalTransactionsProtocol != "xxxx":
+          cd('/JDBCSystemResources/' + dsName + '/JDBCResource/' + dsName + '/JDBCDataSourceParams/' + dsName)
+          cmo.setGlobalTransactionsProtocol('None')
+
+      cd('/SystemResources/' + dsName )
+      targetList = []
+      for datasourceTarget in datasourceTargets:
+        targetList.append( ObjectName('com.bea:Name=' + datasourceTarget + ',Type='+datasourceTargetType) )       
+
+      set('Targets',jarray.array(targetList, ObjectName))
+
+      save()
+      activate()          
+
+except:
+      print "Unexpected error:", sys.exc_info()[0]
+      undo('true','y')
+      stopEdit('y')
