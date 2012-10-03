@@ -4,7 +4,8 @@
 #  
 weblogic puppet module
   installs weblogic
-  installs OSB
+  installs OSB with or without OEPE
+
 
   configure + starts nodemanager
 

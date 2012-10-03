@@ -2,7 +2,7 @@ java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers
 
 weblogic puppet module
   installs weblogic
-  installs OSB
+  installs OSB with or without OEPE
 
   configure + starts nodemanager
 
@@ -69,7 +69,7 @@ node basenode {
 
 node devel inherits basenode {
   $my_zone = "devel"
-  include wls12
+#  include wls12
   include wls1036osb
 }
 
@@ -78,15 +78,16 @@ node prod inherits basenode {
 }
 
 node 'devagent1.alfa.local' inherits devel {
-  include  wls1036osb
 }
 
 node 'win7user.localdomain' inherits prod  {
-
-  include wls1036
   include wls12
-
 } 
+
+node 'hudson.alfa.local' {
+  include hudson
+} 
+
 
 # templates.pp
 #
@@ -94,6 +95,78 @@ node 'win7user.localdomain' inherits prod  {
 include jdk7
 include wls
 
+class hudson{
+
+  jdk7::install7{'jdk7_husdon':
+    version => $defaultJDK,
+    x64     => "true",
+  }
+
+  $osMdwHome    = "/opt/oracle/wls/wls11g"
+  $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+  $osTemplate   = "osb"
+  $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+  $user         = "oracle"
+  $group        = "dba"
+
+  $oepeFile     = "oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip"
+
+
+  # set the defaults
+  Wls::Installwls {
+    version      => '1036',
+    versionJdk   => $defaultJDK,
+    user         => $user,
+    group        => $group,    
+  }
+
+
+  Wls::Installosb {
+    mdwHome      => $osMdwHome,
+    wlHome       => $osWlHome,
+    fullJDKName  => $defaultFullJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+
+  # install
+  wls::installwls{'11gPS5_hudson':
+    require      => Jdk7::Install7['jdk7_husdon'],
+  }
+
+
+  # download oepe to hudson server
+  if ! defined(File["/install/${oepeFile}"]) {
+    file { "/install/${oepeFile}":
+       source  => "puppet:///modules/wls/${oepeFile}",
+       require => Wls::Installwls['11gPS5_hudson'],
+       ensure  => present,
+       mode    => 0775,
+    }
+  }
+
+  # extract oepe in middleware home
+  if ! defined(Exec["extract ${oepeFile}"]) {
+     exec { "extract ${oepeFile}":
+          command   => "unzip -n /install/${oepeFile} -d ${osMdwHome}/oepe11.1.1.8",
+          require   => File["/install/${oepeFile}"],
+          creates   => "${osMdwHome}/oepe11.1.1.8",
+          path      => "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:",
+          user      => $user,
+          group     => $group,
+          logoutput => true,
+         }
+  }
+
+  #install OSB with OEPE
+  wls::installosb{'osbPS5_oepe':
+    osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+    oepeHome     => 'oepe11.1.1.8',
+    require      => Exec["extract ${oepeFile}"],
+  }
+
+
+}
 
 
 

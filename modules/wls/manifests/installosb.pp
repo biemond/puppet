@@ -35,6 +35,7 @@ define wls::installosb($mdwHome         = undef,
                        $wlHome          = undef,
                        $fullJDKName     = undef,
                        $osbFile         = undef, 
+                       $oepeHome        = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                     ) {
@@ -73,15 +74,20 @@ define wls::installosb($mdwHome         = undef,
      }
    }
 
+   if $oepeHome == undef {
+      $osbTemplate =  "wls/silent_osb.xml.erb"
+   } else {
+      $osbTemplate =  "wls/silent_osb_oepe.xml.erb"
+   }
 
    if ! defined(File["${path}silent_osb.xml"]) {
      file { "${path}silent_osb.xml":
        ensure  => present,
-       content => template("wls/silent_osb.xml.erb"),
+       content => template($osbTemplate),
      }
    }
 
-   # the patch used by the bsu
+   # weblogic generic installer zip
    if ! defined(File["${path}${osbFile}"]) {
     file { "${path}${osbFile}":
      source  => "puppet:///modules/wls/${osbFile}",
@@ -113,7 +119,7 @@ define wls::installosb($mdwHome         = undef,
         
         exec { "install osb ${title}":
           command     => "${path}osb/Disk1/install/linux64/runInstaller ${command} -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
-          require => File ["${mdwHome}/oraInst.loc"],
+          require     => File ["${mdwHome}/oraInst.loc"],
           creates     => $oracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
