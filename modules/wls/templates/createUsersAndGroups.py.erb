@@ -14,18 +14,20 @@ portNumber = '<%= @port %>'
             
 connect(wlsUser,password,'t3://'+machine+':'+portNumber)
 
-
 print 'lookup DefaultAuthenticator' 
-
 
 users=String(allUsers).split(",")
 
-atnr=cmo.getSecurityConfiguration().getDefaultRealm().lookupAuthenticationProvider('DefaultAuthenticator')
+try:
+    atnr=cmo.getSecurityConfiguration().getDefaultRealm().lookupAuthenticationProvider('DefaultAuthenticator')
 
-print 'create group'
-atnr.createGroup(group,group)
+    print 'create group'
+    atnr.createGroup(group,group)
 
-for user in users:        
-  print 'create user: ',user
-  atnr.createUser(user,userPassword,user)
-  atnr.addMemberToGroup(group,user)
+    for user in users:        
+      print 'create user: ',user
+      atnr.createUser(user,userPassword,user)
+      atnr.addMemberToGroup(group,user)
+
+except:
+    print "Unexpected error:", sys.exc_info()[0]
