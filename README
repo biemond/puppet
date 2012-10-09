@@ -1,6 +1,25 @@
 java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
 
 weblogic puppet module
+
+  WebLogic Facter , show middleware home + domains, running nodemanagers + weblogic servers
+
+  ora_mdw_0							/opt/oracle/wls/wls12c
+	ora_mdw_0_domain_0		myTestDomain
+	ora_mdw_0_domain_1		myTestDomain2
+	ora_mdw_0_domain_cnt	2
+	ora_mdw_1							/opt/oracle/wls/wls11g
+	ora_mdw_1_domain_0		osbDomain
+	ora_mdw_1_domain_cnt	2
+	ora_mdw_cnt						2
+	ora_mdw_homes					/opt/oracle/wls/wls12c -- /opt/oracle/wls/wls11g --
+	ora_node_mgr_0				pid: 1836 port: 5656
+	ora_wls_0							pid: 1916 name: AdminServer
+	ora_wls_1							pid: 2328 name: osb_server1
+	ora_wls_2							pid: 48605 name: AdminServe
+
+
+
   installs weblogic
   installs OSB with or without OEPE
 
