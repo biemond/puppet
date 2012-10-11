@@ -46,6 +46,8 @@ define wls::installosb($mdwHome         = undef,
         $execPath        = "/usr/java/${fullJDKName}/bin;/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = '/install/'
         $oracleHome      = "${mdwHome}/Oracle_OSB1"
+        $oraInstPath     = "/etc/"
+        $oraInventory    = "/opt/oracle/orainventory"
         
         Exec { path      => $execPath,
                user      => $user,
@@ -65,6 +67,7 @@ define wls::installosb($mdwHome         = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\"
         $oracleHome       = "${mdwHome}\\Oracle_OSB1"
+        $oraInventory     = "C:\Program Files\Oracle\Inventory"
         
         Exec { path      => $execPath,
              }
@@ -96,7 +99,7 @@ define wls::installosb($mdwHome         = undef,
    }
 
    
-   $command  = "-silent -response ${path}silent_osb.xml -invPtrLoc ${mdwHome}/oraInst.loc"
+   $command  = "-silent -response ${path}silent_osb.xml -invPtrLoc ${oraInstPath}/oraInst.loc"
     
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -109,8 +112,8 @@ define wls::installosb($mdwHome         = undef,
          }
         }
 
-        if ! defined(File["${mdwHome}/oraInst.loc"]) {
-         file { "${mdwHome}/oraInst.loc":
+        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
+         file { "${oraInstPath}/oraInst.loc":
            ensure  => present,
            content => template("wls/oraInst.loc.erb"),
            require     => Exec["extract ${osbFile}"],
@@ -119,10 +122,16 @@ define wls::installosb($mdwHome         = undef,
         
         exec { "install osb ${title}":
           command     => "${path}osb/Disk1/install/linux64/runInstaller ${command} -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
-          require     => File ["${mdwHome}/oraInst.loc"],
+          require     => File ["${oraInstPath}/oraInst.loc"],
           creates     => $oracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
+
+        exec { "sleep 1 min for osb install ${title}":
+          command     => "/bin/sleep 60",
+          require     => Exec ["install osb ${title}"],
+        }    
+
              
      }
      windows: { 

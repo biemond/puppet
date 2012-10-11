@@ -1,4 +1,6 @@
 # oracle_middleware_homes.rb
+require 'rexml/document' 
+
 
 # read middleware home in the oracle home folder
 def get_homes()
@@ -50,6 +52,39 @@ def get_wlsservers()
   end
 end
 
+def get_orainst_loc()
+  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
+    if FileTest.exists?("/etc/oraInst.loc")
+      str = ""
+      output = File.read("/etc/oraInst.loc")
+      output.split(/\r?\n/).each do |item|
+        if item.match(/^inventory_loc/)
+          str = item[14,50]
+        end
+      end
+      return str
+    else
+      return nil
+    end
+  end
+end
+
+def get_orainst_products(path)
+  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
+    if FileTest.exists?(path+"/ContentsXML/inventory.xml")
+      file = File.read( path+"/ContentsXML/inventory.xml" )
+      doc = REXML::Document.new file
+      software =  ""
+      doc.elements.each("/INVENTORY/HOME_LIST/HOME") do |element| 
+        software += element.attributes["LOC"] + ","
+      end
+      return software
+    else
+      return "NotFound"
+    end
+  end
+end
+
 # report all oracle homes / domains
 unless get_homes.nil?
   get_homes.each_with_index do |mdw, i|
@@ -80,16 +115,21 @@ unless get_homes.nil?
   end 
 end
 
+
 # all homes on 1 row
-Facter.add("ora_mdw_homes") do
-  setcode do
-    str = ""
-    get_homes.each do |item|
-      str += item + " -- "
+unless get_homes.nil?
+  get_homes.each do |item|
+    Facter.add("ora_mdw_homes") do
+      setcode do
+        str = ""
+        get_homes.each do |item|
+          str += item + " -- "
+        end 
+      end
     end
-    str	
-  end
+  end 
 end
+
 
 
 # all nodemanager 
@@ -126,4 +166,18 @@ Facter.add("ora_mdw_cnt") do
   end
 end
 
+# get orainst loc data
+Facter.add("ora_inst_loc_data") do
+  setcode do
+    inventory = get_orainst_loc
+  end
+end
 
+# get orainst products
+unless get_orainst_loc.nil?
+  Facter.add("ora_inst_products") do
+    setcode do
+      inventory = get_orainst_products(get_orainst_loc)
+    end
+  end
+end

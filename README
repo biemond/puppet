@@ -4,6 +4,8 @@ weblogic puppet module
 
   WebLogic Facter , show middleware home + domains, running nodemanagers + weblogic servers
 
+ora_inst_loc_data     /opt/oracle/orainventory
+ora_inst_products     /opt/oracle/wls/wls11g/Oracle_OSB1,
 ora_mdw_0             /opt/oracle/wls/wls12c
 ora_mdw_0_domain_0    myTestDomain
 ora_mdw_0_domain_1    myTestDomain2
