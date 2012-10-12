@@ -14,15 +14,145 @@ def get_homes()
   end
 end
 
-# read middleware home in the oracle home folder
-def get_domain(name)
+# read weblogic domains in the admin  folder of the middleware home
+def get_domain(name,i)
   if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
     if FileTest.exists?(name+'/admin')
       output = Facter::Util::Resolution.exec('/bin/ls '+name+'/admin')
       if output.nil?
         return nil
-      else 
-        return output.split(/\r?\n/)
+      else
+        l = 0
+        domains = Array.new 
+        output.split(/\r?\n/).each_with_index do |domain, n|
+          if FileTest.exists?(name+'/admin/'+domain+"/config/config.xml")
+            file = File.read( name+'/admin/'+domain+"/config/config.xml" )
+            doc = REXML::Document.new file
+            software = ""
+            root = doc.root
+
+            Facter.add("ora_mdw_#{i}_domain_#{n}") do
+              setcode do
+                root.elements['name'].text
+              end
+            end
+
+            software += "domain: "+root.elements['name'].text + "\n"
+            software += " version: " + root.elements['configuration-version'].text + "\n"
+
+            k = 0
+            root.elements.each("server") do |server| 
+              Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}") do
+                setcode do
+                  server.elements['name'].text
+                end
+              end
+              Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}_port") do
+                setcode do
+                   server.elements['listen-port'].text
+                end
+              end
+              Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}_machine") do
+                setcode do
+                   server.elements['machine'].text 
+                end
+              end
+              software += "  server: " + server.elements['name'].text + 
+                          " port: " + server.elements['listen-port'].text + 
+                          " machine: " + server.elements['machine'].text + "\n"
+              k += 1            
+            end
+
+            deployements = ""
+            root.elements.each("app-deployment[module-type = 'ear']") do |apps|
+            	deployements += apps.elements['name'].text + ";"
+              software += "   deployment: " + apps.elements['name'].text + 
+                          " targets " + apps.elements['target'].text + "\n"
+            end
+            Facter.add("ora_mdw_#{i}_domain_#{n}_deployments") do
+               setcode do
+                  deployements
+               end
+            end
+
+
+            root.elements.each("machine") do |machines| 
+              software += "    machines: " + machines.elements['name'].text + "\n"
+            end
+
+            jmsserversstr = ""
+            root.elements.each("jms-server") do |jmsservers| 
+              jmsserversstr += jmsservers.elements['name'].text + ";"
+              software += "     jmsserver: " + jmsservers.elements['name'].text + 
+                                " targets:" + jmsservers.elements['target'].text +
+                                " persistent-store: " + jmsservers.elements['persistent-store'].text +  "\n"
+            end
+
+            Facter.add("ora_mdw_#{i}_domain_#{n}_jmsservers") do
+              setcode do
+                jmsserversstr
+               end
+            end
+
+            k = 0
+            root.elements.each("jms-system-resource") do |jmsresource|
+              jmsstr = "" 
+              software += "      jmsmodule: " + jmsresource.elements['name'].text + 
+                                " targets:" + jmsresource.elements['target'].text + 
+                                " file: " + jmsresource.elements['descriptor-file-name'].text + "\n"
+              subfile = File.read( name+'/admin/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
+              subdoc = REXML::Document.new subfile
+              jmsroot = subdoc.root
+              jmsroot.elements.each("connection-factory") do |cfs| 
+                jmsstr +=  cfs.attributes["name"] + ";"
+                software += "        conn factory: " + cfs.attributes["name"] + 
+                                " jndi name:" + cfs.elements['jndi-name'].text + "\n"
+              end
+              jmsroot.elements.each("queue") do |queues| 
+                jmsstr +=  queues.attributes["name"] + ";"
+                software += "        queues: " + queues.attributes["name"] + 
+                                " jndi name:" + queues.elements['jndi-name'].text + "\n"
+              end
+              jmsroot.elements.each("topic") do |topics| 
+                jmsstr +=  topics.attributes["name"] + ";"
+                software += "        topics: " + topics.attributes["name"] + 
+                                " jndi name:" + topics.elements['jndi-name'].text + "\n"
+              end
+              Facter.add("ora_mdw_#{i}_domain_#{n}_jmsresource_#{k}_name") do
+                setcode do
+                  jmsresource.elements['name'].text
+                end
+              end
+              Facter.add("ora_mdw_#{i}_domain_#{n}_jmsresource_#{k}_objects") do
+                setcode do
+                  jmsstr
+                end
+              end
+              k += 1            
+            end
+
+            jdbcstr = ""
+            root.elements.each("jdbc-system-resource") do |jdbcresource| 
+              jdbcstr += jdbcresource.elements['name'].text + ";" 
+              software += "       jdbc: " + jdbcresource.elements['name'].text + 
+                                " targets:" + jdbcresource.elements['target'].text + "\n"
+            end
+            Facter.add("ora_mdw_#{i}_domain_#{n}_jdbc") do
+              setcode do
+                jdbcstr
+              end
+            end
+
+            domains.push software
+            l += 1
+          end
+          Facter.add("ora_mdw_#{i}_domain_cnt") do
+            setcode do
+              l
+            end
+          end
+        end
+        return domains
       end
     else
       return nil  
@@ -76,7 +206,7 @@ def get_orainst_products(path)
       doc = REXML::Document.new file
       software =  ""
       doc.elements.each("/INVENTORY/HOME_LIST/HOME") do |element| 
-        software += element.attributes["LOC"] + ","
+        software += element.attributes["LOC"] + ";"
       end
       return software
     else
@@ -93,25 +223,7 @@ unless get_homes.nil?
         mdw
       end
     end
-    unless get_domain(mdw).nil?
-      get_domain(mdw).each_with_index do |domain, n|
-        Facter.add("ora_mdw_#{i}_domain_#{n}") do
-          setcode do
-            domain
-          end
-        end
-      end
-    end
-    Facter.add("ora_mdw_#{i}_domain_cnt") do
-      setcode do
-        if get_domain(mdw).nil?
-          count = 0
-        else        
-          count = get_domain(mdw).count
-        end
-        count
-      end
-    end
+    get_domain(mdw, i)
   end 
 end
 
@@ -123,7 +235,7 @@ unless get_homes.nil?
       setcode do
         str = ""
         get_homes.each do |item|
-          str += item + " -- "
+          str += item + ";"
         end 
       end
     end

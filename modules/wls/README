@@ -6,21 +6,30 @@ weblogic puppet module
 
   WebLogic Facter , show middleware home + domains, running nodemanagers + weblogic servers
 
-ora_inst_loc_data     /opt/oracle/orainventory
-ora_inst_products     /opt/oracle/wls/wls11g/Oracle_OSB1,
-ora_mdw_0             /opt/oracle/wls/wls12c
-ora_mdw_0_domain_0    myTestDomain
-ora_mdw_0_domain_1    myTestDomain2
-ora_mdw_0_domain_cnt  2
-ora_mdw_1             /opt/oracle/wls/wls11g
-ora_mdw_1_domain_0    osbDomain
-ora_mdw_1_domain_cnt  2
-ora_mdw_cnt           2
-ora_mdw_homes         /opt/oracle/wls/wls12c -- /opt/oracle/wls/wls11g --
-ora_node_mgr_0        pid: 1836 port: 5656
-ora_wls_0             pid: 1916 name: AdminServer
-ora_wls_1             pid: 2328 name: osb_server1
-ora_wls_2             pid: 48605 name: AdminServer
+ora_inst_loc_data   /opt/oracle/orainventory
+ora_inst_products   /opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
+ora_mdw_0           /opt/oracle/wls/wls11g
+ora_mdw_0_domain_0  osbDomain
+ora_mdw_0_domain_0_deployments	FMW Welcome Page Application#11.1.0.0.0;wsil-wls;
+ora_mdw_0_domain_0_jdbc	wlsbjmsrpDataSource;hrDS;jmsDS;
+ora_mdw_0_domain_0_jmsresource_0_name	WseeJmsModule
+ora_mdw_0_domain_0_jmsresource_0_objects	WseeMessageQueue;WseeCallbackQueue;
+ora_mdw_0_domain_0_jmsresource_1_name	jmsResources
+ora_mdw_0_domain_0_jmsresource_1_objects	wli.reporting.jmsprovider.ConnectionFactory
+ora_mdw_0_domain_0_jmsresource_2_name	jmsModule
+ora_mdw_0_domain_0_jmsresource_2_objects	cf;ErrorQueue;Queue1;Topic1;
+ora_mdw_0_domain_0_jmsservers	WseeJmsServer;jmsServer;jmsServer2;wlsbJMSServer;
+ora_mdw_0_domain_0_server_0	AdminServer
+ora_mdw_0_domain_0_server_0_machine	LocalMachine
+ora_mdw_0_domain_0_server_0_port	9001
+ora_mdw_0_domain_0_server_1	osb_server1
+ora_mdw_0_domain_0_server_1_machine	LocalMachine
+ora_mdw_0_domain_0_server_1_port	8011
+ora_mdw_0_domain_cnt	1
+ora_mdw_cnt      1
+ora_mdw_homes    /opt/oracle/wls/wls11g
+ora_node_mgr_0   pid: 8416 port: 5556
+ora_wls_0        pid: 8508 name: AdminServer
 
 
 
