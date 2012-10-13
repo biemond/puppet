@@ -1,0 +1,19 @@
+
+wlsUser    = '<%= @wlsUser %>'
+password   = '<%= @password %>'
+machine    = '<%= @address %>'
+portNumber = '<%= @port %>'
+
+#domain, domainPath, wlsServer  
+<% params.each do |param| -%>
+<%= param %>
+<% end -%>
+
+# connect to nodemanager
+nmConnect(wlsUser,password,machine,portNumber,domain,domainPath,'ssl')
+
+#start the WlsServer
+nmKill(wlsServer)
+
+#disconnect from the nodemanager
+nmDisconnect()

@@ -77,6 +77,25 @@ define wls::installosb($mdwHome         = undef,
      }
    }
 
+
+
+     # check if the osb already exists 
+     $found = oracle_exists($oracleHome)
+     if $found == undef {
+       $continue = true
+     } else {
+       if ( $found ) {
+         notify {"wls::installosb ${title} ${oracleHome} already exists":}
+         $continue = false
+       } else {
+         notify {"wls::installosb ${title} ${oracleHome} does not exists":}
+         $continue = true 
+       }
+     }
+
+
+if ( $continue ) {
+
    if $oepeHome == undef {
       $osbTemplate =  "wls/silent_osb.xml.erb"
    } else {
@@ -152,4 +171,5 @@ define wls::installosb($mdwHome         = undef,
 
      }
    }
+}
 }

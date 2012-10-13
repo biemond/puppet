@@ -133,7 +133,6 @@ define wls::installwls( $version    = undef,
         fail("Unrecognized jdk version")        
     }
 
-
    # for linux , create a oracle user plus a dba group
    case $operatingsystem {
       centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -161,12 +160,12 @@ define wls::installwls( $version    = undef,
    # set the environment related vars		
    case $operatingsystem {
       centos, redhat, OracleLinux, ubuntu, debian: { 
-        $mdwHome     = "${beaHome}${$wlsVersion}/"
+        $mdwHome     = "${beaHome}${$wlsVersion}"
         $checkPath   = "/opt/oracle/wls/${$wlsVersion}"
 
      }
       windows: { 
-        $mdwHome     = "${beaHome}${$wlsVersion}\\"
+        $mdwHome     = "${beaHome}${$wlsVersion}"
         $checkPath   = "C:\\oracle\\wls\\${$wlsVersion}"
 
       }
@@ -174,6 +173,25 @@ define wls::installwls( $version    = undef,
         fail("Unrecognized operating system") 
       }
    }
+
+
+     # check if the wls already exists 
+     $found = wls_exists($mdwHome)
+     if $found == undef {
+       $continue = true
+     } else {
+       if ( $found ) {
+         notify {"wls::installwls ${title} ${mdwHome} already exists":}
+         $continue = false
+       } else {
+         notify {"wls::installwls ${title} ${mdwHome} does not exists":}
+         $continue = true 
+       }
+     }
+
+
+if ( $continue ) {
+
 
    File{
         owner   => $user,
@@ -240,4 +258,5 @@ define wls::installwls( $version    = undef,
       require     => [File[$oracleHome],File[$beaHome],File["silent.xml ${version}"],File["wls.jar ${version}"]],
    }
 
+}
 }   

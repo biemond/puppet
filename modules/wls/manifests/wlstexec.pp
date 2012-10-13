@@ -61,18 +61,42 @@
 #  }
 # 
 
-define wls::wlstexec ($wlHome      = undef, 
-                      $fullJDKName = undef, 
-                      $script      = undef,
-                      $address     = "localhost",
-                      $port        = '7001',
-                      $wlsUser     = "weblogic",
-                      $password    = "weblogic1",
-                      $user        = 'oracle', 
-                      $group       = 'dba',
-                      $params      = undef,
+define wls::wlstexec ($wlsDomain     = undef, 
+                      $wlstype       = undef,
+                      $wlsObjectName = undef,
+                      $wlHome        = undef, 
+                      $fullJDKName   = undef, 
+                      $script        = undef,
+                      $address       = "localhost",
+                      $port          = '7001',
+                      $wlsUser       = "weblogic",
+                      $password      = "weblogic1",
+                      $user          = 'oracle', 
+                      $group         = 'dba',
+                      $params        = undef,
                       ) {
+ 
+   # if these params are empty always continue    
+   if $wlsDomain == undef or $wlstype == undef or wlsObjectName == undef {
 
+     $continue = true  
+   } else {
+     # check if the object already exists on the weblogic domain 
+     $found = artifact_exists($wlsDomain ,$wlstype,$wlsObjectName )
+     if $found == undef {
+       $continue = true
+     } else {
+       if ( $found ) {
+         notify {"wls::wlstexec ${title} already exists":}
+         $continue = false
+       } else {
+         $continue = true 
+       }
+     }
+   }
+
+
+if ( $continue ) {
    $javaCommand    = "java weblogic.WLST"
 
    case $operatingsystem {
@@ -156,4 +180,6 @@ define wls::wlstexec ($wlHome      = undef,
    }
 
 
+
+}
 }
