@@ -1,5 +1,9 @@
 java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
 
+for more info see this amis blogpost
+http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/
+
+
 weblogic puppet module
 
   WebLogic Facter , show middleware home + domains, running nodemanagers + weblogic servers
