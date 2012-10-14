@@ -19,7 +19,11 @@ def get_homes()
 
   if FileTest.exists?(beafile)
     output = File.read(beafile)
-    return output.split(/;/)
+    if output.nil?
+      return nil
+    else  
+      return output.split(/;/)
+    end
   else
     return nil
   end
@@ -34,18 +38,22 @@ def get_domain(name,i)
   if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
 
     if FileTest.exists?(name+'/admin')
-      output = Facter::Util::Resolution.exec('/bin/ls '+name+'/admin')
-      if output.nil?
+      output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/admin')
+      if output2.nil?
         return nil
       end
+    else
+      return nil
     end
 
   elsif ["windows"].include?os 
     if FileTest.exists?(name+'/admin')
-      output = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+name+'\admin')
-      if output.nil?
+      output2 = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+name+'\admin')
+      if output2.nil?
         return nil
       end
+    else
+      return nil
     end
 
   else
@@ -53,8 +61,8 @@ def get_domain(name,i)
   end
 
   l = 0
-  domains = Array.new 
-  output.split(/\r?\n/).each_with_index do |domain, n|
+
+  output2.split(/\r?\n/).each_with_index do |domain, n|
 
     if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
       domainfile = name+'/admin/'+domain+'/config/config.xml'
@@ -263,7 +271,8 @@ def get_wlsservers()
 end
 
 def get_orainst_loc()
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
+  os = Facter.value(:operatingsystem)
+  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
     if FileTest.exists?("/etc/oraInst.loc")
       str = ""
       output = File.read("/etc/oraInst.loc")
@@ -276,11 +285,12 @@ def get_orainst_loc()
     else
       return nil
     end
+  elsif ["windows"].include?os
+    return "C:/Program Files/Oracle/Inventory"
   end
 end
 
 def get_orainst_products(path)
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
     if FileTest.exists?(path+"/ContentsXML/inventory.xml")
       file = File.read( path+"/ContentsXML/inventory.xml" )
       doc = REXML::Document.new file
@@ -292,7 +302,6 @@ def get_orainst_products(path)
     else
       return "NotFound"
     end
-  end
 end
 
 # report all oracle homes / domains

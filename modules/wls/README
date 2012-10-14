@@ -1,8 +1,17 @@
-java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
-
 for more info see this amis blogpost
 http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/
 
+for windows puppet agents it is necessary to install unxutils tools 
+and put this on the c drive C:\unxutils
+
+Also for registry support install this on the master, read this  
+http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/
+and install this on the puppet master
+puppet module install puppetlabs/registry
+
+Puppet modules
+
+java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
 
 weblogic puppet module
 
@@ -229,7 +238,7 @@ class wls1036osb{
        $group        = "dba"
      }
      windows: { 
-       $osMdwHome    = "c:/opt/oracle/wls/wls11g"
+       $osMdwHome    = "c:/oracle/wls/wls11g"
        $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
        $osTemplate   = "osb"
        $osDomainPath = "c:/oracle/wls/wls11g/admin"

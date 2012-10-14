@@ -66,7 +66,7 @@ define wls::installosb($mdwHome         = undef,
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\"
-        $oracleHome       = "${mdwHome}\\Oracle_OSB1"
+        $oracleHome       = "${mdwHome}/Oracle_OSB1"
         $oraInventory     = "C:\Program Files\Oracle\Inventory"
         
         Exec { path      => $execPath,
@@ -76,8 +76,6 @@ define wls::installosb($mdwHome         = undef,
              }   
      }
    }
-
-
 
      # check if the osb already exists 
      $found = oracle_exists($oracleHome)
@@ -118,7 +116,7 @@ if ( $continue ) {
    }
 
    
-   $command  = "-silent -response ${path}silent_osb.xml -invPtrLoc ${oraInstPath}/oraInst.loc"
+   $command  = "-silent -response ${path}silent_osb.xml "
     
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -140,7 +138,7 @@ if ( $continue ) {
         }
         
         exec { "install osb ${title}":
-          command     => "${path}osb/Disk1/install/linux64/runInstaller ${command} -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
+          command     => "${path}osb/Disk1/install/linux64/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
           require     => File ["${oraInstPath}/oraInst.loc"],
           creates     => $oracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
@@ -155,19 +153,44 @@ if ( $continue ) {
      }
      windows: { 
 
+        registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
+          ensure  => present,
+          require => File ["${path}${osbFile}"],
+        }
+
+        registry_value { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc":
+          type    => string,
+          data    => $oraInventory,
+          require => Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"],
+        }
+
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
           command => "jar xf ${path}${osbFile}",
-          require => File ["${path}${osbFile}"],
-          creates => "${path}Disk1",
+          require => Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"],
+          creates => "${path}Disk1", 
+          cwd     => $path,
          }
         }
 
+        exec {"icacls osb disk ${title}": 
+           command    => "${checkCommand} icacls ${path}* /T /C /grant Administrator:F Administrators:F",
+           logoutput  => false,
+           require    => Exec["extract ${osbFile}"],
+        } 
+
         exec { "install osb ${title}":
-          command     => "${path}Disk1\\setup ${command} -jreLoc C:\\oracle\\${fullJDKName}",
+          command     => "${path}Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
-          require     => Exec["extract ${osbFile}"],
+          require     => Exec["icacls osb disk ${title}"],
+          creates     => $oracleHome, 
         }    
+
+        exec { "sleep 1 min for osb install ${title}":
+          command     => "${checkCommand} sleep 60",
+          require     => Exec ["install osb ${title}"],
+        }    
+
 
      }
    }

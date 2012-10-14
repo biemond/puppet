@@ -6,9 +6,16 @@ module Puppet::Parser::Functions
 
     ora = lookupvar('ora_inst_products')
     unless ora.nil?
-      if ora.include? args[0]
+
+      software = args[0]
+      os = lookupvar('operatingsystem')
+      if os == "windows"
+        software = software.gsub("/","\\")
+      end 
+      if ora.include? software
         return true
       end
+
     end
     return ora_exists
   end

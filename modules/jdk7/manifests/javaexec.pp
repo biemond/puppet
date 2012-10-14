@@ -56,8 +56,8 @@ define javaexec ($version     = undef,
         if ! defined(File["jdk_install${version}"]) {
         exec {"jdk_install${version}": 
            command    => "${path}${jdkfile} /s ADDLOCAL=\"ToolsFeature\"",
-#          unless     => "C:\\Windows\\System32\\cmd.exe /c dir \"C:/Program Files/Java/${fullversion}\"",
-           creates    => "\"C:/Program Files/Java/${fullversion}\"",
+           unless     => "C:\\Windows\\System32\\cmd.exe /c dir \"C:/Program Files/Java/${fullversion}\"",
+#           creates    => "\"C:\\Program Files\\Java\\${fullversion}\"",
         }
         }      
 
@@ -78,7 +78,7 @@ define javaexec ($version     = undef,
         exec {"copy jdk_install${version}": 
            command    => "C:\\Windows\\System32\\cmd.exe /c xcopy \"C:\\Program Files\\Java\\${fullversion}\" c:\\oracle\\${fullversion} /E /I /H",
 #          unless     => "C:\\Windows\\System32\\cmd.exe /c  test -e c:\\oracle\\${fullversion}",
-           creates    => "c:/oracle/${fullversion}",
+           creates    => "c:\\oracle\\${fullversion}",
            require    => File ["c:/oracle"],
         }      
         exec {"icacls jdk_install${version}": 
