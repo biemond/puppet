@@ -4,194 +4,240 @@ require 'rexml/document'
 
 # read middleware home in the oracle home folder
 def get_homes()
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
-    if FileTest.exists?("/home/oracle/bea/beahomelist")
-      output = File.read("/home/oracle/bea/beahomelist")
-      return output.split(/;/)
-    else
-      return nil
-    end
+
+  os = Facter.value(:operatingsystem)
+
+  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+    beafile = "/home/oracle/bea/beahomelist"
+
+  elsif ["windows"].include?os 
+    beafile = "c:/bea/beahomelist"
+
+  else
+    return nil 
   end
+
+  if FileTest.exists?(beafile)
+    output = File.read(beafile)
+    return output.split(/;/)
+  else
+    return nil
+  end
+
 end
 
 # read weblogic domains in the admin  folder of the middleware home
 def get_domain(name,i)
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
+
+  os = Facter.value(:operatingsystem)
+
+  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+
     if FileTest.exists?(name+'/admin')
       output = Facter::Util::Resolution.exec('/bin/ls '+name+'/admin')
       if output.nil?
         return nil
-      else
-        l = 0
-        domains = Array.new 
-        output.split(/\r?\n/).each_with_index do |domain, n|
-          if FileTest.exists?(name+'/admin/'+domain+"/config/config.xml")
-            file = File.read( name+'/admin/'+domain+"/config/config.xml" )
-            doc = REXML::Document.new file
+      end
+    end
 
-            root = doc.root
+  elsif ["windows"].include?os 
+    if FileTest.exists?(name+'/admin')
+      output = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+name+'\admin')
+      if output.nil?
+        return nil
+      end
+    end
 
-            Facter.add("ora_mdw_#{i}_domain_#{n}") do
-              setcode do
-                root.elements['name'].text
-              end
-            end
+  else
+    return nil 
+  end
 
-            k = 0
-            root.elements.each("server") do |server| 
-              Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}") do
-                setcode do
-                  server.elements['name'].text
-                end
-              end
-              Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}_port") do
-                setcode do
-                   server.elements['listen-port'].text
-                end
-              end
-              Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}_machine") do
-                setcode do
-                   server.elements['machine'].text 
-                end
-              end
-              k += 1            
-            end
+  l = 0
+  domains = Array.new 
+  output.split(/\r?\n/).each_with_index do |domain, n|
 
-            deployements = ""
-            root.elements.each("app-deployment[module-type = 'ear']") do |apps|
-            	deployements += apps.elements['name'].text + ";"
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_deployments") do
-               setcode do
-                  deployements
-               end
-            end
+    if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+      domainfile = name+'/admin/'+domain+'/config/config.xml'
 
-            libraries = ""
-            root.elements.each("library") do |libs|
-            	libraries += libs.elements['name'].text + ";"
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_libraries") do
-               setcode do
-                  libraries
-               end
-            end
+    elsif ["windows"].include?os 
+      domainfile = name+'/admin/'+domain+'/config/config.xml'
+    end
 
-            filestores = ""
-            root.elements.each("file-store") do |file|
-            	filestores += file.elements['name'].text + ";"
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_filestores") do
-               setcode do
-                  filestores
-               end
-            end
+    if FileTest.exists?(domainfile)
+      file = File.read( domainfile)
+      doc = REXML::Document.new file
 
-            jdbcstores = ""
-            root.elements.each("jdbc-store") do |jdbc|
-            	jdbcstores += jdbc.elements['name'].text + ";"
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_jdbcstores") do
-               setcode do
-                  jdbcstores
-               end
-            end
+      root = doc.root
 
-            safagents = ""
-            root.elements.each("jdbc-store") do |agent|
-            	safagents += agent.elements['name'].text + ";"
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_safagents") do
-               setcode do
-                  safagents
-               end
-            end
+      Facter.add("ora_mdw_#{i}_domain_#{n}") do
+        setcode do
+          root.elements['name'].text
+        end
+      end
 
-            jmsserversstr = ""
-            root.elements.each("jms-server") do |jmsservers| 
-              jmsserversstr += jmsservers.elements['name'].text + ";"
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_jmsservers") do
-              setcode do
-                jmsserversstr
-               end
-            end
-
-            k = 0
-            jmsmodulestr = "" 
-            root.elements.each("jms-system-resource") do |jmsresource|
-              jmsstr = "" 
-              jmssubdeployments = ""
-              jmsmodulestr += jmsresource.elements['name'].text + ";"
-
-              jmsresource.elements.each("sub-deployment") do |sub| 
-                jmssubdeployments +=  sub.elements['name'].text + ";"
-              end
-              Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_subdeployments") do
-                setcode do
-                  jmssubdeployments
-                end
-              end
-
-              subfile = File.read( name+'/admin/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
-              subdoc = REXML::Document.new subfile
-
-              jmsroot = subdoc.root
-              jmsroot.elements.each("connection-factory") do |cfs| 
-                jmsstr +=  cfs.attributes["name"] + ";"
-              end
-
-              jmsroot.elements.each("queue") do |queues| 
-                jmsstr +=  queues.attributes["name"] + ";"
-              end
-
-              jmsroot.elements.each("topic") do |topics| 
-                jmsstr +=  topics.attributes["name"] + ";"
-              end
-              Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_name") do
-                setcode do
-                  jmsresource.elements['name'].text
-                end
-              end
-              Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_objects") do
-                setcode do
-                  jmsstr
-                end
-              end
-              k += 1
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodules") do
-              setcode do
-                jmsmodulestr
-              end
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_cnt") do
-              setcode do
-                k
-              end
-            end
-
-            jdbcstr = ""
-            root.elements.each("jdbc-system-resource") do |jdbcresource| 
-              jdbcstr += jdbcresource.elements['name'].text + ";" 
-            end
-            Facter.add("ora_mdw_#{i}_domain_#{n}_jdbc") do
-              setcode do
-                jdbcstr
-              end
-            end
-
-            l += 1
+      k = 0
+      root.elements.each("server") do |server| 
+        Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}") do
+          setcode do
+            server.elements['name'].text
           end
-          Facter.add("ora_mdw_#{i}_domain_cnt") do
+        end
+        
+        port = server.elements['listen-port']
+        unless port.nil?
+          Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}_port") do
             setcode do
-              l
+               port.text
             end
           end
         end
+        machine = server.elements['machine']
+        unless machine.nil?
+          Facter.add("ora_mdw_#{i}_domain_#{n}_server_#{k}_machine") do
+            setcode do
+               machine.text 
+            end
+          end
+        end
+        k += 1            
       end
+
+      deployements = ""
+      root.elements.each("app-deployment[module-type = 'ear']") do |apps|
+      	deployements += apps.elements['name'].text + ";"
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_deployments") do
+         setcode do
+            deployements
+         end
+      end
+
+      libraries = ""
+      root.elements.each("library") do |libs|
+      	libraries += libs.elements['name'].text + ";"
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_libraries") do
+         setcode do
+            libraries
+         end
+      end
+
+      filestores = ""
+      root.elements.each("file-store") do |file|
+      	filestores += file.elements['name'].text + ";"
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_filestores") do
+         setcode do
+            filestores
+         end
+      end
+
+      jdbcstores = ""
+      root.elements.each("jdbc-store") do |jdbc|
+      	jdbcstores += jdbc.elements['name'].text + ";"
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_jdbcstores") do
+         setcode do
+            jdbcstores
+         end
+      end
+
+      safagents = ""
+      root.elements.each("jdbc-store") do |agent|
+      	safagents += agent.elements['name'].text + ";"
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_safagents") do
+         setcode do
+            safagents
+         end
+      end
+
+      jmsserversstr = ""
+      root.elements.each("jms-server") do |jmsservers| 
+        jmsserversstr += jmsservers.elements['name'].text + ";"
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_jmsservers") do
+        setcode do
+          jmsserversstr
+         end
+      end
+
+      k = 0
+      jmsmodulestr = "" 
+      root.elements.each("jms-system-resource") do |jmsresource|
+        jmsstr = "" 
+        jmssubdeployments = ""
+        jmsmodulestr += jmsresource.elements['name'].text + ";"
+
+        jmsresource.elements.each("sub-deployment") do |sub| 
+          jmssubdeployments +=  sub.elements['name'].text + ";"
+        end
+        Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_subdeployments") do
+          setcode do
+            jmssubdeployments
+          end
+        end
+
+        subfile = File.read( name+'/admin/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
+        subdoc = REXML::Document.new subfile
+
+        jmsroot = subdoc.root
+        jmsroot.elements.each("connection-factory") do |cfs| 
+          jmsstr +=  cfs.attributes["name"] + ";"
+        end
+
+        jmsroot.elements.each("queue") do |queues| 
+          jmsstr +=  queues.attributes["name"] + ";"
+        end
+
+        jmsroot.elements.each("topic") do |topics| 
+          jmsstr +=  topics.attributes["name"] + ";"
+        end
+        Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_name") do
+          setcode do
+            jmsresource.elements['name'].text
+          end
+        end
+        Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_objects") do
+          setcode do
+            jmsstr
+          end
+        end
+        k += 1
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodules") do
+        setcode do
+          jmsmodulestr
+        end
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_cnt") do
+        setcode do
+          k
+        end
+      end
+
+      jdbcstr = ""
+      root.elements.each("jdbc-system-resource") do |jdbcresource| 
+        jdbcstr += jdbcresource.elements['name'].text + ";" 
+      end
+      Facter.add("ora_mdw_#{i}_domain_#{n}_jdbc") do
+        setcode do
+          jdbcstr
+        end
+      end
+
+
+      l += 1
+    end
+
+  end 
+
+  Facter.add("ora_mdw_#{i}_domain_cnt") do
+    setcode do
+      l
     end
   end
+ 
 end
 
 def get_nodemanagers()
