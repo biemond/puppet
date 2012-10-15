@@ -3,6 +3,7 @@ module Puppet::Parser::Functions
   newfunction(:artifact_exists, :type => :rvalue) do |args|
     
     art_exists = false
+    mdwArg = args[0].strip
 
     # check the middleware home
     mdw_count = lookupvar('ora_mdw_cnt')
@@ -18,6 +19,14 @@ module Puppet::Parser::Functions
 
         unless mdw.nil?
           mdw = mdw.strip
+          os = lookupvar('operatingsystem')
+          if os == "windows"
+            mdw = mdw.gsub("\\","/")
+            mdw = mdw.downcase
+            mdwArg = mdwArg.gsub("\\","/")
+            mdwArg = mdwArg.downcase
+          end 
+          
 
           # how many domains are there in this mdw home
           domain_count = lookupvar('ora_mdw_'+i.to_s+'_domain_cnt')
@@ -28,10 +37,11 @@ module Puppet::Parser::Functions
             domain = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s)
             unless domain.nil?
               domain = domain.strip
-              domain_path = mdw + "/admin/" + domain
+              
+              domain_path = mdw + "/admin/" + domain.downcase
 
               # do we found the right domain
-              if domain_path == args[0].strip 
+              if domain_path == mdwArg 
                 
                 type = args[1].strip
                 

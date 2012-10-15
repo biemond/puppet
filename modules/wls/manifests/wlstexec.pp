@@ -75,6 +75,9 @@ define wls::wlstexec ($wlsDomain     = undef,
                       $group         = 'dba',
                       $params        = undef,
                       ) {
+
+   notify {"wls::wlstexec ${title} execute ${wlsDomain}":}
+
  
    # if these params are empty always continue    
    if $wlsDomain == undef or $wlstype == undef or wlsObjectName == undef {
@@ -85,11 +88,13 @@ define wls::wlstexec ($wlsDomain     = undef,
      $found = artifact_exists($wlsDomain ,$wlstype,$wlsObjectName )
      if $found == undef {
        $continue = true
+         notify {"wls::wlstexec ${title} continue true cause nill":}
      } else {
        if ( $found ) {
-         notify {"wls::wlstexec ${title} already exists":}
+         notify {"wls::wlstexec ${title} continue false cause already exists":}
          $continue = false
        } else {
+         notify {"wls::wlstexec ${title} continue true cause not exists":}
          $continue = true 
        }
      }
@@ -109,7 +114,7 @@ if ( $continue ) {
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
-               logoutput => true,
+               logoutput => false,
              }
         File {
                ensure  => present,

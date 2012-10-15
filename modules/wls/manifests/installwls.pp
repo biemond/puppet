@@ -166,7 +166,7 @@ define wls::installwls( $version    = undef,
      }
       windows: { 
         $mdwHome     = "${beaHome}${$wlsVersion}"
-        $checkPath   = "C:\\oracle\\wls\\${$wlsVersion}"
+        $checkPath   = "c:\\oracle\\wls\\${$wlsVersion}"
 
       }
       default: { 

@@ -3,6 +3,8 @@ module Puppet::Parser::Functions
   newfunction(:wls_exists, :type => :rvalue) do |args|
     
     wls_exists = false
+    
+    mdwArg = args[0]
 
     # check the middleware home
     mdw_count = lookupvar('ora_mdw_cnt')
@@ -15,7 +17,12 @@ module Puppet::Parser::Functions
         mdw = lookupvar('ora_mdw_'+i.to_s)
         unless mdw.nil?
           mdw = mdw.strip
-          if mdw == args[0].strip
+          os = lookupvar('operatingsystem')
+          if os == "windows"
+            mdw = mdw.gsub("\\","/").downcase
+            mdwArg = mdwArg.gsub("\\","/").downcase
+          end 
+          if mdw == mdwArg
             return true
           end
         end 
