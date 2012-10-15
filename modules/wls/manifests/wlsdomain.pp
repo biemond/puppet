@@ -132,6 +132,7 @@ define wls::wlsdomain ($wlHome          = undef,
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $path             = "c:/temp/" 
+        $path_win         = "c:\\temp\\" 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
         $nodeMgrMachine   = "Machine"
 
@@ -140,7 +141,7 @@ define wls::wlsdomain ($wlHome          = undef,
              }
         File { ensure  => present,
                replace => 'yes',
-               mode    => 0555,
+               mode    => 0777,
              }     
      }
    }
@@ -199,22 +200,47 @@ define wls::wlsdomain ($wlHome          = undef,
      }
      windows: { 
      
-        notify{"${domainPath}/${domain}":}
+        notify{"${domainPath}/${domain} ${title}":}
         
-        exec { "execwlst win ${domain}":
+        exec { "execwlst win ${domain} ${title}":
           command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
 #          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
-          require     => File["domain.py ${domain}"],
+          require     => File["domain.py ${domain} ${title}"],
         }    
-        if ! defined(Exec["domain.py ${domain}"]) {
-          exec { "domain.py ${domain}":
-           command => "C:\\Windows\\System32\\cmd.exe /c delete ${path}domain_${domain}.py",
-           require => Exec["execwlst win ${domain}"],
+
+        exec {"icacls domain ${title}${script}": 
+           command    => "C:\\Windows\\System32\\cmd.exe /c  icacls ${domainPath}/${domain} /T /C /grant Administrator:F Administrators:F",
+           logoutput  => false,
+           subscribe   => Exec["execwlst win ${domain} ${title}"],
+           refreshonly => true,
+#           require    => Exec["execwlst win ${domain} ${title}"],
+        } 
+
+        exec { "domain.py ${domain} ${title}":
+           command     => "C:\\Windows\\System32\\cmd.exe /c del ${path_win}domain_${domain}.py",
+#           require => Exec["icacls domain ${title}${script}"],
+           subscribe   => Exec["icacls domain ${title}${script}"],
+           refreshonly => true,
           }
-        }
+
+        exec { "domain win stop service ${title}":
+          command     => "C:\\Windows\\System32\\cmd.exe /c NET STOP \"Oracle WebLogic NodeManager (${serviceName})\"",
+          subscribe   => Exec["domain.py ${domain} ${title}"],
+          refreshonly => true,
+          logoutput   => true,
+        } 
+
+        exec { "domain win start service ${title}":
+          command     => "C:\\Windows\\System32\\cmd.exe /c NET START \"Oracle WebLogic NodeManager (${serviceName})\"",
+          subscribe   => Exec ["domain win stop service ${title}"],
+          refreshonly => true,
+          logoutput   => true,
+        } 
+
+
      }
    }
 }

@@ -123,6 +123,8 @@ if ( $continue ) {
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $path             = "c:/temp/" 
+        $path_win         = "c:\\temp\\" 
+
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
 
         Exec { path      => $execPath,
@@ -130,7 +132,7 @@ if ( $continue ) {
              }
         File { ensure  => present,
                replace => 'yes',
-               mode    => 0555,
+               mode    => 0777,
              }     
      }
    }
@@ -170,11 +172,11 @@ if ( $continue ) {
                           "JAVA_HOME=${JAVA_HOME}"],
           require     => File["${path}${title}${script}"],
         }    
-        if ! defined(Exec["rm ${path}${title}${script}"]) {
-          exec { "rm ${path}${id}${script}":
-           command => "C:\\Windows\\System32\\cmd.exe /c delete ${path}${title}${script}",
+
+
+        exec { "rm ${path}${title}${script}":
+           command => "C:\\Windows\\System32\\cmd.exe /c del c:\\temp\\${title}${script}",
            require => Exec["execwlst ${title}${script}"],
-          }
         }
      }
    }

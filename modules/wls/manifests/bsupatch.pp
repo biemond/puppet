@@ -116,19 +116,24 @@ define wls::bsupatch($mdwHome         = undef,
      }
      windows: { 
 
-        if ! defined(Exec["extract ${patchFile}"]) {
-         exec { "extract ${patchFile}":
-          command => "jar xf ${path}/${patchFile}",
+        exec {"icacls win patchfile ${title}": 
+           command    => "${checkCommand} icacls ${mdwHome}/utils/bsu/cache_dir /T /C /grant Administrator:F Administrators:F",
+#           unless     => "${checkCommand} test -e ${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
+           logoutput  => false,
+           require    => File ["${path}${patchFile}"],
+        } 
+
+        exec { "extract ${patchFile} ${title}":
+          command => "jar.exe xf ${path}${patchFile}",
           cwd     => "${mdwHome}/utils/bsu/cache_dir",
-          require => File ["${path}${patchFile}"],
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
-         }
+          require => Exec["icacls win patchfile ${title}"],
         }
 
         exec { "exec bsu win ${title}":
-          command     => "${checkCommand} ${mdwHome}\\utils\\bsu\\bsu.bat ${bsuCommand}",
+          command     => "${checkCommand} bsu.cmd ${bsuCommand}",
           logoutput   => true,
-          require     => Exec["extract ${patchFile}"],
+          require     => Exec["extract ${patchFile} ${title}"],
           cwd         => "${mdwHome}\\utils\\bsu",
         }    
 

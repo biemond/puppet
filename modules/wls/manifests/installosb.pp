@@ -187,7 +187,7 @@ if ( $continue ) {
         }    
 
         exec { "sleep 1 min for osb install ${title}":
-          command     => "${checkCommand} sleep 60",
+          command     => "${checkCommand} sleep 90",
           require     => Exec ["install osb ${title}"],
         }    
 
