@@ -30,6 +30,37 @@ def get_homes()
 
 end
 
+def get_bsu_patches(name)
+  os = Facter.value(:operatingsystem)
+
+  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+
+    output2 = Facter::Util::Resolution.exec('java -Xms256m -Xmx512m -jar '+ name+'/utils/bsu/patch-client.jar -report -bea_home='+name+' -output_format=xml')
+    if output2.nil?
+      return "empty"
+    end
+
+  elsif ["windows"].include?os 
+    output2 = Facter::Util::Resolution.exec('java -Xms256m -Xmx512m -jar '+ name+'/utils/bsu/patch-client.jar -report -bea_home='+name+' -output_format=xml')
+    if output2.nil?
+      return nil
+    end
+
+  else
+    return nil 
+  end
+  doc = REXML::Document.new output2
+
+  root = doc.root
+  patches = ""
+  root.elements.each("//patchDesc") do |patch|
+    patches += patch.elements['patchId'].text + ";"
+  end
+  return patches
+
+end
+
+
 # read weblogic domains in the admin  folder of the middleware home
 def get_domain(name,i)
 
@@ -326,6 +357,17 @@ unless get_homes.nil?
         get_homes.each do |item|
           str += item + ";"
         end 
+      end
+    end
+  end 
+end
+
+# get bsu patches
+unless get_homes.nil?
+  get_homes.each_with_index do |mdw, i|
+     Facter.add("ora_mdw_#{i}_bsu") do
+      setcode do
+        get_bsu_patches(mdw)
       end
     end
   end 

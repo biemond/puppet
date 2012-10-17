@@ -93,6 +93,25 @@ define wls::bsupatch($mdwHome         = undef,
     }
    }
 
+
+
+     # check if the bsu already is installed 
+     $found = bsu_exists($mdwHome,$patchId)
+     if $found == undef {
+       $continue = true
+     } else {
+       if ( $found ) {
+         notify {"wls::bsupatch ${title} ${mdwHome} already exists":}
+         $continue = false
+       } else {
+         notify {"wls::bsupatch ${title} ${mdwHome} does not exists":}
+         $continue = true 
+       }
+     }
+
+
+if ( $continue ) {
+
    
    $bsuCommand  = "-prod_dir=${wlHome} -patchlist=${patchId} -verbose -install"
     
@@ -139,4 +158,5 @@ define wls::bsupatch($mdwHome         = undef,
 
      }
    }
+}
 }
