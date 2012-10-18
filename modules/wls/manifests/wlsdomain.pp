@@ -82,7 +82,25 @@ define wls::wlsdomain ($wlHome          = undef,
                        $group           = 'dba',
                        ) {
 
-    notify {"Domain ${domain} wlHome ${wlHome}":}
+   notify {"Domain ${domain} wlHome ${wlHome}":}
+
+     # check if the domain already exists 
+     $found = domain_exists("${domainPath}/${domain}")
+     if $found == undef {
+       $continue = true
+     } else {
+       if ( $found ) {
+         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} already exists":}
+         $continue = false
+       } else {
+         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} does not exists":}
+         $continue = true 
+       }
+     }
+
+
+if ( $continue ) {
+
 
    $javaCommand    = "java weblogic.WLST"
    
@@ -243,4 +261,6 @@ define wls::wlsdomain ($wlHome          = undef,
 
      }
    }
+
+}
 }

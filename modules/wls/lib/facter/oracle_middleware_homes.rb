@@ -34,18 +34,23 @@ def get_bsu_patches(name)
   os = Facter.value(:operatingsystem)
 
   if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
-
+   if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
     output2 = Facter::Util::Resolution.exec('java -Xms256m -Xmx512m -jar '+ name+'/utils/bsu/patch-client.jar -report -bea_home='+name+' -output_format=xml')
     if output2.nil?
       return "empty"
     end
-
-  elsif ["windows"].include?os 
+   else
+    return nil
+   end 
+  elsif ["windows"].include?os
+   if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
     output2 = Facter::Util::Resolution.exec('java -Xms256m -Xmx512m -jar '+ name+'/utils/bsu/patch-client.jar -report -bea_home='+name+' -output_format=xml')
     if output2.nil?
       return nil
     end
-
+   else
+    return nil
+   end 
   else
     return nil 
   end

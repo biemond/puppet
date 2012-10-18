@@ -54,6 +54,9 @@ define jdk7::install7( $version =  undef , $x64 = "true" ) {
     } elsif $jdkVersion == "7u8" {
        $jdkfile         =  "jdk-7u8-${installVersion}-${type}${installExtension}"
        $fullVersion     =  "jdk1.7.0_08"
+    } elsif $jdkVersion == "7u9" {
+       $jdkfile         =  "jdk-7u9-${installVersion}-${type}${installExtension}"
+       $fullVersion     =  "jdk1.7.0_09"
     } elsif $jdkVersion == "6u35" {
        $jdkfile         =  "jdk-6u35-${installVersion}-${type}${installExtension}"
        $fullVersion     =  "jdk1.6.0_35"

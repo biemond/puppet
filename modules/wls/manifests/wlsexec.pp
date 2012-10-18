@@ -37,7 +37,9 @@ define wls::wlsexec ( $mdwHome     = undef,
                       $checkPath   = undef, 
                       $fullJDKName = undef, 
                       $wlsfile     = undef, 
-                      $silentfile  = undef  ) {
+                      $silentfile  = undef,
+                      $user        = undef,
+                      $group       = undef,  ) {
 
    $javaCommand     = "java -Xmx1024m -jar"
 

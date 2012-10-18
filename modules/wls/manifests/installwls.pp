@@ -63,6 +63,9 @@ define wls::installwls( $version    = undef,
    $jdkVersion7u8    = "7u8" 
    $fullJDKName7u8   = "jdk1.7.0_08"
 
+   $jdkVersion7u9    = "7u9" 
+   $fullJDKName7u9   = "jdk1.7.0_09"
+
    $jdkVersion6u35   = "6u35" 
    $fullJDKName6u35  = "jdk1.6.0_35"
 
@@ -125,6 +128,9 @@ define wls::installwls( $version    = undef,
 
     } elsif $jdkVersion == $jdkVersion7u8 {
        $fullJDKName  =  $fullJDKName7u8
+
+    } elsif $jdkVersion == $jdkVersion7u9 {
+       $fullJDKName  =  $fullJDKName7u9
 
     } elsif $jdkVersion == $jdkVersion6u35 {
        $fullJDKName  =  $fullJDKName6u35
@@ -255,6 +261,8 @@ if ( $continue ) {
       fullJDKName => $fullJDKName,
       wlsfile     => "${path}${wlsFile}",
       silentfile  => "${path}silent${version}.xml",
+      user        => $user,
+      group       => $group,
       require     => [File[$oracleHome],File[$beaHome],File["silent.xml ${version}"],File["wls.jar ${version}"]],
    }
 
