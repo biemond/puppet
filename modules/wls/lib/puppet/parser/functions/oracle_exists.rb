@@ -1,13 +1,12 @@
 # restart the puppetmaster when changed
 module Puppet::Parser::Functions
   newfunction(:oracle_exists, :type => :rvalue) do |args|
-    
-    ora_exists = false
 
     ora = lookupvar('ora_inst_products')
-    unless ora.nil?
-
-      software = args[0]
+    if ora.nil?
+      return false
+    else
+      software = args[0].strip
       os = lookupvar('operatingsystem')
       if os == "windows"
         software = software.gsub("/","\\")
@@ -15,9 +14,8 @@ module Puppet::Parser::Functions
       if ora.include? software
         return true
       end
-
     end
-    return ora_exists
+    return false
   end
 end
 
