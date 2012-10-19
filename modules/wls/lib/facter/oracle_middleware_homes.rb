@@ -319,7 +319,7 @@ def get_orainst_loc()
       end
       return str
     else
-      return nil
+      return "NotFound"
     end
   elsif ["windows"].include?os
     return "C:/Program Files/Oracle/Inventory"
@@ -416,16 +416,15 @@ end
 
 # get orainst loc data
 Facter.add("ora_inst_loc_data") do
-  setcode do
-    inventory = get_orainst_loc
-  end
+    setcode do
+      inventory = get_orainst_loc
+    end
 end
 
+
 # get orainst products
-unless get_orainst_loc.nil?
-  Facter.add("ora_inst_products") do
-    setcode do
-      inventory = get_orainst_products(get_orainst_loc)
-    end
+Facter.add("ora_inst_products") do
+  setcode do
+    inventory = get_orainst_products(get_orainst_loc)
   end
 end
