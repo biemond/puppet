@@ -355,14 +355,13 @@ end
 
 # all homes on 1 row
 unless get_homes.nil?
+  str = ""
   get_homes.each do |item|
-    Facter.add("ora_mdw_homes") do
-      setcode do
-        str = ""
-        get_homes.each do |item|
-          str += item + ";"
-        end 
-      end
+    str += item + ";"
+  end 
+  Facter.add("ora_mdw_homes") do
+    setcode do
+      str
     end
   end 
 end
