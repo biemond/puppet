@@ -11,6 +11,7 @@ module Puppet::Parser::Functions
       return art_exists
 
     else
+
       # check the all mdw home
       i = 0
       while ( i < mdw_count.to_i) 
@@ -28,10 +29,12 @@ module Puppet::Parser::Functions
           # do we found the right mdw
           if mdw == mdwArg 
             # check patches
-            all_bsu =  lookupvar('ora_mdw_'+i.to_s+'_bsu')
-            unless all_bsu.nil?
-              if all_bsu.include? args[1]
-                return true
+            if lookupvar('ora_mdw_'+i.to_s+'_bsu') != :undefined
+              all_bsu =  lookupvar('ora_mdw_'+i.to_s+'_bsu')
+              unless all_bsu.nil?
+                if all_bsu.include? args[1]
+                  return true
+                end
               end
             end
           end
