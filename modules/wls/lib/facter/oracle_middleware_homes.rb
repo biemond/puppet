@@ -76,9 +76,19 @@ def get_domain(name,i)
     if FileTest.exists?(name+'/admin')
       output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/admin')
       if output2.nil?
+        Facter.add("ora_mdw_#{i}_domain_cnt") do
+          setcode do
+            0
+          end
+        end
         return nil
       end
     else
+      Facter.add("ora_mdw_#{i}_domain_cnt") do
+        setcode do
+          0
+        end
+      end
       return nil
     end
 
@@ -86,9 +96,19 @@ def get_domain(name,i)
     if FileTest.exists?(name+'/admin')
       output2 = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+name+'\admin')
       if output2.nil?
+        Facter.add("ora_mdw_#{i}_domain_cnt") do
+          setcode do
+            0
+          end
+        end
         return nil
       end
     else
+      Facter.add("ora_mdw_#{i}_domain_cnt") do
+        setcode do
+          0
+        end
+      end
       return nil
     end
 
