@@ -1,41 +1,38 @@
 # == Define: wls::bsupatch
 #
-# install bsu patch for weblogic  
+# installs bsu patch for weblogic  
 #
-# === Parameters
-#
-# [*mdwHome*]
-#   the middleware home path /opt/oracle/wls/wls12c
-#
-# [*wlHome*]
-#   the weblogic home path /opt/oracle/wls/wls12c/wlserver_12.1
-#
-# [*patchFile*]
-#   bsu patch zip
-#
-# [*patchId*]
-#   bsu patch id
-#
-# [*user*]
-#   the user which runs the nodemanager on unix = oracle on windows = administrator
-#
-# [*group*]
-#   the group which runs the nodemanager on unix = dba on windows = administrators
-#
-# === Variables
 #
 # === Examples
 #
+#    $jdkWls11gJDK = 'jdk1.7.0_09'
+#    $wls11gVersion = "1036"
+# 
+#  case $operatingsystem {
+#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#       $osMdwHome    = "/opt/oracle/wls/wls11g"
+#       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+#       $user         = "oracle"
+#       $group        = "dba"
+#     }
+#     windows: { 
+#       $osMdwHome    = "c:/oracle/wls/wls11g"
+#       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+#       $user         = "Administrator"
+#       $group        = "Administrators"
+#     }
+#  }
+#
 #  wls::bsupatch{'p13573621':
-#    mdwHome      => '/opt/oracle/wls/wls11g',
-#    wlHome       => '/opt/oracle/wls/wls11g/wlserver_10.3',
-#    fullJDKName  => 'jdk1.7.0_07',	
+#    mdwHome      => $osMdwHome ,
+#    wlHome       => $osWlHome,
+#    fullJDKName  => $defaultFullJDK,
 #    patchId      => 'KZKQ',	
 #    patchFile    => 'p13573621_1036_Generic.zip',	
-#    user         => 'oracle',
-#    group        => 'dba', 
+#    user         => $user,
+#    group        => $group, 
 #  }
-# 
+## 
 
 
 define wls::bsupatch($mdwHome         = undef,

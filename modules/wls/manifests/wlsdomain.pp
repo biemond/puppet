@@ -2,68 +2,60 @@
 #
 # install a new weblogic domain  
 #
-# === Parameters
-#
-# [*wlHome*]
-#   the weblogic home path /opt/oracle/wls/wls12c/wlserver_12.1
-#
-# [*fullJDKName*]
-#   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
-#
-# [*wlsTemplate*]
-#   default weblogic domain template   
-#
-# [*domain*]
-#   the name of the domain
-#
-# [*adminServerName*]
-#   weblogic adminserver name
-#
-# [*adminListenAdr*]
-#   listen ip addresses for the adminserver
-#
-# [*adminListenPort*]
-#   port for adminserver
-#
-# [*wlsUser*]
-#   weblogic username
-#
-# [*password*]
-#   weblogic password
-#
-# [*domainPath*]
-#   path for the weblogic domains
-#
-# [*user*]
-#   the user which owns the software on unix = oracle on windows = administrator
-#
-# [*group*]
-#   the group which owns the software on unix = dba on windows = administrators
-#
-# === Variables
 #
 # === Examples
 #
-# Wls::Wlsdomain {
-#   wlHome       => '/opt/oracle/wls/wls12c/wlserver_12.1',
-#   fullJDKName  => 'jdk1.7.0_07',	
-#   user         => 'oracle',
-#   group        => 'dba',    
-# }
+#  $jdkWls11gJDK = 'jdk1.7.0_09'
 #
+#  $wlsDomainName   = "osbDomain"
+#  $osTemplate      = "osb"
+#  $osTemplate      = "standard"
+#  $adminListenPort = "7001"
+#  $nodemanagerPort = "5556"
+#  $address         = "localhost"
+#  $wlsUser         = "weblogic"
+#  $password        = "weblogic1"
+# 
+# 
+#  case $operatingsystem {
+#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#       $osMdwHome    = "/opt/oracle/wls/wls11g"
+#       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+#       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+#       $user         = "oracle"
+#       $group        = "dba"
+#     }
+#     windows: { 
+#       $osMdwHome    = "c:/oracle/wls/wls11g"
+#       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+#       $osDomainPath = "c:/oracle/wls/wls11g/admin"
+#       $user         = "Administrator"
+#       $group        = "Administrators"
+#       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+#     }
+#  }
+#
+#  # set the defaults
+#
+#  Wls::Wlsdomain {
+#    wlHome       => $osWlHome,
+#    mdwHome      => $osMdwHome,
+#    fullJDKName  => $jdkWls11gJDK,	
+#    user         => $user,
+#    group        => $group,    
+#  }
+#
+# # install OSB domain
 # wls::wlsdomain{
 # 
-#   'testDomain':
-#   wlsTemplate  => "standard",
-#   domain       => 'myTestDomain',
-#   domainPath   => "/opt/oracle/wls/wls12c/admin";
-#
-#   'testDomain2':
-#   wlsTemplate  => "standard",
-#   domain       => 'myTestDomain2',
-#   domainPath   => "/opt/oracle/wls/wls12c/admin";
+#   'osbDomain':
+#   wlsTemplate     => $osTemplate,
+#   domain          => $wlsDomainName,
+#   domainPath      => $osDomainPath,
+#   adminListenPort => $adminListenPort,
+#   nodemanagerPort => $nodemanagerPort,
 # }
-# 
+## 
 # 
 
 define wls::wlsdomain ($wlHome          = undef,

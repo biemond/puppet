@@ -1,34 +1,42 @@
 # == Define: wls::installosb
 #
-# install bsu patch for weblogic  
-#
-# === Parameters
-#
-# [*mdwHome*]
-#   the middleware home path /opt/oracle/wls/wls12c
-#
-# [*wlHome*]
-#   the weblogic home path /opt/oracle/wls/wls12c/wlserver_12.1
-#
-# [*user*]
-#   the user which runs the nodemanager on unix = oracle on windows = administrator
-#
-# [*group*]
-#   the group which runs the nodemanager on unix = dba on windows = administrators
-#
-# === Variables
+# installs Oracle Service Bus addon   
 #
 # === Examples
 #
-#  wls::installosb{'osbPS5':
-#    mdwHome      => '/opt/oracle/wls/wls11g',
-#    wlHome       => '/opt/oracle/wls/wls11g/wlserver_10.3',
-#    osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
-#    fullJDKName  => 'jdk1.7.0_07',	
-#    user         => 'oracle',
-#    group        => 'dba', 
+#    $jdkWls11gJDK = 'jdk1.7.0_09'
+#    $wls11gVersion = "1036"
+#
+#  case $operatingsystem {
+#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#       $osMdwHome    = "/opt/oracle/wls/wls11g"
+#       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+#       $user         = "oracle"
+#       $group        = "dba"
+#     }
+#     windows: { 
+#       $osMdwHome    = "c:/oracle/wls/wls11g"
+#       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+#       $user         = "Administrator"
+#       $group        = "Administrators"
+#     }
 #  }
-# 
+#
+#
+#  Wls::Installosb {
+#    mdwHome      => $osMdwHome,
+#    wlHome       => $osWlHome,
+#    fullJDKName  => $jdkWls11gJDK,	
+#    user         => $user,
+#    group        => $group,    
+#  }
+#  
+#
+#  wls::installosb{'osbPS5':
+#    osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+#  }
+#
+## 
 
 
 define wls::installosb($mdwHome         = undef,
@@ -77,8 +85,8 @@ define wls::installosb($mdwHome         = undef,
      }
    }
 
-     # check if the osb already exists 
-     $found = oracle_exists($oracleHome)
+     # check if the osb already exists
+     $found = oracle_exists( $oracleHome )
      if $found == undef {
        $continue = true
      } else {

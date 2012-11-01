@@ -1,36 +1,20 @@
 # == Define: wls::wlsexec
 #
-# install weblogic on operating system   
+# install weblogic on operating system called from installwls.pp  
 #
-# === Parameters
-#
-# [*mdwHome*]
-#   the middleware home path /opt/oracle/wls/wls12c
-#
-# [*checkPath*]
-#   the middleware home path for test -f
-#
-#
-# [*fullJDKName*]
-#   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
-#
-# [*wlsfile*]
-#   the generic weblogic jar like  wls1211_generic.jar
-#
-# [*silentfile*]
-#   the xml with beahome
-#
-# === Variables
 #
 # === Examples
 #
-#  wls::wlsexec{'domain':
-#    mdwHome      => '/opt/oracle/wls/wls12c/wlserver_12.1',
-#    checkPath    => '/opt/oracle/wls/wls12c',
-#    fullJDKName  => 'jdk1.7.0_07',	
-#    wlsfile      => '/install/wls1211_generic.jar',
-#    silentfile   => '/install/silent.xml', 
-#  }
+#   # install weblogic
+#   wls::wlsexec{ "installer ${version}":
+#      mdwHome     => "/opt/oracle/wls/wls11g",
+#      checkPath   => "/opt/oracle/wls/wls11g",
+#      fullJDKName => "jdk1.7.0_09",
+#      wlsfile     => "/install/wls1036_generic.jar",
+#      silentfile  => "/install/silent1036.xml",
+#      user        => "oracle",
+#      group       => "dba",
+#   }
 # 
 
 define wls::wlsexec ( $mdwHome     = undef, 

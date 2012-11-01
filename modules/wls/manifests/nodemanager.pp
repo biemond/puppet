@@ -2,32 +2,39 @@
 #
 # install and configures nodemanager  
 #
-# === Parameters
-#
-# [*wlHome*]
-#   the weblogic home path /opt/oracle/wls/wls12c/wlserver_12.1
-#
-# [*fullJDKName*]
-#   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
-#
-# [*listenPort*]
-#   port of the nodemanager , default 5556
-#
-# [*user*]
-#   the user which runs the nodemanager on unix = oracle on windows = administrator
-#
-# [*group*]
-#   the group which runs the nodemanager on unix = dba on windows = administrators
-#
-# === Variables
 #
 # === Examples
 #
+#  $jdkWls12cJDK = 'jdk1.7.0_09'
+#  $wls12cVersion = "1211"
+#
+#  
+#  case $operatingsystem {
+#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
+#       $user         = "oracle"
+#       $group        = "dba"
+#     }
+#     windows: { 
+#       $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
+#       $user         = "Administrator"
+#       $group        = "Administrators"
+#       $serviceName  = "C_oracle_wls_wls12c_wlserver_12.1"
+#     }
+#  }
+#
+#
+#  Wls::Nodemanager {
+#    wlHome       => $osWlHome,
+#    fullJDKName  => $jdkWls12cJDK,	
+#    user         => $user,
+#    group        => $group,
+#    serviceName  => $serviceName,  
+#  }
+#
+#  #nodemanager configuration and starting
 #  wls::nodemanager{'nodemanager':
-#    wlHome       => '/opt/oracle/wls/wls12c/wlserver_12.1',
-#    fullJDKName  => 'jdk1.7.0_07',	
-#    user         => 'oracle',
-#    group        => 'dba', 
+#    listenPort   => '5556',
 #  }
 # 
 
@@ -71,7 +78,7 @@ define wls::nodemanager($wlHome          = undef,
      }
    }
 
-   $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
+   $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/./urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
 
 
     

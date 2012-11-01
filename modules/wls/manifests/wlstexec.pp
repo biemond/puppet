@@ -2,63 +2,59 @@
 #
 # generic wlst script  
 #
-# === Parameters
-#
-# [*wlHome*]
-#   the weblogic home path /opt/oracle/wls/wls12c/wlserver_12.1
-#
-# [*fullJDKName*]
-#   jdk path jdk1.7.0_07 this maps to /usr/java/.. or c:\program files\
-#
-#
-# [*script*]
-#   wlst script
-#
-# [*address*]
-#   address of nodemanager or adminserver
-#
-# [*port*]
-#   port number of nodemanager or adminserver
-#
-# [*wlsUser*]
-#   weblogic username
-#
-# [*password*]
-#   weblogic password
-#
-# [*user*]
-#   the user which owns the software on unix = oracle on windows = administrator
-#
-# [*group*]
-#   the group which owns the software on unix = dba on windows = administrators
-#
-# [*params*]
-#   extra params for WLST script 
-#
-# === Variables
 #
 # === Examples
 #  
-# default parameters for the wlst scripts
+#  case $operatingsystem {
+#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#       $osMdwHome    = "/opt/oracle/wls/wls11g"
+#       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+#       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+#       $user         = "oracle"
+#       $group        = "dba"
+#     }
+#     windows: { 
+#       $osMdwHome    = "c:/oracle/wls/wls11g"
+#       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+#       $osDomainPath = "c:/oracle/wls/wls11g/admin"
+#       $user         = "Administrator"
+#       $group        = "Administrators"
+#       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+#     }
+#  }
+#
+#  # default parameters for the wlst scripts
 #  Wls::Wlstexec {
-#    wlHome       => '/opt/oracle/wls/wls12c/wlserver_12.1',
-#    fullJDKName  => 'jdk1.7.0_07',	
-#    user         => 'oracle',
-#    group        => 'dba', 
+#    wlsDomain    => "${osDomainPath}/osbDomain",
+#    wlHome       => $osWlHome,
+#    fullJDKName  => $jdkWls11gJDK,	
+#    user         => $user,
+#    group        => $group,
 #    address      => "localhost",
 #    wlsUser      => "weblogic",
 #    password     => "weblogic1",
+#    port         => "7001",
 #  }
-#  
-#  # start AdminServers for configuration of both domains myTestDomain
+#
+#  # create jdbc datasource for osb_server1 
 #  wls::wlstexec { 
-#    'startAdminServer':
-#     script      => 'startWlsServer.py',
-#     port        => '5556',
-#     params      =>  ["domain = 'myTestDomain'",
-#                      "domainPath = '${osDomainPath}/myTestDomain'",
-#                      "wlsServer = 'AdminServer'"],
+#  
+#    'createJdbcDatasourceHr':
+#     wlstype       => "jdbc",
+#     wlsObjectName => "hrDS",
+#     script        => 'createJdbcDatasource.py',
+#     params        => ["dsName                      = 'hrDS'",
+#                      "jdbcDatasourceTargets       = 'AdminServer,osb_server1'",
+#                      "dsJNDIName                  = 'jdbc/hrDS'",
+#                      "dsDriverName                = 'oracle.jdbc.xa.client.OracleXADataSource'",
+#                      "dsURL                       = 'jdbc:oracle:thin:@master.alfa.local:1521/XE'",
+#                      "dsUserName                  = 'hr'",
+#                      "dsPassword                  = 'hr'",
+#                      "datasourceTargetType        = 'Server'",
+#                      "globalTransactionsProtocol  = 'xxxx'"
+#                      ],
 #  }
+#
 # 
 
 define wls::wlstexec ($wlsDomain     = undef, 
@@ -147,7 +143,7 @@ if ( $continue ) {
 #   if ! defined(File["${path}${title}${script}"]) {
     file { "${path}${title}${script}":
       path    => "${path}${title}${script}",
-      content => template("wls/${script}.erb"),
+      content => template("wls/wlst/${script}.erb"),
     }
 #   }
      

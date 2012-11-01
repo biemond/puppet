@@ -1,27 +1,38 @@
-for more info see this amis blogpost
+Oracle WebLogic / FMW puppet module
+
+created by Edwin Biemond
+biemond.blogspot.com
+
+github.com/biemond/puppet
+
+
+for more about this Oracle WebLogic / FMW puppet module see this AMIS blogpost
 http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/
 
 for windows puppet agents it is necessary to install unxutils tools 
 and put this on the c drive C:\unxutils
 
+copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder.
+
 Also for registry support install this on the master, read this  
 http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/
 and install this on the puppet master
+
 puppet module install puppetlabs/registry
 
-Puppet modules
 
-java jdk7 JAVA SE 6/7 puppet module, install java on win/ux servers 
+WLS WebLogic puppet module
 
-weblogic puppet module
+WebLogic Facter, shows middleware home + domains + domain configuration, running nodemanagers + weblogic servers
 
-  WebLogic Facter , show middleware home + domains, running nodemanagers + weblogic servers
+Example from DashBoard
 
 ora_inst_loc_data	/opt/oracle/orainventory
 ora_inst_products	/opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
 ora_mdw_0	/opt/oracle/wls/wls11g
+ora_mdw_0_bsu	KZKQ;
 ora_mdw_0_domain_0	osbDomain
-ora_mdw_0_domain_0_deployments	FMW Welcome Page Application#11.1.0.0.0;wsil-wls;
+ora_mdw_0_domain_0_deployments	FMW Welcome Page Application#11.1.0.0.0
 ora_mdw_0_domain_0_filestores	FileStore;WseeFileStore;jmsModuleFilePersistence;
 ora_mdw_0_domain_0_jdbc	wlsbjmsrpDataSource;hrDS;jmsDS;
 ora_mdw_0_domain_0_jdbcstores	jmsModuleJdbcPersistence;
@@ -29,7 +40,7 @@ ora_mdw_0_domain_0_jmsmodule_0_name	WseeJmsModule
 ora_mdw_0_domain_0_jmsmodule_0_objects	WseeMessageQueue;WseeCallbackQueue;
 ora_mdw_0_domain_0_jmsmodule_0_subdeployments	BEA_JMS_MODULE_SUBDEPLOYMENT_WSEEJMSServer;
 ora_mdw_0_domain_0_jmsmodule_1_name	jmsResources
-ora_mdw_0_domain_0_jmsmodule_1_objects	wli.reporting.jmsprovider.ConnectionFactory;
+ora_mdw_0_domain_0_jmsmodule_1_objects	wli.reporting.jmsprovider.ConnectionFactory
 ora_mdw_0_domain_0_jmsmodule_1_subdeployments	weblogic.wlsb.jms.transporttask.QueueConnectionFactory;wlsbJMSServer;
 ora_mdw_0_domain_0_jmsmodule_2_name	jmsModule
 ora_mdw_0_domain_0_jmsmodule_2_objects	cf;ErrorQueue;Queue1;Topic1;
@@ -37,21 +48,30 @@ ora_mdw_0_domain_0_jmsmodule_2_subdeployments	wlsServer;JmsServer;
 ora_mdw_0_domain_0_jmsmodule_cnt	3
 ora_mdw_0_domain_0_jmsmodules	WseeJmsModule;jmsResources;jmsModule;
 ora_mdw_0_domain_0_jmsservers	WseeJmsServer;jmsServer;jmsServer2;wlsbJMSServer;
-ora_mdw_0_domain_0_libraries	oracle.bi.jbips#11.1.1@0.1;oracle.bi.composer#11.1.1@0.1;
+ora_mdw_0_domain_0_libraries	oracle.bi.jbips#11.1.1@0.1;oracle.bi.composer#11.1.1@0.1
 ora_mdw_0_domain_0_safagents	jmsModuleJdbcPersistence;
 ora_mdw_0_domain_0_server_0	AdminServer
 ora_mdw_0_domain_0_server_0_machine	LocalMachine
-ora_mdw_0_domain_0_server_0_port	9001
 ora_mdw_0_domain_0_server_1	osb_server1
 ora_mdw_0_domain_0_server_1_machine	LocalMachine
 ora_mdw_0_domain_0_server_1_port	8011
 ora_mdw_0_domain_cnt	1
-ora_mdw_cnt	1
-ora_mdw_homes	/opt/oracle/wls/wls11g
-ora_node_mgr_0	pid: 4109 port: 5556
-ora_wls_0	pid: 4204 name: AdminServer
+ora_mdw_1	/opt/oracle/wls/wls12c
+ora_mdw_1_bsu	97L5;NST7;4331;RCMZ;53JP;1U7B;B33B;WC8G;B84Y;8PE3;H675;
+ora_mdw_1_domain_0	stdDomain12c
+ora_mdw_1_domain_0_jmsmodule_cnt	0
+ora_mdw_1_domain_0_server_0	AdminServer
+ora_mdw_1_domain_0_server_0_machine	LocalMachine
+ora_mdw_1_domain_0_server_0_port	8001
+ora_mdw_1_domain_cnt	1
+ora_mdw_cnt	2
+ora_mdw_homes	/opt/oracle/wls/wls11g;/opt/oracle/wls/wls12c;
+ora_node_mgr_0	pid: 26113 port: 5556
+ora_node_mgr_1	pid: 28321 port: 5656
+ora_wls_0	pid: 26198 name: AdminServer
 
 
+Following functions
 
   installs weblogic
   installs OSB with or without OEPE
@@ -87,12 +107,6 @@ ora_wls_0	pid: 4204 name: AdminServer
 
 ToDo: total weblogic configuration. Deployments 
 
-#  java jdk7 JAVA SE 6/7 puppet module 
-# installs jdk on linux based systems and window with 64 or 32 bits
-# just add the jdk 6 or 7 files like jdk-6u35-linux-x64-rpm.bin, jdk-7u7-linux-x64.rpm, 
-# jdk-7u7-windows-i586.exe or jdk-7u7-windows-x64.exe downloaded from Oracle website to 
-# the files folder of jdk7 module
-#
  
 # weblogic puppet module 
 # installs weblogic on linux window based systems with 64 or 32 bits JDK
@@ -100,44 +114,29 @@ ToDo: total weblogic configuration. Deployments
 # use it like this in site.pp
 #
 
-# site.pp
-#
- 
-import "templates"
-import "nodes"
 
-$defaultJDK     = '7u7'
-$defaultFullJDK = 'jdk1.7.0_07'
+My Files folder in the wls folder
+-rw-r--r--. 1 root root  375895263 Oct  3 19:27 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
+-rw-r-xr-x. 1 root root 1149088683 Sep 26 22:20 ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
+-rw-r-xr-x. 1 root root    1024644 Sep 26 22:20 p13573621_1036_Generic.zip
+-rw-r-xr-x. 1 root root 1068506707 Sep 17 20:06 wls1036_generic.jar
+-rw-r-xr-x. 1 root root 1045221652 Sep 13 21:54 wls1211_generic.jar
 
 
-# nodes.pp
-#
 
-node default {
+include wls
+
+class application_osb {
+
+   include wls1036osb, wls_osb_domain , wls_OSB_application_JDBC , wls_OSB_application_JMS
+   Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
 }
 
-node basenode {
+class application_wls12 {
+
+   include wls12, wls12c_domain
+   Class['wls12'] -> Class['wls12c_domain']
 }
-
-node devel inherits basenode {
-  $my_zone = "devel"
-  include wls1036osb
-}
-
-node prod inherits basenode {
-  $my_zone = "prod"
-}
-
-node 'devagent1.alfa.local' inherits devel {
-}
-
-node 'win7user.localdomain' inherits prod  {
-  include wls12
-} 
-
-node 'hudson.alfa.local' {
-  include hudson
-} 
 
 
 # templates.pp
@@ -146,17 +145,28 @@ node 'hudson.alfa.local' {
 include jdk7
 include wls
 
-class hudson{
+class osb_oepe{
+
+  if $jdkWls11gVersion == undef {
+    $jdkWls11gVersion = "7u9"
+    notify {"wls11g jdkWls11gVersion not defined,use defaults":}
+  }
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_09'
+  }
+
+  if $wls11gVersion == undef {
+    $wls11gVersion = "1036"
+  }
 
   jdk7::install7{'jdk7_husdon':
-    version => $defaultJDK,
+    version => $jdkWls11gVersion,
     x64     => "true",
   }
 
   $osMdwHome    = "/opt/oracle/wls/wls11g"
   $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-  $osTemplate   = "osb"
-  $osDomainPath = "/opt/oracle/wls/wls11g/admin"
   $user         = "oracle"
   $group        = "dba"
 
@@ -165,8 +175,8 @@ class hudson{
 
   # set the defaults
   Wls::Installwls {
-    version      => '1036',
-    versionJdk   => $defaultJDK,
+    version      => $wls11gVersion,
+    versionJdk   => $jdkWls11gVersion,
     user         => $user,
     group        => $group,    
   }
@@ -175,7 +185,7 @@ class hudson{
   Wls::Installosb {
     mdwHome      => $osMdwHome,
     wlHome       => $osWlHome,
-    fullJDKName  => $defaultFullJDK,	
+    fullJDKName  => $jdkWls11gJDK,	
     user         => $user,
     group        => $group,    
   }
@@ -223,8 +233,22 @@ class hudson{
 
 class wls1036osb{
 
+  if $jdkWls11gVersion == undef {
+    $jdkWls11gVersion = "7u9"
+    notify {"wls11g jdkWls11gVersion not defined,use defaults":}
+  }
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_09'
+  }
+
+  if $wls11gVersion == undef {
+    $wls11gVersion = "1036"
+  }
+
+
   jdk7::install7{'jdk7_2':
-    version => $defaultJDK,
+    version => $jdkWls11gVersion,
     x64     => "true",
   }
  
@@ -232,16 +256,12 @@ class wls1036osb{
      centos, redhat, OracleLinux, ubuntu, debian: { 
        $osMdwHome    = "/opt/oracle/wls/wls11g"
        $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-       $osTemplate   = "osb"
-       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
        $user         = "oracle"
        $group        = "dba"
      }
      windows: { 
        $osMdwHome    = "c:/oracle/wls/wls11g"
        $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-       $osTemplate   = "osb"
-       $osDomainPath = "c:/oracle/wls/wls11g/admin"
        $user         = "Administrator"
        $group        = "Administrators"
        $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
@@ -250,8 +270,8 @@ class wls1036osb{
 
   # set the defaults
   Wls::Installwls {
-    version      => '1036',
-    versionJdk   => $defaultJDK,
+    version      => $wls11gVersion,
+    versionJdk   => $jdkWls11gVersion,
     user         => $user,
     group        => $group,    
   }
@@ -259,22 +279,14 @@ class wls1036osb{
   Wls::Installosb {
     mdwHome      => $osMdwHome,
     wlHome       => $osWlHome,
-    fullJDKName  => $defaultFullJDK,	
-    user         => $user,
-    group        => $group,    
-  }
-
-  Wls::Wlsdomain {
-    wlHome       => $osWlHome,
-    mdwHome      => $osMdwHome,
-    fullJDKName  => $defaultFullJDK,	
+    fullJDKName  => $jdkWls11gJDK,	
     user         => $user,
     group        => $group,    
   }
   
   Wls::Nodemanager {
     wlHome       => $osWlHome,
-    fullJDKName  => $defaultFullJDK,	
+    fullJDKName  => $jdkWls11gJDK,	
     user         => $user,
     group        => $group,
     serviceName  => $serviceName,  
@@ -303,36 +315,153 @@ class wls1036osb{
   }
 
 
-  #nodemanager configuration and starting
-  wls::nodemanager{'nodemanager11g':
-    listenPort  => '5556',
-    require     => Wls::Installosb['osbPS5'],
+ #nodemanager configuration and starting
+ wls::nodemanager{'nodemanager11g':
+   listenPort  => '5556',
+   require     => Wls::Installosb['osbPS5'],
+ }
+
+
+}
+
+class wls12{
+
+  if $jdkWls12cVersion == undef {
+    $jdkWls12cVersion = "7u9"
+    notify {"wls12 jdkWls12cVersion not defined,use defaults":}
   }
 
-  # install OSB domain
-  wls::wlsdomain{
-  
-    'osbDomain':
-    wlsTemplate     => $osTemplate,
-    domain          => 'osbDomain',
-    domainPath      => $osDomainPath,
-    adminListenPort => '9001',
-    nodemanagerPort => '5556',
-    require         => Wls::Nodemanager['nodemanager11g'];
-    
+  if $jdkWls12cJDK == undef {
+    $jdkWls12cJDK = 'jdk1.7.0_09'
   }
+
+  if $wls12cVersion == undef {
+    $wls12cVersion = "1211"
+  }
+
+  jdk7::install7{'jdk7':
+    version => $jdkWls12cVersion,
+    x64     => "true",
+  }
+  
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls12c_wlserver_12.1"
+     }
+  }
+
+  # set the defaults
+  Wls::Installwls {
+    version      => $wls12cVersion,
+    versionJdk   => $jdkWls12cVersion,
+    user         => $user,
+    group        => $group,    
+  }
+
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls12cJDK,	
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+  }
+  
+  # install
+  wls::installwls{'wls12c':
+    require      => Jdk7::Install7['jdk7'],
+  }
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager':
+    listenPort   => '5656',
+    require      => Wls::Installwls['wls12c'],
+  }
+
+} 
+
+
+class wls_osb_domain{
+
+  if $jdkWls11gVersion == undef {
+    $jdkWls11gVersion = "7u9"
+    notify {"wls11g jdkWls11gVersion not defined,use defaults":}
+  }
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_09'
+  }
+
+  $wlsDomainName   = "osbDomain"
+  $osTemplate      = "osb"
+  $adminListenPort = "7001"
+  $nodemanagerPort = "5556"
+  $address         = "localhost"
+  $wlsUser         = "weblogic"
+  $password        = "weblogic1"
+ 
+ 
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls11g"
+       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls11g"
+       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "c:/oracle/wls/wls11g/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+     }
+  }
+
+  # set the defaults
+
+  Wls::Wlsdomain {
+    wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+
+
+
+ # install OSB domain
+ wls::wlsdomain{
+ 
+   'osbDomain':
+   wlsTemplate     => $osTemplate,
+   domain          => $wlsDomainName,
+   domainPath      => $osDomainPath,
+   adminListenPort => $adminListenPort,
+   nodemanagerPort => $nodemanagerPort,
+   require         => Wls::Nodemanager['nodemanager11g'];
+   
+ }
 
 
   # default parameters for the wlst scripts
   Wls::Wlstexec {
-    wlsDomain    => "${osDomainPath}/osbDomain",
+    wlsDomain    => "${osDomainPath}/${wlsDomainName}",
     wlHome       => $osWlHome,
-    fullJDKName  => $defaultFullJDK,	
+    fullJDKName  => $jdkWls11gJDK,	
     user         => $user,
     group        => $group,
-    address      => "localhost",
-    wlsUser      => "weblogic",
-    password     => "weblogic1",
+    address      => $address,
+    wlsUser      => $wlsUser,
+    password     => $password,
   }
   
   # start AdminServers for configuration of both domains myTestDomain
@@ -340,12 +469,237 @@ class wls1036osb{
   
     'startOSBAdminServer':
      script      => 'startWlsServer.py',
-     port        => '5556',
-     params      =>  ["domain = 'osbDomain'",
-                      "domainPath = '${osDomainPath}/osbDomain'",
+     port        => $nodemanagerPort,
+     params      =>  ["domain = '${wlsDomainName}'",
+                      "domainPath = '${osDomainPath}/${wlsDomainName}'",
                       "wlsServer = 'AdminServer'"],
      require     => Wls::Wlsdomain['osbDomain'];
 
+  }
+
+
+}
+
+class wls11g_domain{
+
+  if $jdkWls11gVersion == undef {
+    $jdkWls11gVersion = "7u9"
+    notify {"wls11g jdkWls11gVersion not defined,use defaults":}
+  }
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_09'
+  }
+
+  $wlsDomainName   = "stdDomain"
+  $osTemplate      = "standard"
+  $adminListenPort = "9001"
+  $nodemanagerPort = "5556"
+  $address         = "localhost"
+  $wlsUser         = "weblogic"
+  $password        = "weblogic1"
+ 
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls11g"
+       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls11g"
+       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "c:/oracle/wls/wls11g/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+     }
+  }
+
+  # set the defaults
+
+  Wls::Wlsdomain {
+    wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+
+
+
+ # install domain
+ wls::wlsdomain{
+ 
+   'stdDomain':
+   wlsTemplate     => $osTemplate,
+   domain          => $wlsDomainName,
+   domainPath      => $osDomainPath,
+   adminListenPort => $adminListenPort,
+   nodemanagerPort => $nodemanagerPort,
+   require         => Wls::Nodemanager['nodemanager11g'];
+   
+ }
+
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlsDomain    => "${osDomainPath}/${wlsDomainName}",
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,
+    address      => $address,
+    wlsUser      => $wlsUser,
+    password     => $password,
+  }
+  
+  # start AdminServers for configuration of both domains myTestDomain
+  wls::wlstexec { 
+  
+    'startWLSAdminServer':
+     script      => 'startWlsServer.py',
+     port        =>  $nodemanagerPort,
+     params      =>  ["domain = '${wlsDomainName}'",
+                      "domainPath = '${osDomainPath}/${wlsDomainName}'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Wlsdomain['osbDomain'];
+
+  }
+
+
+}
+
+class wls12c_domain{
+
+  if $jdkWls11gVersion == undef {
+    $jdkWls11gVersion = "7u9"
+    notify {"wls11g jdkWls11gVersion not defined,use defaults":}
+  }
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_09'
+  }
+
+  $wlsDomainName   = "stdDomain12c"
+  $osTemplate      = "standard"
+  $adminListenPort = "8001"
+  $nodemanagerPort = "5656"
+  $address         = "localhost"
+  $wlsUser         = "weblogic"
+  $password        = "weblogic1"
+ 
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls12c"
+       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
+       $osDomainPath = "/opt/oracle/wls/wls12c/admin"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls12c"
+       $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
+       $osDomainPath = "c:/oracle/wls/wls12c/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls12g_wlserver_12.1"
+     }
+  }
+
+  # set the defaults
+
+  Wls::Wlsdomain {
+    wlHome       => $osWlHome,
+    mdwHome      => $osMdwHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,    
+  }
+
+
+
+ # install domain
+ wls::wlsdomain{
+ 
+   'stdDomain12c':
+   wlsTemplate     => $osTemplate,
+   domain          => $wlsDomainName,
+   domainPath      => $osDomainPath,
+   adminListenPort => $adminListenPort,
+   nodemanagerPort => $nodemanagerPort,
+   require         => Wls::Nodemanager['nodemanager11g'];
+   
+ }
+
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlsDomain    => "${osDomainPath}/${wlsDomainName}",
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,
+    address      => $address,
+    wlsUser      => $wlsUser,
+    password     => $password,
+  }
+  
+  # start AdminServers for configuration of both domains myTestDomain
+  wls::wlstexec { 
+  
+    'startWLSAdminServer12c':
+     script      => 'startWlsServer.py',
+     port        =>  $nodemanagerPort,
+     params      =>  ["domain = '${wlsDomainName}'",
+                      "domainPath = '${osDomainPath}/${wlsDomainName}'",
+                      "wlsServer = 'AdminServer'"],
+     require     => Wls::Wlsdomain['osbDomain'];
+
+  }
+
+
+}
+
+
+
+class wls_OSB_application_JDBC{
+
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_09'
+  }
+
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls11g"
+       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls11g"
+       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "c:/oracle/wls/wls11g/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+     }
+  }
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlsDomain    => "${osDomainPath}/osbDomain",
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,
+    address      => "localhost",
+    wlsUser      => "weblogic",
+    password     => "weblogic1",
+    port         => "7001",
   }
 
   # create jdbc datasource for osb_server1 
@@ -355,7 +709,6 @@ class wls1036osb{
      wlstype       => "jdbc",
      wlsObjectName => "hrDS",
      script        => 'createJdbcDatasource.py',
-     port          => '9001',
      params        => ["dsName                      = 'hrDS'",
                       "jdbcDatasourceTargets       = 'AdminServer,osb_server1'",
                       "dsJNDIName                  = 'jdbc/hrDS'",
@@ -370,6 +723,50 @@ class wls1036osb{
 
   }
 
+}  
+
+
+
+
+class wls_OSB_application_JMS{
+
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_09'
+  }
+
+
+  case $operatingsystem {
+     centos, redhat, OracleLinux, ubuntu, debian: { 
+       $osMdwHome    = "/opt/oracle/wls/wls11g"
+       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+       $user         = "oracle"
+       $group        = "dba"
+     }
+     windows: { 
+       $osMdwHome    = "c:/oracle/wls/wls11g"
+       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
+       $osDomainPath = "c:/oracle/wls/wls11g/admin"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+     }
+  }
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlsDomain    => "${osDomainPath}/osbDomain",
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,
+    address      => "localhost",
+    wlsUser      => "weblogic",
+    password     => "weblogic1",
+    port         => "7001",
+  }
+
   # create jdbc jms datasource for jms server 
   wls::wlstexec { 
   
@@ -377,7 +774,6 @@ class wls1036osb{
      wlstype       => "jdbc",
      wlsObjectName => "jmsDS",
      script        => 'createJdbcDatasource.py',
-     port          => '9001',
      params        => ["dsName                      = 'jmsDS'",
                       "jdbcDatasourceTargets       = 'AdminServer,osb_server1'",
                       "dsJNDIName                  = 'jdbc/jmsDS'",
@@ -388,7 +784,6 @@ class wls1036osb{
                       "datasourceTargetType        = 'Server'",
                       "globalTransactionsProtocol  = 'None'"
                       ],
-     require     => Wls::Wlstexec['createJdbcDatasourceHr'];
 
   }
 
@@ -399,7 +794,6 @@ class wls1036osb{
      wlstype       => "jdbcstore",
      wlsObjectName => "jmsModuleJdbcPersistence",
      script        => 'createJdbcPersistenceStore.py',
-     port          => '9001',
      params        => ["jdbcStoreName = 'jmsModuleJdbcPersistence'",
                       "serverTarget  = 'osb_server1'",
                       "prefix        = 'jms1'",
@@ -416,7 +810,7 @@ class wls1036osb{
      wlstype       => "filestore",
      wlsObjectName => "jmsModuleFilePersistence",
      script        => 'createFilePersistenceStore.py',
-     port          => '9001',
+     port          => $adminServerPort,
      params        =>  ["fileStoreName = 'jmsModuleFilePersistence'",
                       "serverTarget  = 'osb_server1'"],
      require       => Wls::Wlstexec['createJdbcPersistenceStoreOSBServer'];
@@ -430,7 +824,6 @@ class wls1036osb{
      wlstype       => "jmsserver",
      wlsObjectName => "jmsServer",
      script      => 'createJmsServer.py',
-     port        => '9001',
      params      =>  ["storeName      = 'jmsModuleFilePersistence'",
                       "serverTarget   = 'osb_server1'",
                       "jmsServerName  = 'jmsServer'",
@@ -446,7 +839,7 @@ class wls1036osb{
      wlstype       => "jmsserver",
      wlsObjectName => "jmsServer2",
      script      => 'createJmsServer.py',
-     port        => '9001',
+     port        => $adminServerPort,
      params      =>  ["storeName      = 'jmsModuleJdbcPersistence'",
                       "serverTarget   = 'osb_server1'",
                       "jmsServerName  = 'jmsServer2'",
@@ -462,7 +855,6 @@ class wls1036osb{
      wlstype       => "jmsmodule",
      wlsObjectName => "jmsModule",
      script      => 'createJmsModule.py',
-     port        => '9001',
      params      =>  ["target         = 'osb_server1'",
                       "jmsModuleName  = 'jmsModule'",
                       "targetType     = 'Server'",
@@ -477,7 +869,6 @@ class wls1036osb{
      wlstype       => "jmssubdeployment",
      wlsObjectName => "jmsModule/wlsServer",
      script        => 'createJmsSubDeployment.py',
-     port          => '9001',
      params        => ["target         = 'osb_server1'",
                       "jmsModuleName  = 'jmsModule'",
                       "subName        = 'wlsServer'",
@@ -493,7 +884,6 @@ class wls1036osb{
      wlstype       => "jmssubdeployment",
      wlsObjectName => "jmsModule/JmsServer",
      script      => 'createJmsSubDeployment.py',
-     port        => '9001',
      params      =>  ["target         = 'jmsServer'",
                       "jmsModuleName  = 'jmsModule'",
                       "subName        = 'JmsServer'",
@@ -509,7 +899,6 @@ class wls1036osb{
      wlstype       => "jmsobject",
      wlsObjectName => "cf",
      script        => 'createJmsConnectionFactory.py',
-     port          => '9001',
      params        => ["subDeploymentName = 'wlsServer'",
                       "jmsModuleName     = 'jmsModule'",
                       "cfName            = 'cf'",
@@ -528,7 +917,6 @@ class wls1036osb{
      wlstype       => "jmsobject",
      wlsObjectName => "ErrorQueue",
      script        => 'createJmsQueueOrTopic.py',
-     port          => '9001',
      params        => ["subDeploymentName = 'JmsServer'",
                       "jmsModuleName     = 'jmsModule'",
                       "jmsName           = 'ErrorQueue'",
@@ -551,7 +939,6 @@ class wls1036osb{
      wlstype       => "jmsobject",
      wlsObjectName => "Queue1",
      script        => 'createJmsQueueOrTopic.py',
-     port          => '9001',
      params        => ["subDeploymentName   = 'JmsServer'",
                       "jmsModuleName       = 'jmsModule'",
                       "jmsName             = 'Queue1'",
@@ -573,7 +960,6 @@ class wls1036osb{
      wlstype       => "jmsobject",
      wlsObjectName => "Topic1",
      script        => 'createJmsQueueOrTopic.py',
-     port          => '9001',
      params        => ["subDeploymentName   = 'JmsServer'",
                       "jmsModuleName       = 'jmsModule'",
                       "jmsName             = 'Topic1'",
@@ -589,99 +975,9 @@ class wls1036osb{
      require     => Wls::Wlstexec['createJmsQueueforJmsModule'];
   }
 
-  # create user and group 
-  wls::wlstexec { 
-  
-    'createUserAndGroups':
-     script      => 'createUsersAndGroups.py',
-     port        => '9001',
-     params      =>  ["userPassword   = 'Welcome01'",
-                      "allUsers       = 'user1,user2'",
-                      "group          = 'superuser'"
-                      ],
-     require     => Wls::Wlstexec['createJmsTopicforJmsModule'];
-  }
-
-  
-
-}
-
-class wls12{
+}  
 
 
-  jdk7::install7{'jdk7':
-    version => $defaultJDK,
-    x64     => "true",
-  }
-  
-  case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
-       $osMdwHome    = "/opt/oracle/wls/wls12c"
-       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "standard"
-       $osDomainPath = "/opt/oracle/wls/wls12c/admin"
-       $user         = "oracle"
-       $group        = "dba"
-     }
-     windows: { 
-       $osMdwHome    = "c:/oracle/wls/wls12c"
-       $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
-       $osTemplate   = "standard"
-       $osDomainPath = "c:/oracle/wls/wls12c/admin"
-       $user         = "Administrator"
-       $group        = "Administrators"
-       $serviceName  = "C_oracle_wls_wls12c_wlserver_12.1"
-     }
-  }
-
-  # set the defaults
-  Wls::Installwls {
-    version      => '1211',
-    versionJdk   => $defaultJDK,
-    user         => $user,
-    group        => $group,    
-  }
-  Wls::Wlsdomain {
-    wlHome       => $osWlHome,
-    mdwHome      => $osMdwHome,
-    fullJDKName  => $defaultFullJDK,	
-    user         => $user,
-    group        => $group,    
-  }
-  Wls::Nodemanager {
-    wlHome       => $osWlHome,
-    fullJDKName  => $defaultFullJDK,	
-    user         => $user,
-    group        => $group,
-    serviceName  => $serviceName,  
-  }
-  
-  # install
-  wls::installwls{'wls12c':
-    require      => Jdk7::Install7['jdk7'],
-  }
-
-  #nodemanager configuration and starting
-  wls::nodemanager{'nodemanager':
-    require      => Wls::Installwls['wls12c'],
-  }
-
-  wls::wlsdomain{
-  
-    'testDomain':
-    wlsTemplate  => $osTemplate,
-    domain       => 'myTestDomain',
-    domainPath   => $osDomainPath,
-    require      => Wls::Nodemanager['nodemanager'];
-
-    'testDomain2':
-    wlsTemplate     => $osTemplate,
-    domain          => 'myTestDomain2',
-    domainPath      => $osDomainPath,
-    adminListenPort => '8001',
-    require         => Wls::Nodemanager['nodemanager'];
-    
-  }
 
 
-} 
+
