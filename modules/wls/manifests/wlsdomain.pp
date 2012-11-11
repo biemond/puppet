@@ -94,7 +94,7 @@ define wls::wlsdomain ($wlHome          = undef,
 if ( $continue ) {
 
 
-   $javaCommand    = "java weblogic.WLST"
+   $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
    
    $template             = "${wlHome}/common/templates/domains/wls.jar"
    $templateOSB          = "${mdwHome}/Oracle_OSB1/common/templates/applications/wlsb.jar"

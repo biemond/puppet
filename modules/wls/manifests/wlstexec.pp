@@ -98,7 +98,7 @@ define wls::wlstexec ($wlsDomain     = undef,
 
 
 if ( $continue ) {
-   $javaCommand    = "java weblogic.WLST"
+   $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -140,12 +140,10 @@ if ( $continue ) {
 
     
    # the py script used by the wlst
-#   if ! defined(File["${path}${title}${script}"]) {
-    file { "${path}${title}${script}":
+   file { "${path}${title}${script}":
       path    => "${path}${title}${script}",
       content => template("wls/wlst/${script}.erb"),
-    }
-#   }
+   }
      
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -157,12 +155,11 @@ if ( $continue ) {
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           require     => File["${path}${title}${script}"],
         }    
-#        if ! defined(Exec["rm ${path}${title}${script}"]) {
-          exec { "rm ${path}${title}${script}":
+
+        exec { "rm ${path}${title}${script}":
            command => "rm -I ${path}${title}${script}",
            require => Exec["execwlst ${title}${script}"],
-          }
-#        }
+        }
 
      }
      windows: { 

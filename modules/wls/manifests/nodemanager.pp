@@ -126,6 +126,14 @@ define wls::nodemanager($wlHome          = undef,
            require  => File["${wlHome}/common/nodemanager/nodemanager1.properties"],
         }
 
+
+        exec { "sleep 15 sec for wlst exec ${title}":
+          command     => "/bin/sleep 15",
+          subscribe   => Exec ["execwlst ux nodemanager ${title}"],
+          refreshonly => true,
+        }  
+
+
              
      }
      windows: { 

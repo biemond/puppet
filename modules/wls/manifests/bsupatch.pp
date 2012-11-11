@@ -115,18 +115,16 @@ if ( $continue ) {
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
-        if ! defined(Exec["extract ${patchFile}"]) {
-         exec { "extract ${patchFile}":
+        exec { "extract ${patchFile}":
           command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
           require => File ["${path}${patchFile}"],
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
-         }
         }
         
         exec { "exec bsu ux ${title}":
           command     => "${mdwHome}/utils/bsu/bsu.sh ${bsuCommand}",
           require     => Exec["extract ${patchFile}"],
-          cwd     => "${mdwHome}/utils/bsu",
+          cwd         => "${mdwHome}/utils/bsu",
         }    
              
      }
