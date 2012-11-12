@@ -1,36 +1,83 @@
-Oracle WebLogic / FMW puppet module
+Oracle WebLogic / Fusion Middleware puppet module
+=================================================
 
 created by Edwin Biemond
-biemond.blogspot.com
+[biemond.blogspot.com](http://biemond.blogspot.com)
+[Github homepage](https://github.com/biemond/puppet)
 
-github.com/biemond/puppet
+for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
 
+for windows puppet agents it is necessary to install unxutils tools
+and extract this on the c drive C:\unxutils
 
-for more about this Oracle WebLogic / FMW puppet module see this AMIS blogpost
-http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/
+For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder).
 
-for windows puppet agents it is necessary to install unxutils tools 
-and put this on the c drive C:\unxutils
-
-copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder.
-
-Also for registry support install this on the master, read this  
-http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/
-and install this on the puppet master
-
+Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) 
+and install this forge module on the puppet master
 puppet module install puppetlabs/registry
 
+WLS WebLogic Features
+---------------------------
 
-WLS WebLogic puppet module
+- `installs weblogic
+- `installs OSB with or without OEPE ( Oracle Eclipse )
 
-WebLogic Facter, shows middleware home + domains + domain configuration, running nodemanagers + weblogic servers
+- `configures + starts nodemanager
 
-Example from DashBoard
+- `domain creation
+- `domain OSB creation
 
+- `can start the AdminServer for configuration 
+
+- `apply bsu patch ( WebLogic Patch )
+
+- `create File or JDBC Persistence Store
+
+- `create JMS Server
+- `create JMS Module
+- `create JMS subdeployment
+- `create JMS connection factory
+- `create JMS queue or topic
+
+- `create users with group
+
+- `create SAF agents 
+- `create SAF Remote Destinations
+- `create SAf imported Destinations
+- `create SAF objects
+
+- `create Foreign Servers
+- `create Foreign Servers entries
+
+- `run every wlst script with the flexible wlst define
+
+- `deploy an OSB project to the OSB server
+ 
+
+
+WLS WebLogic Facter
+-------------------
+
+- `Contains WebLogic Facter which displays 
+- `Middleware homes
+- `Domains
+- `Domain configuration ( deployments, datasource, JMS, SAF)
+- `running nodemanagers
+- `running WebLogic servers
+
+Example of the WebLogic Facts 
+
+# oracle installed products
 ora_inst_loc_data	/opt/oracle/orainventory
 ora_inst_products	/opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
+
+# Middleware home 0
 ora_mdw_0	/opt/oracle/wls/wls11g
+
+# BSU patches on the Middleware home
 ora_mdw_0_bsu	KZKQ;
+
+# Domain 0
 ora_mdw_0_domain_0	osbDomain
 ora_mdw_0_domain_0_deployments	FMW Welcome Page Application#11.1.0.0.0
 ora_mdw_0_domain_0_filestores	FileStore;WseeFileStore;jmsModuleFilePersistence;
@@ -55,78 +102,37 @@ ora_mdw_0_domain_0_server_0_machine	LocalMachine
 ora_mdw_0_domain_0_server_1	osb_server1
 ora_mdw_0_domain_0_server_1_machine	LocalMachine
 ora_mdw_0_domain_0_server_1_port	8011
+
+# domains in first middleware home
 ora_mdw_0_domain_cnt	1
-ora_mdw_1	/opt/oracle/wls/wls12c
-ora_mdw_1_bsu	97L5;NST7;4331;RCMZ;53JP;1U7B;B33B;WC8G;B84Y;8PE3;H675;
-ora_mdw_1_domain_0	stdDomain12c
-ora_mdw_1_domain_0_jmsmodule_cnt	0
-ora_mdw_1_domain_0_server_0	AdminServer
-ora_mdw_1_domain_0_server_0_machine	LocalMachine
-ora_mdw_1_domain_0_server_0_port	8001
-ora_mdw_1_domain_cnt	1
-ora_mdw_cnt	2
-ora_mdw_homes	/opt/oracle/wls/wls11g;/opt/oracle/wls/wls12c;
+
+# middleware home counts
+ora_mdw_cnt	1
+ora_mdw_homes	/opt/oracle/wls/wls11g;
+
+# Running node managers + WebLogic Servers
 ora_node_mgr_0	pid: 26113 port: 5556
-ora_node_mgr_1	pid: 28321 port: 5656
 ora_wls_0	pid: 26198 name: AdminServer
 
 
-Following functions
 
-  installs weblogic
-  installs OSB with or without OEPE
-
-  configure + starts nodemanager
-
-  domain creation normal
-  domain OSB creation
-
-  start the AdminServer for configuration 
-
-  apply bsu patch
-
-  create File or JDBC Persistence Store
-
-  create JMS Server
-  create JMS Module
-  create JMS subdeployment
-  create JMS connection factory
-  create JMS queue or topic
-
-  create users with group
-
-  create SAF agents 
-  create SAF Remote Destinations
-  create SAf imported Destinations
-  create SAF objects
-
-  create Foreign Servers
-  create Foreign Servers entries
-
-  run every wlst script with the flexible wlst define
-
-  deploy an OSB project to the OSB server
- 
-# weblogic puppet module 
-# installs weblogic on linux window based systems with 64 or 32 bits JDK
-# just add the weblogic generic jar to the files folder of the wls module
-# use it like this in site.pp
-#
+Example of my Files folder in the wls module
+--------------------------------------------
+oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
+ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
+p13573621_1036_Generic.zip
+wls1036_generic.jar
+wls1211_generic.jar
 
 
-My Files folder in the wls folder
--rw-r--r--. 1 root root  375895263 Oct  3 19:27 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
--rw-r-xr-x. 1 root root 1149088683 Sep 26 22:20 ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
--rw-r-xr-x. 1 root root    1024644 Sep 26 22:20 p13573621_1036_Generic.zip
--rw-r-xr-x. 1 root root 1068506707 Sep 17 20:06 wls1036_generic.jar
--rw-r-xr-x. 1 root root 1045221652 Sep 13 21:54 wls1211_generic.jar
+WebLogic configuration examples
+-------------------------------
 
 
+templates_app.pp
+----------------
 
-# templates_app.pp
-#
-
-
+```
 include wls
 
 class application_osb {
@@ -803,39 +809,16 @@ class wls12c_domain{
 
 
 }
+```
 
-# templates.pp
-#
 
+templates.pp
+------------
+
+```
 include jdk7
 include wls
 
-class apache_haproxy_config {
-
-  haproxy::listen { 'wlsConfig':
-    ipaddress => '*',
-    ports     => '7778',
-    options   => {
-      'mode'     => 'http',
-      'option'   => ['httpclose','forwardfor','tcplog','ssl-hello-chk'],
-      'balance'  => 'roundrobin',
-      'stats'    => ['enable','auth weblogic:weblogic1'],
-      'cookie'   => 'JSESSIONID prefix',
-      'server'   => 'wls1 *:80 cookie wls1',
-    }  
-  }
-
-#  haproxy::balancermember { 'wls1':
-#    listening_service =>  'wlsConfig',
-#    server_names      =>  'wls1',
-#    ipaddresses       =>  '*',
-#    ports             =>  '80',
-#    options           =>  'cookie wls1',
-#    require           =>   Haproxy::Listen['wlsConfig'],
-#  }
-#
-
-}
 
 
 class osb_oepe{
@@ -1078,4 +1061,5 @@ class wls12{
     require      => Wls::Installwls['wls12c'],
   }
 
-} 
+}
+``` 

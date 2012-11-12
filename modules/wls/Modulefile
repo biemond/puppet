@@ -1,5 +1,7 @@
 name 'biemond-wls'
-version '0.1.0'
+version '0.2.0'
+author 'Edwin Biemond'
+source 'https://github.com/biemond/puppet/tree/master/modules/wls'
 description "Oracle WebLogic / Fusion Middleware puppet module
       installs weblogic 10.3, 11g, 12c
       installs OSB 11g with or without OEPE
@@ -22,7 +24,7 @@ description "Oracle WebLogic / Fusion Middleware puppet module
       create Foreign Servers
       create Foreign Servers entries
       run every wlst script with the flexible wlst define"
-project_page http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/
+project_page 'http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/'
 license 'GNU General Public License version 3 of the License'
-author "Edwin Biemond"
-source https://github.com/biemond/puppet/tree/master/modules/wls
+
+dependency 'puppetlabs/registry', '>= 0.1.1'
