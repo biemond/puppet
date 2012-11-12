@@ -2,9 +2,7 @@ Oracle WebLogic / Fusion Middleware puppet module
 =================================================
 
 created by Edwin Biemond
-
 [biemond.blogspot.com](http://biemond.blogspot.com)
-
 [Github homepage](https://github.com/biemond/puppet)
 
 for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
@@ -59,51 +57,51 @@ WLS WebLogic Facter
 Example of the WebLogic Facts 
 
 oracle installed products
-ora_inst_loc_data	/opt/oracle/orainventory
-ora_inst_products	/opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
+ora_inst_loc_data /opt/oracle/orainventory
+ora_inst_products /opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
 
 Middleware home 0
-ora_mdw_0	/opt/oracle/wls/wls11g
+ora_mdw_0 /opt/oracle/wls/wls11g
 
 BSU patches on the Middleware home
-ora_mdw_0_bsu	KZKQ;
+ora_mdw_0_bsu KZKQ;
 
 Domain 0
-ora_mdw_0_domain_0	osbDomain
-ora_mdw_0_domain_0_deployments	FMW Welcome Page Application#11.1.0.0.0
-ora_mdw_0_domain_0_filestores	FileStore;WseeFileStore;jmsModuleFilePersistence;
-ora_mdw_0_domain_0_jdbc	wlsbjmsrpDataSource;hrDS;jmsDS;
-ora_mdw_0_domain_0_jdbcstores	jmsModuleJdbcPersistence;
-ora_mdw_0_domain_0_jmsmodule_0_name	WseeJmsModule
-ora_mdw_0_domain_0_jmsmodule_0_objects	WseeMessageQueue;WseeCallbackQueue;
-ora_mdw_0_domain_0_jmsmodule_0_subdeployments	BEA_JMS_MODULE_SUBDEPLOYMENT_WSEEJMSServer;
-ora_mdw_0_domain_0_jmsmodule_1_name	jmsResources
-ora_mdw_0_domain_0_jmsmodule_1_objects	wli.reporting.jmsprovider.ConnectionFactory
-ora_mdw_0_domain_0_jmsmodule_1_subdeployments	weblogic.wlsb.jms.transporttask.QueueConnectionFactory;wlsbJMSServer;
-ora_mdw_0_domain_0_jmsmodule_2_name	jmsModule
-ora_mdw_0_domain_0_jmsmodule_2_objects	cf;ErrorQueue;Queue1;Topic1;
-ora_mdw_0_domain_0_jmsmodule_2_subdeployments	wlsServer;JmsServer;
-ora_mdw_0_domain_0_jmsmodule_cnt	3
-ora_mdw_0_domain_0_jmsmodules	WseeJmsModule;jmsResources;jmsModule;
-ora_mdw_0_domain_0_jmsservers	WseeJmsServer;jmsServer;jmsServer2;wlsbJMSServer;
-ora_mdw_0_domain_0_libraries	oracle.bi.jbips#11.1.1@0.1;oracle.bi.composer#11.1.1@0.1
-ora_mdw_0_domain_0_safagents	jmsModuleJdbcPersistence;
-ora_mdw_0_domain_0_server_0	AdminServer
-ora_mdw_0_domain_0_server_0_machine	LocalMachine
-ora_mdw_0_domain_0_server_1	osb_server1
-ora_mdw_0_domain_0_server_1_machine	LocalMachine
-ora_mdw_0_domain_0_server_1_port	8011
+ora_mdw_0_domain_0  osbDomain
+ora_mdw_0_domain_0_deployments  FMW Welcome Page Application#11.1.0.0.0
+ora_mdw_0_domain_0_filestores FileStore;WseeFileStore;jmsModuleFilePersistence;
+ora_mdw_0_domain_0_jdbc wlsbjmsrpDataSource;hrDS;jmsDS;
+ora_mdw_0_domain_0_jdbcstores jmsModuleJdbcPersistence;
+ora_mdw_0_domain_0_jmsmodule_0_name WseeJmsModule
+ora_mdw_0_domain_0_jmsmodule_0_objects  WseeMessageQueue;WseeCallbackQueue;
+ora_mdw_0_domain_0_jmsmodule_0_subdeployments BEA_JMS_MODULE_SUBDEPLOYMENT_WSEEJMSServer;
+ora_mdw_0_domain_0_jmsmodule_1_name jmsResources
+ora_mdw_0_domain_0_jmsmodule_1_objects  wli.reporting.jmsprovider.ConnectionFactory
+ora_mdw_0_domain_0_jmsmodule_1_subdeployments weblogic.wlsb.jms.transporttask.QueueConnectionFactory;wlsbJMSServer;
+ora_mdw_0_domain_0_jmsmodule_2_name jmsModule
+ora_mdw_0_domain_0_jmsmodule_2_objects  cf;ErrorQueue;Queue1;Topic1;
+ora_mdw_0_domain_0_jmsmodule_2_subdeployments wlsServer;JmsServer;
+ora_mdw_0_domain_0_jmsmodule_cnt  3
+ora_mdw_0_domain_0_jmsmodules WseeJmsModule;jmsResources;jmsModule;
+ora_mdw_0_domain_0_jmsservers WseeJmsServer;jmsServer;jmsServer2;wlsbJMSServer;
+ora_mdw_0_domain_0_libraries  oracle.bi.jbips#11.1.1@0.1;oracle.bi.composer#11.1.1@0.1
+ora_mdw_0_domain_0_safagents  jmsModuleJdbcPersistence;
+ora_mdw_0_domain_0_server_0 AdminServer
+ora_mdw_0_domain_0_server_0_machine LocalMachine
+ora_mdw_0_domain_0_server_1 osb_server1
+ora_mdw_0_domain_0_server_1_machine LocalMachine
+ora_mdw_0_domain_0_server_1_port  8011
 
 Domains in first middleware home
-ora_mdw_0_domain_cnt	1
+ora_mdw_0_domain_cnt  1
 
 Middleware home counts
-ora_mdw_cnt	1
-ora_mdw_homes	/opt/oracle/wls/wls11g;
+ora_mdw_cnt 1
+ora_mdw_homes /opt/oracle/wls/wls11g;
 
 Running node managers + WebLogic Servers
-ora_node_mgr_0	pid: 26113 port: 5556
-ora_wls_0	pid: 26198 name: AdminServer
+ora_node_mgr_0  pid: 26113 port: 5556
+ora_wls_0 pid: 26198 name: AdminServer
 
 
 
@@ -185,7 +183,7 @@ class wls_OSB_application_jar {
   Wls::Wlsdeploy {
     wlHome       => $osWlHome,
     osbHome      => $osbHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,
     address      => "localhost",
@@ -243,7 +241,7 @@ class wls_OSB_application_JDBC{
   Wls::Wlstexec {
     wlsDomain    => "${osDomainPath}/osbDomain",
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,
     address      => "localhost",
@@ -306,7 +304,7 @@ class wls_OSB_application_JMS{
   Wls::Wlstexec {
     wlsDomain    => "${osDomainPath}/osbDomain",
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,
     address      => "localhost",
@@ -573,7 +571,7 @@ class wls_osb_domain{
   Wls::Wlsdomain {
     wlHome       => $osWlHome,
     mdwHome      => $osMdwHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,    
   }
@@ -598,7 +596,7 @@ class wls_osb_domain{
   Wls::Wlstexec {
     wlsDomain    => "${osDomainPath}/${wlsDomainName}",
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,
     address      => $address,
@@ -662,7 +660,7 @@ class wls11g_domain{
   Wls::Wlsdomain {
     wlHome       => $osWlHome,
     mdwHome      => $osMdwHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,    
   }
@@ -687,7 +685,7 @@ class wls11g_domain{
   Wls::Wlstexec {
     wlsDomain    => "${osDomainPath}/${wlsDomainName}",
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,
     address      => $address,
@@ -753,7 +751,7 @@ class wls12c_domain{
   Wls::Wlsdomain {
     wlHome       => $osWlHome,
     mdwHome      => $osMdwHome,
-    fullJDKName  => $jdkWls12gJDK,	
+    fullJDKName  => $jdkWls12gJDK,  
     user         => $user,
     group        => $group,    
   }
@@ -776,7 +774,7 @@ class wls12c_domain{
   Wls::Wlstexec {
     wlsDomain    => "${osDomainPath}/${wlsDomainName}",
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls12gJDK,	
+    fullJDKName  => $jdkWls12gJDK,  
     user         => $user,
     group        => $group,
     address      => $address,
@@ -851,7 +849,7 @@ class osb_oepe{
   Wls::Installosb {
     mdwHome      => $osMdwHome,
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,    
   }
@@ -945,14 +943,14 @@ class wls1036osb{
   Wls::Installosb {
     mdwHome      => $osMdwHome,
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,    
   }
   
   Wls::Nodemanager {
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls11gJDK,	
+    fullJDKName  => $jdkWls11gJDK,  
     user         => $user,
     group        => $group,
     serviceName  => $serviceName,  
@@ -973,8 +971,8 @@ class wls1036osb{
     mdwHome      => $osMdwHome ,
     wlHome       => $osWlHome,
     fullJDKName  => $defaultFullJDK,
-    patchId      => 'KZKQ',	
-    patchFile    => 'p13573621_1036_Generic.zip',	
+    patchId      => 'KZKQ', 
+    patchFile    => 'p13573621_1036_Generic.zip', 
     user         => $user,
     group        => $group, 
     require      => Wls::Installosb['osbPS5'],
@@ -1034,7 +1032,7 @@ class wls12{
 
   Wls::Nodemanager {
     wlHome       => $osWlHome,
-    fullJDKName  => $jdkWls12cJDK,	
+    fullJDKName  => $jdkWls12cJDK,  
     user         => $user,
     group        => $group,
     serviceName  => $serviceName,  
