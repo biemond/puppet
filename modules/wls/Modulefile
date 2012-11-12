@@ -2,28 +2,7 @@ name 'biemond-wls'
 version '0.2.0'
 author 'Edwin Biemond'
 source 'https://github.com/biemond/puppet/tree/master/modules/wls'
-description "Oracle WebLogic / Fusion Middleware puppet module
-      installs weblogic 10.3, 11g, 12c
-      installs OSB 11g with or without OEPE
-      configure + starts nodemanager
-      domain creation normal
-      domain OSB creation
-      start the AdminServer for configuration 
-      apply bsu patch
-      create File or JDBC Persistence Store
-      create JMS Server
-      create JMS Module
-      create JMS subdeployment
-      create JMS connection factory
-      create JMS queue or topic
-      create users with group
-      create SAF agents 
-      create SAF Remote Destinations
-      create SAf imported Destinations
-      create SAF objects
-      create Foreign Servers
-      create Foreign Servers entries
-      run every wlst script with the flexible wlst define"
+description "Oracle WebLogic / Fusion Middleware puppet module"
 project_page 'http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/'
 license 'GNU General Public License version 3 of the License'
 
