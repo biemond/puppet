@@ -7,14 +7,12 @@ created by Edwin Biemond<br>
 
 for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
 
-for windows puppet agents it is necessary to install unxutils tools
-and extract this on the c drive C:\unxutils
+Windows agents
+--------------
+for windows puppet agents it is necessary to install unxutils tools and extract this on the c drive C:\unxutils<br>
+For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder).<br>
 
-For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder).
-
-Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) 
-and install this forge module on the puppet master
-
+Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) and install this forge module on the puppet master<br>
 puppet module install puppetlabs/registry
 
 WLS WebLogic Features
@@ -56,62 +54,62 @@ WLS WebLogic Facter
 
 Example of the WebLogic Facts 
 
-oracle installed products
-ora_inst_loc_data /opt/oracle/orainventory
-ora_inst_products /opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
+oracle installed products<br>
+ora_inst_loc_data /opt/oracle/orainventory<br>
+ora_inst_products /opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;<br>
 
-Middleware home 0
-ora_mdw_0 /opt/oracle/wls/wls11g
+Middleware home 0<br>
+ora_mdw_0 /opt/oracle/wls/wls11g<br>
 
-BSU patches on the Middleware home
-ora_mdw_0_bsu KZKQ;
+BSU patches on the Middleware home<br>
+ora_mdw_0_bsu KZKQ;<br>
 
-Domain 0
-ora_mdw_0_domain_0  osbDomain
-ora_mdw_0_domain_0_deployments  FMW Welcome Page Application#11.1.0.0.0
-ora_mdw_0_domain_0_filestores FileStore;WseeFileStore;jmsModuleFilePersistence;
-ora_mdw_0_domain_0_jdbc wlsbjmsrpDataSource;hrDS;jmsDS;
-ora_mdw_0_domain_0_jdbcstores jmsModuleJdbcPersistence;
-ora_mdw_0_domain_0_jmsmodule_0_name WseeJmsModule
-ora_mdw_0_domain_0_jmsmodule_0_objects  WseeMessageQueue;WseeCallbackQueue;
-ora_mdw_0_domain_0_jmsmodule_0_subdeployments BEA_JMS_MODULE_SUBDEPLOYMENT_WSEEJMSServer;
-ora_mdw_0_domain_0_jmsmodule_1_name jmsResources
-ora_mdw_0_domain_0_jmsmodule_1_objects  wli.reporting.jmsprovider.ConnectionFactory
-ora_mdw_0_domain_0_jmsmodule_1_subdeployments weblogic.wlsb.jms.transporttask.QueueConnectionFactory;wlsbJMSServer;
-ora_mdw_0_domain_0_jmsmodule_2_name jmsModule
-ora_mdw_0_domain_0_jmsmodule_2_objects  cf;ErrorQueue;Queue1;Topic1;
-ora_mdw_0_domain_0_jmsmodule_2_subdeployments wlsServer;JmsServer;
-ora_mdw_0_domain_0_jmsmodule_cnt  3
-ora_mdw_0_domain_0_jmsmodules WseeJmsModule;jmsResources;jmsModule;
-ora_mdw_0_domain_0_jmsservers WseeJmsServer;jmsServer;jmsServer2;wlsbJMSServer;
-ora_mdw_0_domain_0_libraries  oracle.bi.jbips#11.1.1@0.1;oracle.bi.composer#11.1.1@0.1
-ora_mdw_0_domain_0_safagents  jmsModuleJdbcPersistence;
-ora_mdw_0_domain_0_server_0 AdminServer
-ora_mdw_0_domain_0_server_0_machine LocalMachine
-ora_mdw_0_domain_0_server_1 osb_server1
-ora_mdw_0_domain_0_server_1_machine LocalMachine
-ora_mdw_0_domain_0_server_1_port  8011
+Domain 0<br>
+ora_mdw_0_domain_0  osbDomain<br>
+ora_mdw_0_domain_0_deployments  FMW Welcome Page Application#11.1.0.0.0<br>
+ora_mdw_0_domain_0_filestores FileStore;WseeFileStore;jmsModuleFilePersistence;<br>
+ora_mdw_0_domain_0_jdbc wlsbjmsrpDataSource;hrDS;jmsDS;<br>
+ora_mdw_0_domain_0_jdbcstores jmsModuleJdbcPersistence;<br>
+ora_mdw_0_domain_0_jmsmodule_0_name WseeJmsModule<br>
+ora_mdw_0_domain_0_jmsmodule_0_objects  WseeMessageQueue;WseeCallbackQueue;<br>
+ora_mdw_0_domain_0_jmsmodule_0_subdeployments BEA_JMS_MODULE_SUBDEPLOYMENT_WSEEJMSServer;<br>
+ora_mdw_0_domain_0_jmsmodule_1_name jmsResources<br>
+ora_mdw_0_domain_0_jmsmodule_1_objects  wli.reporting.jmsprovider.ConnectionFactory<br>
+ora_mdw_0_domain_0_jmsmodule_1_subdeployments weblogic.wlsb.jms.transporttask.QueueConnectionFactory;wlsbJMSServer;<br>
+ora_mdw_0_domain_0_jmsmodule_2_name jmsModule<br>
+ora_mdw_0_domain_0_jmsmodule_2_objects  cf;ErrorQueue;Queue1;Topic1;<br>
+ora_mdw_0_domain_0_jmsmodule_2_subdeployments wlsServer;JmsServer;<br>
+ora_mdw_0_domain_0_jmsmodule_cnt  3<br>
+ora_mdw_0_domain_0_jmsmodules WseeJmsModule;jmsResources;jmsModule;<br>
+ora_mdw_0_domain_0_jmsservers WseeJmsServer;jmsServer;jmsServer2;wlsbJMSServer;<br>
+ora_mdw_0_domain_0_libraries  oracle.bi.jbips#11.1.1@0.1;oracle.bi.composer#11.1.1@0.1<br>
+ora_mdw_0_domain_0_safagents  jmsModuleJdbcPersistence;<br>
+ora_mdw_0_domain_0_server_0 AdminServer<br>
+ora_mdw_0_domain_0_server_0_machine LocalMachine<br>
+ora_mdw_0_domain_0_server_1 osb_server1<br>
+ora_mdw_0_domain_0_server_1_machine LocalMachine<br>
+ora_mdw_0_domain_0_server_1_port  8011<br>
 
-Domains in first middleware home
-ora_mdw_0_domain_cnt  1
+Domains in first middleware home<br>
+ora_mdw_0_domain_cnt  1<br>
 
-Middleware home counts
-ora_mdw_cnt 1
-ora_mdw_homes /opt/oracle/wls/wls11g;
+Middleware home counts<br>
+ora_mdw_cnt 1<br>
+ora_mdw_homes /opt/oracle/wls/wls11g;<br>
 
-Running node managers + WebLogic Servers
-ora_node_mgr_0  pid: 26113 port: 5556
-ora_wls_0 pid: 26198 name: AdminServer
+Running node managers + WebLogic Servers<br>
+ora_node_mgr_0  pid: 26113 port: 5556<br>
+ora_wls_0 pid: 26198 name: AdminServer<br>
 
 
 
 Example of my Files folder in the wls module
 --------------------------------------------
-oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
-ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
-p13573621_1036_Generic.zip
-wls1036_generic.jar
-wls1211_generic.jar
+oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip<br>
+ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip<br>
+p13573621_1036_Generic.zip<br>
+wls1036_generic.jar<br>
+wls1211_generic.jar<br>
 
 WebLogic configuration examples
 -------------------------------
