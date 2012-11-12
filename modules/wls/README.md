@@ -1,9 +1,9 @@
 Oracle WebLogic / Fusion Middleware puppet module
 =================================================
 
-created by Edwin Biemond
-[biemond.blogspot.com](http://biemond.blogspot.com)
-[Github homepage](https://github.com/biemond/puppet)
+created by Edwin Biemond<br>
+[biemond.blogspot.com](http://biemond.blogspot.com)<br>
+[Github homepage](https://github.com/biemond/puppet)<br>
 
 for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
 
