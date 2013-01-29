@@ -3,7 +3,7 @@ WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
 
 
-print('Start...')
+print('Start...osb domain with template <%= @template %>')
 readTemplate('<%= @template %>')
 
 cd('/')
@@ -47,6 +47,8 @@ closeTemplate()
 
 readDomain(DOMAIN_PATH)
 setOption( "AppDir", DOMAIN_PATH+'/applications' )
+print('Extend...osb domain with template <%= @templateOSB %>')
+
 addTemplate('<%= @templateOSB %>')
 
 dumpStack();
