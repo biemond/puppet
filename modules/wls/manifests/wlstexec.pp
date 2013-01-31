@@ -110,7 +110,7 @@ if ( $continue ) {
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
-               logoutput => false,
+               logoutput => true,
              }
         File {
                ensure  => present,

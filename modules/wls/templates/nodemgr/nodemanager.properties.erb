@@ -1,0 +1,26 @@
+DomainsFile=<%= @wlHome %>/common/nodemanager/nodemanager.domains
+LogLimit=0
+PropertiesVersion=10.3
+DomainsDirRemoteSharingEnabled=false
+AuthenticationEnabled=true
+NodeManagerHome=<%= @wlHome %>/common/nodemanager
+JavaHome=<%= @JAVA_HOME %>
+LogLevel=INFO
+DomainsFileEnabled=true
+StartScriptName=startWebLogic.sh
+ListenAddress=
+NativeVersionEnabled=true
+ListenPort=<%= @listenPort %>
+LogToStderr=true
+SecureListener=true
+LogCount=1
+DomainRegistrationEnabled=false
+StopScriptEnabled=true
+QuitEnabled=false
+LogAppend=true
+StateCheckInterval=500
+CrashRecoveryEnabled=true
+StartScriptEnabled=true
+LogFile=<%= @wlHome %>/common/nodemanager/nodemanager.log
+LogFormatter=weblogic.nodemanager.server.LogFormatter
+ListenBacklog=50

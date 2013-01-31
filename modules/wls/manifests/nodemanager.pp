@@ -47,6 +47,11 @@ define wls::nodemanager($wlHome          = undef,
                         $serviceName     = undef,
                        ) {
 
+   File{
+        owner   => $user,
+        group   => $group,
+        mode    => 0770,
+   } 
 
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -63,6 +68,7 @@ define wls::nodemanager($wlHome          = undef,
                logoutput => true,
                cwd       => "${wlHome}/common/nodemanager",
              }
+  
      
      }
      windows: { 
@@ -85,6 +91,13 @@ define wls::nodemanager($wlHome          = undef,
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
 
+        file { "nodemanager.properties ux ${version}":
+                path    => "${wlHome}/common/nodemanager/nodemanager.properties",
+                ensure  => present,
+                replace => 'yes',
+                content => template("wls/nodemgr/nodemanager.properties.erb"),
+        }
+
         exec { "execwlst ux nodemanager ${title}":
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
@@ -92,47 +105,15 @@ define wls::nodemanager($wlHome          = undef,
                           "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/linux/x86_64",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "${checkCommand}",
+          require     => File ["nodemanager.properties ux ${version}"],
         }    
 
-        # wait for the nodemanager.properties file
-        exec { "execwlst ux StopScriptEnabled ${title}":
-          command     => "/bin/sed 's/StopScriptEnabled=false/StopScriptEnabled=true/g' nodemanager.properties > nodemanager1.properties",
-          unless      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager.properties",
-          require     => Exec ["execwlst ux nodemanager ${title}"],
-          tries       => 2,
-          try_sleep   => 10,
-        }    
 
-        exec { "execwlst ux StartScriptEnabled ${title}":
-          command     => "/bin/sed 's/StartScriptEnabled=false/StartScriptEnabled=true/g' nodemanager1.properties > nodemanager2.properties",
-          onlyif      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager1.properties",
-          subscribe   => Exec ["execwlst ux StopScriptEnabled ${title}"],
-          refreshonly => true,
-        } 
-        exec { "execwlst ux CrashRecoveryEnabled ${title}":
-          command     => "/bin/sed 's/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g' nodemanager2.properties > nodemanager.properties",
-          onlyif      => "/usr/bin/test -f ${wlHome}/common/nodemanager/nodemanager2.properties",
-          subscribe   => Exec ["execwlst ux StartScriptEnabled ${title}"],
-          refreshonly => true,
-        } 
-
-        # delete old files used by sed
-        file { "${wlHome}/common/nodemanager/nodemanager1.properties":
-           ensure     => absent,
-           require    => Exec ["execwlst ux CrashRecoveryEnabled ${title}"],
-        }
-        file { "${wlHome}/common/nodemanager/nodemanager2.properties":
-           ensure     => absent,
-           require  => File["${wlHome}/common/nodemanager/nodemanager1.properties"],
-        }
-
-
-        exec { "sleep 15 sec for wlst exec ${title}":
-          command     => "/bin/sleep 15",
+        exec { "sleep 5 sec for wlst exec ${title}":
+          command     => "/bin/sleep 5",
           subscribe   => Exec ["execwlst ux nodemanager ${title}"],
           refreshonly => true,
         }  
-
 
              
      }
@@ -159,65 +140,20 @@ define wls::nodemanager($wlHome          = undef,
           logoutput   => true,
         }    
 
+        file { "nodemanager.properties win ${version}":
+                path    => "${wlHome}/common/nodemanager/nodemanager.properties",
+                ensure  => present,
+                replace => 'yes',
+                content => template("wls/nodemgr/nodemanager.properties.erb"),
+                require => Exec ["execwlst win nodemanager ${title}"],
+        }
+
         service { "window nodemanager initial start ${title}":
                 name       => "Oracle WebLogic NodeManager (${serviceName})",
                 enable     => true,
                 ensure     => true,
-                require    => Exec ["execwlst win nodemanager ${title}"],
+                require    => File ["nodemanager.properties win ${version}"],
         }
-
-        exec { "execwlst win StopScriptEnabled ${title}":
-          command     => "${checkCommand} sed \"s/StopScriptEnabled=false/StopScriptEnabled=true/g\" nodemanager.properties > nodemanager1.properties",
-          unless      => "${checkCommand} dir ${wlHome}/common/nodemanager/nodemanager.properties",
-          creates     => "${wlHome}/common/nodemanager/nodemanager1.properties",
-          require     => [Service ["window nodemanager initial start ${title}"],Exec ["execwlst win nodemanager ${title}"]],
-          tries       => 6,
-          try_sleep   => 5,
-          logoutput   => true,
-        }    
-
-        exec { "execwlst win StartScriptEnabled ${title}":
-          command     => "${checkCommand} sed \"s/StartScriptEnabled=false/StartScriptEnabled=true/g\" nodemanager1.properties > nodemanager2.properties",
-          onlyif      => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager1.properties",
-          logoutput   => true,
-          subscribe   => Exec ["execwlst win StopScriptEnabled ${title}"],
-          refreshonly => true,
-
-        } 
-        exec { "execwlst win CrashRecoveryEnabled ${title}":
-          command     => "${checkCommand} sed \"s/CrashRecoveryEnabled=false/CrashRecoveryEnabled=true/g\" nodemanager2.properties > nodemanager.properties",
-          onlyif      => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager2.properties",
-          subscribe   => Exec ["execwlst win StartScriptEnabled ${title}"],
-          refreshonly => true,
-          logoutput   => true,
-        } 
-
-
-        # delete old files used by sed
-        file { "${wlHome}/common/nodemanager/nodemanager1.properties":
-           ensure     => absent,
-           require    => Exec ["execwlst win CrashRecoveryEnabled ${title}"],
-        }
-
-        file { "${wlHome}/common/nodemanager/nodemanager2.properties":
-           ensure   => absent,
-           require  => File["${wlHome}/common/nodemanager/nodemanager1.properties"],
-        }
-
-        exec { "execwlst win stop service ${title}":
-          command     => "${checkCommand} NET STOP \"Oracle WebLogic NodeManager (${serviceName})\"",
-          subscribe   => File ["${wlHome}/common/nodemanager/nodemanager2.properties"],
-          refreshonly => true,
-          logoutput   => true,
-        } 
-
-        exec { "execwlst win start service ${title}":
-          command     => "${checkCommand} NET START \"Oracle WebLogic NodeManager (${serviceName})\"",
-          subscribe   => Exec ["execwlst win stop service ${title}"],
-          refreshonly => true,
-          logoutput   => true,
-        } 
-
 
 
      }

@@ -1,5 +1,5 @@
 name 'biemond-wls'
-version '0.2.0'
+version '0.3.0'
 author 'Edwin Biemond'
 source 'https://github.com/biemond/puppet/tree/master/modules/wls'
 description "Oracle WebLogic / Fusion Middleware puppet module"
