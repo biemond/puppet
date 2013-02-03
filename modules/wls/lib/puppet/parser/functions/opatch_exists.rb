@@ -4,7 +4,7 @@ module Puppet::Parser::Functions
     
     patch_exists  = false
     oracleHomeArg = args[0].strip.downcase
-    oracleHome    = oracleHomeArg.gsub("/","_").gsub("\\","_")
+    oracleHome    = oracleHomeArg.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
 
     # check the oracle home patches
     if lookupvar("ora_inst_patches"+oracleHome) != :undefined

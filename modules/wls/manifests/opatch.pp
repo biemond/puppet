@@ -65,9 +65,10 @@ define wls::opatch(  $oracleHome      = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\" 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
-
+        $oracleHomeWin    = slash_replace($oracleHome)
 
         Exec { path      => $execPath,
+        	     logoutput => true,
              }
         File { ensure  => present,
                mode    => 0555,
@@ -101,7 +102,7 @@ define wls::opatch(  $oracleHome      = undef,
 if ( $continue ) {
 
    # opatch apply -silent -jdk %JDK_HOME% -jre %JDK_HOME%\jre  -oh C:\oracle\MiddlewarePS5\Oracle_OSB1 C:\temp\14389126
-   $oPatchCommand  = "opatch apply -silent -jre ${JAVA_HOME}/jre  -oh ${oracleHome}"
+   $oPatchCommand  = "opatch apply -silent -jre"
     
    case $operatingsystem {
      centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -113,7 +114,7 @@ if ( $continue ) {
         }
         
         exec { "exec opatch ux ${title}":
-          command     => "${oracleHome}/OPatch/${oPatchCommand} ${path}/${patchId}",
+          command     => "${oracleHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleHome} ${path}/${patchId}",
           require     => Exec["extract opatch ${patchFile} ${title}"],
         }    
              
@@ -122,12 +123,13 @@ if ( $continue ) {
 
         exec { "extract opatch ${patchFile} ${title}":
           command => "jar.exe xf ${path}${patchFile}",
-          creates => "${path}/${patchId}",
+          creates => "${path}${patchId}",
+          cwd     => $path, 
           require => File ["${path}${patchFile}"],
         }
-
+        #notify {"wls::opatch win exec ${title} ${checkCommand} ${oracleHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}${patchId}":}
         exec { "exec opatch win ${title}":
-          command     => "${oracleHome}/OPatch/${oPatchCommand} ${path}/${patchFile}",
+          command     => "${checkCommand} ${oracleHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}${patchId}",
           logoutput   => true,
           require     => Exec["extract opatch ${patchFile} ${title}"],
         }    

@@ -68,14 +68,14 @@ end
 
 def get_opatch_patches(name)
 
-  	home = name.gsub("/","_").gsub("\\","_")
+  	home = name.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
     output3 = nil
 
     os = Facter.value(:operatingsystem)
     if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
       output3 = Facter::Util::Resolution.exec("sudo -u oracle "+name+"/OPatch/opatch lsinventory -patch_id -oh " + name)
     elsif ["windows"].include?os
-      output3 = Facter::Util::Resolution.exec(name+"\OPatch\opatch.bat lsinventory -patch_id -oh " + name)
+      output3 = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat lsinventory -patch_id -oh " + name)
     end
 
     patches = "Patches;"
