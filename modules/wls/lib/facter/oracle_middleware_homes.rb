@@ -66,6 +66,37 @@ def get_bsu_patches(name)
 end
 
 
+def get_opatch_patches(name)
+
+  	home = name.gsub("/","_").gsub("\\","_")
+    output3 = nil
+
+    os = Facter.value(:operatingsystem)
+    if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+      output3 = Facter::Util::Resolution.exec("sudo -u oracle "+name+"/OPatch/opatch lsinventory -patch_id -oh " + name)
+    elsif ["windows"].include?os
+      output3 = Facter::Util::Resolution.exec(name+"\OPatch\opatch.bat lsinventory -patch_id -oh " + name)
+    end
+
+    patches = "Patches;"
+    if output3.nil?
+      patches = "Error;"
+    else 
+       output3.each_line() do |li|
+         #Patch  14389126     : applied on Sun Feb 03 13:49:20 CET 2013
+         patches += li[5, li.index(':')-5 ].strip + ";" if (li['Patch'] and li[': applied on'] )
+       end
+    end
+    
+    Facter.add("ora_inst_patches#{home}") do
+      setcode do
+        patches
+      end
+    end
+
+end  
+
+
 # read weblogic domains in the admin  folder of the middleware home
 def get_domain(name,i)
 
@@ -353,6 +384,7 @@ def get_orainst_products(path)
       software =  ""
       doc.elements.each("/INVENTORY/HOME_LIST/HOME") do |element| 
         software += element.attributes["LOC"] + ";"
+        get_opatch_patches(element.attributes["LOC"])
       end
       return software
     else
@@ -390,10 +422,10 @@ end
 unless get_homes.nil?
   get_homes.each_with_index do |mdw, i|
      Facter.add("ora_mdw_#{i}_bsu") do
-      setcode do
+       setcode do
         get_bsu_patches(mdw)
-      end
-    end
+       end
+     end
   end 
 end
 

@@ -33,6 +33,7 @@ WLS WebLogic Features
 - domain OSB creation
 - can start the AdminServer for configuration 
 - apply bsu patch ( WebLogic Patch )
+- apply oracle patch ( OPatch )
 - create File or JDBC Persistence Store
 - create JMS Server
 - create JMS Module
@@ -65,6 +66,8 @@ WLS WebLogic Facter
     oracle installed products
         ora_inst_loc_data /opt/oracle/orainventory
         ora_inst_products /opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
+        ora_inst_patches_opt_oracle_wls_wls11g_oracle_common Patches;
+        ora_inst_patches_opt_oracle_wls_wls11g_oracle_osb1 Patches;14389126;
         
     Middleware home 0
         ora_mdw_0 /opt/oracle/wls/wls11g
@@ -120,6 +123,7 @@ WLS WebLogic Facter
     oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
     ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
     p13573621_1036_Generic.zip
+    p14389126_111160_Generic.zip
     wls1036_generic.jar
     wls1211_generic.jar
     
@@ -901,8 +905,6 @@ WebLogic configuration examples
      
      }
      
-     
-     
      class wls1036osb{
      
        if $jdkWls11gVersion == undef {
@@ -951,14 +953,14 @@ WebLogic configuration examples
        Wls::Installosb {
          mdwHome      => $osMdwHome,
          wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,  
+         fullJDKName  => $jdkWls11gJDK,	
          user         => $user,
          group        => $group,    
        }
        
        Wls::Nodemanager {
          wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,  
+         fullJDKName  => $jdkWls11gJDK,	
          user         => $user,
          group        => $group,
          serviceName  => $serviceName,  
@@ -978,23 +980,32 @@ WebLogic configuration examples
        wls::bsupatch{'p13573621':
          mdwHome      => $osMdwHome ,
          wlHome       => $osWlHome,
-         fullJDKName  => $defaultFullJDK,
-         patchId      => 'KZKQ', 
-         patchFile    => 'p13573621_1036_Generic.zip', 
+         fullJDKName  => $jdkWls11gJDK,
+         patchId      => 'KZKQ',	
+         patchFile    => 'p13573621_1036_Generic.zip',	
          user         => $user,
          group        => $group, 
          require      => Wls::Installosb['osbPS5'],
        }
      
+       wls::opatch{'14389126_osb_patch':
+         oracleHome   => "${osMdwHome}/Oracle_OSB1" ,
+         fullJDKName  => $jdkWls11gJDK,
+         patchId      => '14389126',	
+         patchFile    => 'p14389126_111160_Generic.zip',	
+         user         => $user,
+         group        => $group, 
+         require      => Wls::Bsupatch['p13573621'],
+       }
      
-      #nodemanager configuration and starting
-      wls::nodemanager{'nodemanager11g':
-        listenPort  => '5556',
-        require     => Wls::Installosb['osbPS5'],
-      }
+       #nodemanager configuration and starting
+       wls::nodemanager{'nodemanager11g':
+         listenPort  => '5556',
+         require     => Wls::Opatch['14389126_osb_patch'],
+       }
      
+     }          
      
-     }
      
      class wls12{
      
@@ -1058,4 +1069,4 @@ WebLogic configuration examples
        }
      
      }
-     
+          
