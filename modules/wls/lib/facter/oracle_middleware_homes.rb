@@ -68,10 +68,10 @@ end
 
 def get_opatch_patches(name)
 
-  	home = name.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
-    output3 = nil
+	  home = name.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
 
     os = Facter.value(:operatingsystem)
+
     if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
       output3 = Facter::Util::Resolution.exec("sudo -u oracle "+name+"/OPatch/opatch lsinventory -patch_id -oh " + name)
     elsif ["windows"].include?os
@@ -82,7 +82,7 @@ def get_opatch_patches(name)
     if output3.nil?
       patches = "Error;"
     else 
-       output3.each_line() do |li|
+       output3.each_line do |li|
          #Patch  14389126     : applied on Sun Feb 03 13:49:20 CET 2013
          patches += li[5, li.index(':')-5 ].strip + ";" if (li['Patch'] and li[': applied on'] )
        end
@@ -93,6 +93,7 @@ def get_opatch_patches(name)
         patches
       end
     end
+
 
 end  
 
@@ -382,9 +383,14 @@ def get_orainst_products(path)
       file = File.read( path+"/ContentsXML/inventory.xml" )
       doc = REXML::Document.new file
       software =  ""
-      doc.elements.each("/INVENTORY/HOME_LIST/HOME") do |element| 
-        software += element.attributes["LOC"] + ";"
-        get_opatch_patches(element.attributes["LOC"])
+      doc.elements.each("/INVENTORY/HOME_LIST/HOME") do |element|
+      	str = element.attributes["LOC"] 
+        software += str + ";"
+        if str.include? "oracle_common"
+          #skip, a bug 
+        else
+          get_opatch_patches(str)
+        end  
       end
       return software
     else

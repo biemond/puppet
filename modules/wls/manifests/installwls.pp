@@ -24,7 +24,7 @@
 #  # set the defaults
 #  Wls::Installwls {
 #    version      => $wls12cVersion,
-#    versionJdk   => $jdkWls12cVersion,
+#    fullJDKName  => $jdkWls12cJDK,
 #    user         => $user,
 #    group        => $group,    
 #  }
@@ -36,10 +36,10 @@
 #
 # 
 
-define wls::installwls( $version    = undef, 
-                        $versionJdk = undef,
-                        $user       = 'oracle',
-                        $group      = 'dba',
+define wls::installwls( $version     = undef, 
+                        $fullJDKName = undef,
+                        $user        = 'oracle',
+                        $group       = 'dba',
                       ) {
 
    notify {"wls::installwls ${version}":}
@@ -55,21 +55,6 @@ define wls::installwls( $version    = undef,
    $wlsFileDefault      = $wlsFile1211 
    $wlsVersionDefault   = $wlsVersion1211 
 
-
-   $jdkVersion7u7    = "7u7" 
-   $fullJDKName7u7   = "jdk1.7.0_07"
-
-   $jdkVersion7u8    = "7u8" 
-   $fullJDKName7u8   = "jdk1.7.0_08"
-
-   $jdkVersion7u9    = "7u9" 
-   $fullJDKName7u9   = "jdk1.7.0_09"
-
-   $jdkVersion6u35   = "6u35" 
-   $fullJDKName6u35  = "jdk1.6.0_35"
-
-
-   $jdkVersionDefault   = $jdkVersion7u7 
 
    case $operatingsystem {
       centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -114,29 +99,6 @@ define wls::installwls( $version    = undef,
       $wlsVersion =  $wlsVersionDefault 
     } 
 
-    if $versionJdk == undef {
-      $jdkVersion = $jdkVersionDefault
-    } else {
-      $jdkVersion = $versionJdk
-    } 
-     
-    # is it a know jdk version like 7u7
-
-    if $jdkVersion      == $jdkVersion7u7 {
-       $fullJDKName  =  $fullJDKName7u7
-
-    } elsif $jdkVersion == $jdkVersion7u8 {
-       $fullJDKName  =  $fullJDKName7u8
-
-    } elsif $jdkVersion == $jdkVersion7u9 {
-       $fullJDKName  =  $fullJDKName7u9
-
-    } elsif $jdkVersion == $jdkVersion6u35 {
-       $fullJDKName  =  $fullJDKName6u35
-
-    } else {
-        fail("Unrecognized jdk version")        
-    }
 
    # for linux , create a oracle user plus a dba group
    case $operatingsystem {
@@ -154,7 +116,7 @@ define wls::installwls( $version    = undef,
               shell      => '/bin/bash',
               password   => '$1$IX3YD7fb$JndzPUOGNCRYp/FG0GM1y/',  
               home       => '/home/oracle',
-              comment    => 'This user was created by Puppet',
+              comment    => 'This user oracle was created by Puppet',
               require    => Group[$group],
               managehome => true, 
           }

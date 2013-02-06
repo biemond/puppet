@@ -195,7 +195,7 @@ WebLogic configuration examples
       Wls::Wlsdeploy {
         wlHome       => $osWlHome,
         osbHome      => $osbHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => "localhost",
@@ -253,7 +253,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/osbDomain",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => "localhost",
@@ -316,7 +316,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/osbDomain",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => "localhost",
@@ -542,10 +542,6 @@ WebLogic configuration examples
     
     class wls_osb_domain{
     
-      if $jdkWls11gVersion == undef {
-        $jdkWls11gVersion = "7u9"
-        notify {"wls11g jdkWls11gVersion not defined,use defaults":}
-      }
     
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_09'
@@ -583,7 +579,7 @@ WebLogic configuration examples
       Wls::Wlsdomain {
         wlHome       => $osWlHome,
         mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
       }
@@ -608,7 +604,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/${wlsDomainName}",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => $address,
@@ -631,11 +627,6 @@ WebLogic configuration examples
     }
     
     class wls11g_domain{
-    
-      if $jdkWls11gVersion == undef {
-        $jdkWls11gVersion = "7u9"
-        notify {"wls11g jdkWls11gVersion not defined,use defaults":}
-      }
     
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_09'
@@ -672,7 +663,7 @@ WebLogic configuration examples
       Wls::Wlsdomain {
         wlHome       => $osWlHome,
         mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
       }
@@ -697,7 +688,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/${wlsDomainName}",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => $address,
@@ -723,10 +714,6 @@ WebLogic configuration examples
     
     class wls12c_domain{
     
-      if $jdkWls12gVersion == undef {
-        $jdkWls12gVersion = "7u9"
-        notify {"wls12g jdkWls12gVersion not defined,use defaults":}
-      }
     
       if $jdkWls12gJDK == undef {
         $jdkWls12gJDK = 'jdk1.7.0_09'
@@ -763,7 +750,7 @@ WebLogic configuration examples
       Wls::Wlsdomain {
         wlHome       => $osWlHome,
         mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls12gJDK,  
+        fullJDKName  => $jdkWls12gJDK,	
         user         => $user,
         group        => $group,    
       }
@@ -786,7 +773,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/${wlsDomainName}",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls12gJDK,  
+        fullJDKName  => $jdkWls12gJDK,	
         user         => $user,
         group        => $group,
         address      => $address,
@@ -810,23 +797,15 @@ WebLogic configuration examples
     
     }
     
+        
 
 
 ### templates.pp
 
-
-
-     include jdk7
      include wls
      
      
-     
      class osb_oepe{
-     
-       if $jdkWls11gVersion == undef {
-         $jdkWls11gVersion = "7u9"
-         notify {"wls11g jdkWls11gVersion not defined,use defaults":}
-       }
      
        if $jdkWls11gJDK == undef {
          $jdkWls11gJDK = 'jdk1.7.0_09'
@@ -834,11 +813,6 @@ WebLogic configuration examples
      
        if $wls11gVersion == undef {
          $wls11gVersion = "1036"
-       }
-     
-       jdk7::install7{'jdk7_husdon':
-         version => $jdkWls11gVersion,
-         x64     => "true",
        }
      
        $osMdwHome    = "/opt/oracle/wls/wls11g"
@@ -852,7 +826,7 @@ WebLogic configuration examples
        # set the defaults
        Wls::Installwls {
          version      => $wls11gVersion,
-         versionJdk   => $jdkWls11gVersion,
+         fullJDKName  => $jdkWls11gJDK,
          user         => $user,
          group        => $group,    
        }
@@ -861,15 +835,13 @@ WebLogic configuration examples
        Wls::Installosb {
          mdwHome      => $osMdwHome,
          wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,  
+         fullJDKName  => $jdkWls11gJDK,	
          user         => $user,
          group        => $group,    
        }
      
        # install
-       wls::installwls{'11gPS5_hudson':
-         require      => Jdk7::Install7['jdk7_husdon'],
-       }
+       wls::installwls{'11gPS5_hudson':}
      
      
        # download oepe to hudson server
@@ -905,12 +877,9 @@ WebLogic configuration examples
      
      }
      
-     class wls1036osb{
      
-       if $jdkWls11gVersion == undef {
-         $jdkWls11gVersion = "7u9"
-         notify {"wls11g jdkWls11gVersion not defined,use defaults":}
-       }
+     
+     class wls1036osb{
      
        if $jdkWls11gJDK == undef {
          $jdkWls11gJDK = 'jdk1.7.0_09'
@@ -920,11 +889,6 @@ WebLogic configuration examples
          $wls11gVersion = "1036"
        }
      
-     
-       jdk7::install7{'jdk7_2':
-         version => $jdkWls11gVersion,
-         x64     => "true",
-       }
       
        case $operatingsystem {
           centos, redhat, OracleLinux, ubuntu, debian: { 
@@ -945,7 +909,7 @@ WebLogic configuration examples
        # set the defaults
        Wls::Installwls {
          version      => $wls11gVersion,
-         versionJdk   => $jdkWls11gVersion,
+         fullJDKName  => $jdkWls11gVersion,
          user         => $user,
          group        => $group,    
        }
@@ -968,9 +932,7 @@ WebLogic configuration examples
        
      
        # install
-       wls::installwls{'11gPS5':
-         require      => Jdk7::Install7['jdk7_2'],
-       }
+       wls::installwls{'11gPS5':}
      
        wls::installosb{'osbPS5':
          osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
@@ -1004,15 +966,10 @@ WebLogic configuration examples
          require     => Wls::Opatch['14389126_osb_patch'],
        }
      
-     }          
-     
+     }
      
      class wls12{
      
-       if $jdkWls12cVersion == undef {
-         $jdkWls12cVersion = "7u9"
-         notify {"wls12 jdkWls12cVersion not defined,use defaults":}
-       }
      
        if $jdkWls12cJDK == undef {
          $jdkWls12cJDK = 'jdk1.7.0_09'
@@ -1020,11 +977,6 @@ WebLogic configuration examples
      
        if $wls12cVersion == undef {
          $wls12cVersion = "1211"
-       }
-     
-       jdk7::install7{'jdk7':
-         version => $jdkWls12cVersion,
-         x64     => "true",
        }
        
        case $operatingsystem {
@@ -1044,23 +996,21 @@ WebLogic configuration examples
        # set the defaults
        Wls::Installwls {
          version      => $wls12cVersion,
-         versionJdk   => $jdkWls12cVersion,
+         fullJDKName  => $jdkWls12cJDK,
          user         => $user,
          group        => $group,    
        }
      
        Wls::Nodemanager {
          wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls12cJDK,  
+         fullJDKName  => $jdkWls12cJDK,	
          user         => $user,
          group        => $group,
          serviceName  => $serviceName,  
        }
        
        # install
-       wls::installwls{'wls12c':
-         require      => Jdk7::Install7['jdk7'],
-       }
+       wls::installwls{'wls12c':}
      
        #nodemanager configuration and starting
        wls::nodemanager{'nodemanager':
@@ -1068,5 +1018,4 @@ WebLogic configuration examples
          require      => Wls::Installwls['wls12c'],
        }
      
-     }
-          
+     }           
