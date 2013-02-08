@@ -18,7 +18,7 @@
 # 
 # 
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#     centos, redhat, OracleLinux, Ubuntu, debian: { 
 #       $osMdwHome    = "/opt/oracle/wls/wls11g"
 #       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
 #       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
@@ -117,7 +117,7 @@ if ( $continue ) {
    
 
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = '/install/'
@@ -164,7 +164,7 @@ if ( $continue ) {
    }
     
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
         
         exec { "execwlst ux ${domain} ${title}":
           command     => "${javaCommand} ${path}domain_${domain}.py",

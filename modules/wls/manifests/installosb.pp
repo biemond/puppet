@@ -8,9 +8,10 @@
 #    $wls11gVersion = "1036"
 #
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, ubuntu, debian: { 
-#       $osMdwHome    = "/opt/oracle/wls/wls11g"
-#       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+#       $osMdwHome    = "/opt/wls/Middleware11gR1"
+#       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+#       $oracleHome   = "/opt/wls/"
 #       $user         = "oracle"
 #       $group        = "dba"
 #     }
@@ -41,6 +42,7 @@
 
 define wls::installosb($mdwHome         = undef,
                        $wlHome          = undef,
+                       $oracleHome      = undef,
                        $fullJDKName     = undef,
                        $osbFile         = undef, 
                        $oepeHome        = undef,
@@ -49,13 +51,13 @@ define wls::installosb($mdwHome         = undef,
                     ) {
 
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath        = "/usr/java/${fullJDKName}/bin;/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = '/install/'
-        $oracleHome      = "${mdwHome}/Oracle_OSB1"
+        $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
         $oraInstPath     = "/etc/"
-        $oraInventory    = "/opt/oracle/orainventory"
+        $oraInventory    = "${oracleHome}/orainventory"
         
         Exec { path      => $execPath,
                user      => $user,
@@ -74,7 +76,7 @@ define wls::installosb($mdwHome         = undef,
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\"
-        $oracleHome       = "${mdwHome}/Oracle_OSB1"
+        $osbOracleHome    = "${mdwHome}/Oracle_OSB1"
         $oraInventory     = "C:\Program Files\Oracle\Inventory"
         
         Exec { path      => $execPath,
@@ -86,15 +88,15 @@ define wls::installosb($mdwHome         = undef,
    }
 
      # check if the osb already exists
-     $found = oracle_exists( $oracleHome )
+     $found = oracle_exists( $osbOracleHome )
      if $found == undef {
        $continue = true
      } else {
        if ( $found ) {
-         notify {"wls::installosb ${title} ${oracleHome} already exists":}
+         notify {"wls::installosb ${title} ${osbOracleHome} already exists":}
          $continue = false
        } else {
-         notify {"wls::installosb ${title} ${oracleHome} does not exists":}
+         notify {"wls::installosb ${title} ${osbOracleHome} does not exists":}
          $continue = true 
        }
      }
@@ -127,7 +129,7 @@ if ( $continue ) {
    $command  = "-silent -response ${path}silent_osb.xml "
     
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
@@ -148,12 +150,12 @@ if ( $continue ) {
         exec { "install osb ${title}":
           command     => "${path}osb/Disk1/install/linux64/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
           require     => File ["${oraInstPath}/oraInst.loc"],
-          creates     => $oracleHome,
+          creates     => $osbOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
-        exec { "sleep 1 min for osb install ${title}":
-          command     => "/bin/sleep 60",
+        exec { "sleep 3 min for osb install ${title}":
+          command     => "/bin/sleep 180",
           require     => Exec ["install osb ${title}"],
         }    
 
@@ -191,11 +193,11 @@ if ( $continue ) {
           command     => "${path}Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
           require     => Exec["icacls osb disk ${title}"],
-          creates     => $oracleHome, 
+          creates     => $osbOracleHome, 
         }    
 
-        exec { "sleep 1 min for osb install ${title}":
-          command     => "${checkCommand} sleep 90",
+        exec { "sleep 3 min for osb install ${title}":
+          command     => "${checkCommand} sleep 180",
           require     => Exec ["install osb ${title}"],
         }    
 

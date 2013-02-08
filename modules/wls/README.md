@@ -122,6 +122,239 @@ WLS WebLogic Facter
 WebLogic configuration examples
 -------------------------------
 
+### templates.pp
+
+    include wls
+    
+    
+    class osb_oepe{
+    
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
+    
+      if $wls11gVersion == undef {
+        $wls11gVersion = "1036"
+      }
+    
+      $osOracleHome = "/opt/wls"
+      $osMdwHome    = "/opt/wls/Middleware11gR1"
+      $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+      $user         = "oracle"
+      $group        = "dba"
+    
+      $oepeFile     = "oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip"
+    
+      # set the defaults
+      Wls::Installwls {
+        version      => $wls11gVersion,
+        fullJDKName  => $jdkWls11gJDK,
+        oracleHome   => $osOracleHome,
+        mdwHome      => $osMdwHome,
+        user         => $user,
+        group        => $group,    
+      }
+    
+      Wls::Installosb {
+        mdwHome      => $osMdwHome,
+        wlHome       => $osWlHome,
+        oracleHome   => $osOracleHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+      }
+    
+      # install
+      wls::installwls{'11gPS5_hudson':}
+    
+      # download oepe to hudson server
+      if ! defined(File["/install/${oepeFile}"]) {
+        file { "/install/${oepeFile}":
+           source  => "puppet:///modules/wls/${oepeFile}",
+           require => Wls::Installwls['11gPS5_hudson'],
+           ensure  => present,
+           mode    => 0775,
+        }
+      }
+    
+      # extract oepe in middleware home
+      if ! defined(Exec["extract ${oepeFile}"]) {
+         exec { "extract ${oepeFile}":
+              command   => "unzip -n /install/${oepeFile} -d ${osMdwHome}/oepe11.1.1.8",
+              require   => File["/install/${oepeFile}"],
+              creates   => "${osMdwHome}/oepe11.1.1.8",
+              path      => "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:",
+              user      => $user,
+              group     => $group,
+              logoutput => true,
+             }
+      }
+    
+      #install OSB with OEPE
+      wls::installosb{'osbPS5_oepe':
+        osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+        oepeHome     => 'oepe11.1.1.8',
+        require      => Exec["extract ${oepeFile}"],
+      }
+    
+    }
+    
+    
+    
+    class wls1036osb{
+    
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
+    
+      if $wls11gVersion == undef {
+        $wls11gVersion = "1036"
+      }
+    
+     
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $user         = "oracle"
+           $group        = "dba"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+         }
+      }
+    
+      # set the defaults
+      Wls::Installwls {
+        version      => $wls11gVersion,
+        fullJDKName  => $jdkWls11gJDK,
+        oracleHome   => $osOracleHome,
+        mdwHome      => $osMdwHome,
+        user         => $user,
+        group        => $group,    
+      }
+    
+      Wls::Installosb {
+        mdwHome      => $osMdwHome,
+        wlHome       => $osWlHome,
+        oracleHome   => $osOracleHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+      }
+      
+      Wls::Nodemanager {
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,
+        serviceName  => $serviceName,  
+      }
+      
+    
+      # install
+      wls::installwls{'11gPS5':}
+    
+      wls::bsupatch{'p14736139':
+         mdwHome      => $osMdwHome ,
+         wlHome       => $osWlHome,
+         fullJDKName  => $jdkWls11gJDK,
+         patchId      => 'HYKC',    
+         patchFile    => 'p14736139_1036_Generic.zip',  
+         user         => $user,
+         group        => $group, 
+         require      => Wls::Installwls['11gPS5'],
+       }
+    
+    
+       wls::installosb{'osbPS5':
+         osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+         require      => Wls::Bsupatch['p14736139'],
+       }
+    
+      wls::opatch{'14389126_osb_patch':
+        oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
+        fullJDKName       => $jdkWls11gJDK,
+        patchId           => '14389126',	
+        patchFile         => 'p14389126_111160_Generic.zip',	
+        user              => $user,
+        group             => $group, 
+        require           => Wls::Installosb['osbPS5'],
+      }
+    
+      #nodemanager configuration and starting
+      wls::nodemanager{'nodemanager11g':
+        listenPort  => '5556',
+        require     => Wls::Opatch['14389126_osb_patch'],
+      }
+    
+    }
+    
+    
+    class wls12{
+    
+    
+      if $jdkWls12cJDK == undef {
+        $jdkWls12cJDK = 'jdk1.7.0_09'
+      }
+    
+      if $wls12cVersion == undef {
+        $wls12cVersion = "1211"
+      }
+    
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware12g"
+           $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
+           $user         = "oracle"
+           $group        = "dba"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/Middleware12g"
+           $osWlHome     = "c:/oracle/Middleware12g/wlserver_12.1"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
+         }
+      }
+    
+      # set the defaults
+      Wls::Installwls {
+        version      => $wls12cVersion,
+        fullJDKName  => $jdkWls12cJDK,
+        oracleHome   => $osOracleHome,
+        mdwHome      => $osMdwHome,
+        user         => $user,
+        group        => $group,    
+      }
+      
+      Wls::Nodemanager {
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls12cJDK,	
+        user         => $user,
+        group        => $group,
+        serviceName  => $serviceName,  
+      }
+      
+      # install
+      wls::installwls{'wls12c':}
+    
+      #nodemanager configuration and starting
+      wls::nodemanager{'nodemanager':
+        listenPort   => '5656',
+        require      => Wls::Installwls['wls12c'],
+      }
+    
+    }
+    
 
 ### templates_app.pp
 
@@ -129,8 +362,10 @@ WebLogic configuration examples
     
     class application_osb {
     
-       include wls1036osb, wls_osb_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS, wls_OSB_application_jar
-       Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS'] -> Class['wls_OSB_application_jar']
+       include wls1036osb, wls_osb_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS
+       #, wls_OSB_application_jar
+       Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
+       # -> Class['wls_OSB_application_jar']
     }
     
     class application_wls12 {
@@ -159,8 +394,9 @@ WebLogic configuration examples
         $jdkWls11gJDK = 'jdk1.7.0_09'
       }
     
-      $osbHome      = "/opt/oracle/wls/wls11g/Oracle_OSB1"
-      $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
+    
+      $osbHome      = "/opt/wls/Middleware11gR1/Oracle_OSB1"
+      $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
       $user         = "oracle"
       $group        = "dba"
     
@@ -224,20 +460,20 @@ WebLogic configuration examples
       }
     
       case $operatingsystem {
-         centos, redhat, OracleLinux, ubuntu, debian: { 
-           $osMdwHome    = "/opt/oracle/wls/wls11g"
-           $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
          }
          windows: { 
-           $osMdwHome    = "c:/oracle/wls/wls11g"
-           $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "c:/oracle/wls/wls11g/admin"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $osDomainPath = "c:/oracle/wls11g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
-           $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
          }
       }
     
@@ -287,20 +523,20 @@ WebLogic configuration examples
     
     
       case $operatingsystem {
-         centos, redhat, OracleLinux, ubuntu, debian: { 
-           $osMdwHome    = "/opt/oracle/wls/wls11g"
-           $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
          }
          windows: { 
-           $osMdwHome    = "c:/oracle/wls/wls11g"
-           $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "c:/oracle/wls/wls11g/admin"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $osDomainPath = "c:/oracle/wls11g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
-           $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
          }
       }
     
@@ -549,23 +785,25 @@ WebLogic configuration examples
      
      
       case $operatingsystem {
-         centos, redhat, OracleLinux, ubuntu, debian: { 
-           $osMdwHome    = "/opt/oracle/wls/wls11g"
-           $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
          }
          windows: { 
-           $osMdwHome    = "c:/oracle/wls/wls11g"
-           $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "c:/oracle/wls/wls11g/admin"
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $osDomainPath = "c:/oracle/wls11g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
          }
       }
-    
+      
       # set the defaults
     
       Wls::Wlsdomain {
@@ -631,24 +869,27 @@ WebLogic configuration examples
       $address         = "localhost"
       $wlsUser         = "weblogic"
       $password        = "weblogic1"
-     
+    
       case $operatingsystem {
-         centos, redhat, OracleLinux, ubuntu, debian: { 
-           $osMdwHome    = "/opt/oracle/wls/wls11g"
-           $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "/opt/oracle/wls/wls11g/admin"
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $osDomainPath = "/opt/wls/Middleware11gR1/admin" 
            $user         = "oracle"
            $group        = "dba"
          }
          windows: { 
-           $osMdwHome    = "c:/oracle/wls/wls11g"
-           $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-           $osDomainPath = "c:/oracle/wls/wls11g/admin"
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $osDomainPath = "c:/oracle/wls11g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
          }
       }
+    
     
       # set the defaults
     
@@ -720,20 +961,22 @@ WebLogic configuration examples
       $password        = "weblogic1"
      
       case $operatingsystem {
-         centos, redhat, OracleLinux, ubuntu, debian: { 
-           $osMdwHome    = "/opt/oracle/wls/wls12c"
-           $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
-           $osDomainPath = "/opt/oracle/wls/wls12c/admin"
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware12g"
+           $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
+           $osDomainPath = "/opt/wls/Middleware12g/admin"
            $user         = "oracle"
            $group        = "dba"
          }
          windows: { 
-           $osMdwHome    = "c:/oracle/wls/wls12c"
-           $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
-           $osDomainPath = "c:/oracle/wls/wls12c/admin"
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/Middleware12g"
+           $osWlHome     = "c:/oracle/Middleware12g/wlserver_12.1"
+           $osDomainPath = "c:/oracle/Middleware12g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
-           $serviceName  = "C_oracle_wls_wls12g_wlserver_12.1"
+           $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
          }
       }
     
@@ -789,225 +1032,4 @@ WebLogic configuration examples
     
     }
     
-        
-
-
-### templates.pp
-
-     include wls
-     
-     
-     class osb_oepe{
-     
-       if $jdkWls11gJDK == undef {
-         $jdkWls11gJDK = 'jdk1.7.0_09'
-       }
-     
-       if $wls11gVersion == undef {
-         $wls11gVersion = "1036"
-       }
-     
-       $osMdwHome    = "/opt/oracle/wls/wls11g"
-       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-       $user         = "oracle"
-       $group        = "dba"
-     
-       $oepeFile     = "oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip"
-     
-     
-       # set the defaults
-       Wls::Installwls {
-         version      => $wls11gVersion,
-         fullJDKName  => $jdkWls11gJDK,
-         user         => $user,
-         group        => $group,    
-       }
-     
-     
-       Wls::Installosb {
-         mdwHome      => $osMdwHome,
-         wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,	
-         user         => $user,
-         group        => $group,    
-       }
-     
-       # install
-       wls::installwls{'11gPS5_hudson':}
-     
-     
-       # download oepe to hudson server
-       if ! defined(File["/install/${oepeFile}"]) {
-         file { "/install/${oepeFile}":
-            source  => "puppet:///modules/wls/${oepeFile}",
-            require => Wls::Installwls['11gPS5_hudson'],
-            ensure  => present,
-            mode    => 0775,
-         }
-       }
-     
-       # extract oepe in middleware home
-       if ! defined(Exec["extract ${oepeFile}"]) {
-          exec { "extract ${oepeFile}":
-               command   => "unzip -n /install/${oepeFile} -d ${osMdwHome}/oepe11.1.1.8",
-               require   => File["/install/${oepeFile}"],
-               creates   => "${osMdwHome}/oepe11.1.1.8",
-               path      => "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:",
-               user      => $user,
-               group     => $group,
-               logoutput => true,
-              }
-       }
-     
-       #install OSB with OEPE
-       wls::installosb{'osbPS5_oepe':
-         osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
-         oepeHome     => 'oepe11.1.1.8',
-         require      => Exec["extract ${oepeFile}"],
-       }
-     
-     
-     }
-     
-     
-     
-     class wls1036osb{
-     
-       if $jdkWls11gJDK == undef {
-         $jdkWls11gJDK = 'jdk1.7.0_09'
-       }
-     
-       if $wls11gVersion == undef {
-         $wls11gVersion = "1036"
-       }
-     
-      
-       case $operatingsystem {
-          centos, redhat, OracleLinux, ubuntu, debian: { 
-            $osMdwHome    = "/opt/oracle/wls/wls11g"
-            $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-            $user         = "oracle"
-            $group        = "dba"
-          }
-          windows: { 
-            $osMdwHome    = "c:/oracle/wls/wls11g"
-            $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-            $user         = "Administrator"
-            $group        = "Administrators"
-            $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
-          }
-       }
-     
-       # set the defaults
-       Wls::Installwls {
-         version      => $wls11gVersion,
-         fullJDKName  => $jdkWls11gVersion,
-         user         => $user,
-         group        => $group,    
-       }
-     
-       Wls::Installosb {
-         mdwHome      => $osMdwHome,
-         wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,	
-         user         => $user,
-         group        => $group,    
-       }
-       
-       Wls::Nodemanager {
-         wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,	
-         user         => $user,
-         group        => $group,
-         serviceName  => $serviceName,  
-       }
-       
-     
-       # install
-       wls::installwls{'11gPS5':}
-     
-       wls::installosb{'osbPS5':
-         osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
-         require      => Wls::Installwls['11gPS5'],
-       }
-     
-       wls::bsupatch{'p13573621':
-         mdwHome      => $osMdwHome ,
-         wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,
-         patchId      => 'KZKQ',	
-         patchFile    => 'p13573621_1036_Generic.zip',	
-         user         => $user,
-         group        => $group, 
-         require      => Wls::Installosb['osbPS5'],
-       }
-     
-       wls::opatch{'14389126_osb_patch':
-         oracleHome   => "${osMdwHome}/Oracle_OSB1" ,
-         fullJDKName  => $jdkWls11gJDK,
-         patchId      => '14389126',	
-         patchFile    => 'p14389126_111160_Generic.zip',	
-         user         => $user,
-         group        => $group, 
-         require      => Wls::Bsupatch['p13573621'],
-       }
-     
-       #nodemanager configuration and starting
-       wls::nodemanager{'nodemanager11g':
-         listenPort  => '5556',
-         require     => Wls::Opatch['14389126_osb_patch'],
-       }
-     
-     }
-     
-     class wls12{
-     
-     
-       if $jdkWls12cJDK == undef {
-         $jdkWls12cJDK = 'jdk1.7.0_09'
-       }
-     
-       if $wls12cVersion == undef {
-         $wls12cVersion = "1211"
-       }
-       
-       case $operatingsystem {
-          centos, redhat, OracleLinux, ubuntu, debian: { 
-            $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
-            $user         = "oracle"
-            $group        = "dba"
-          }
-          windows: { 
-            $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
-            $user         = "Administrator"
-            $group        = "Administrators"
-            $serviceName  = "C_oracle_wls_wls12c_wlserver_12.1"
-          }
-       }
-     
-       # set the defaults
-       Wls::Installwls {
-         version      => $wls12cVersion,
-         fullJDKName  => $jdkWls12cJDK,
-         user         => $user,
-         group        => $group,    
-       }
-     
-       Wls::Nodemanager {
-         wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls12cJDK,	
-         user         => $user,
-         group        => $group,
-         serviceName  => $serviceName,  
-       }
-       
-       # install
-       wls::installwls{'wls12c':}
-     
-       #nodemanager configuration and starting
-       wls::nodemanager{'nodemanager':
-         listenPort   => '5656',
-         require      => Wls::Installwls['wls12c'],
-       }
-     
-     } 
+    

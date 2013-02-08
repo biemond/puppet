@@ -8,7 +8,7 @@
 #    $jdkWls11gJDK = 'jdk1.7.0_09'
 # 
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 #       $oracleHome   = "/opt/oracle/wls/wls11g/Oracle_OSB1"
 #       $user         = "oracle"
 #       $group        = "dba"
@@ -21,26 +21,26 @@
 #  }
 #
 #  wls::opatch{'14389126_osb_patch':
-#    oracleHome   => $oracleHome ,
-#    fullJDKName  => $defaultFullJDK,
-#    patchId      => '14389126',	
-#    patchFile    => 'p14389126_111160_Generic.zip',	
-#    user         => $user,
-#    group        => $group, 
+#    oracleProductHome => $oracleHome ,
+#    fullJDKName       => $defaultFullJDK,
+#    patchId           => '14389126',	
+#    patchFile         => 'p14389126_111160_Generic.zip',	
+#    user              => $user,
+#    group             => $group, 
 #  }
 ## 
 
 
-define wls::opatch(  $oracleHome      = undef,
-                     $fullJDKName     = undef, 
-                     $patchId         = undef,
-                     $patchFile       = undef,	
-                     $user            = 'oracle',
-                     $group           = 'dba',
+define wls::opatch(  $oracleProductHome = undef,
+                     $fullJDKName       = undef, 
+                     $patchId           = undef,
+                     $patchFile         = undef,	
+                     $user              = 'oracle',
+                     $group             = 'dba',
                     ) {
 
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $path             = '/install'
@@ -65,7 +65,7 @@ define wls::opatch(  $oracleHome      = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = "c:\\temp\\" 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
-        $oracleHomeWin    = slash_replace($oracleHome)
+        $oracleHomeWin    = slash_replace($oracleProductHome)
 
         Exec { path      => $execPath,
         	     logoutput => true,
@@ -86,15 +86,15 @@ define wls::opatch(  $oracleHome      = undef,
 
 
      # check if the opatch already is installed 
-     $found = opatch_exists($oracleHome,$patchId)
+     $found = opatch_exists($oracleProductHome,$patchId)
      if $found == undef {
        $continue = true
      } else {
        if ( $found ) {
-         notify {"wls::opatch ${title} ${oracleHome} already exists":}
+         notify {"wls::opatch ${title} ${oracleProductHome} already exists":}
          $continue = false
        } else {
-         notify {"wls::opatch ${title} ${oracleHome} does not exists":}
+         notify {"wls::opatch ${title} ${oracleProductHome} does not exists":}
          $continue = true 
        }
      }
@@ -105,7 +105,7 @@ if ( $continue ) {
    $oPatchCommand  = "opatch apply -silent -jre"
     
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "extract opatch ${patchFile} ${title}":
           command => "unzip -n ${path}/${patchFile} -d ${path}",
@@ -114,7 +114,7 @@ if ( $continue ) {
         }
         
         exec { "exec opatch ux ${title}":
-          command     => "${oracleHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleHome} ${path}/${patchId}",
+          command     => "${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleProductHome} ${path}/${patchId}",
           require     => Exec["extract opatch ${patchFile} ${title}"],
         }    
              
@@ -127,9 +127,9 @@ if ( $continue ) {
           cwd     => $path, 
           require => File ["${path}${patchFile}"],
         }
-        #notify {"wls::opatch win exec ${title} ${checkCommand} ${oracleHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}${patchId}":}
+        #notify {"wls::opatch win exec ${title} ${checkCommand} ${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}${patchId}":}
         exec { "exec opatch win ${title}":
-          command     => "${checkCommand} ${oracleHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}${patchId}",
+          command     => "${checkCommand} ${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}${patchId}",
           logoutput   => true,
           require     => Exec["extract opatch ${patchFile} ${title}"],
         }    

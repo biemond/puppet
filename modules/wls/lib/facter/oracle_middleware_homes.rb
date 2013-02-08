@@ -7,12 +7,10 @@ def get_homes()
 
   os = Facter.value(:operatingsystem)
 
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
     beafile = "/home/oracle/bea/beahomelist"
-
   elsif ["windows"].include?os 
     beafile = "c:/bea/beahomelist"
-
   else
     return nil 
   end
@@ -33,7 +31,7 @@ end
 def get_bsu_patches(name)
   os = Facter.value(:operatingsystem)
 
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
    if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
     output2 = Facter::Util::Resolution.exec('java -Xms256m -Xmx512m -jar '+ name+'/utils/bsu/patch-client.jar -report -bea_home='+name+' -output_format=xml')
     if output2.nil?
@@ -68,33 +66,24 @@ end
 
 def get_opatch_patches(name)
 
-	  home = name.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
-
     os = Facter.value(:operatingsystem)
 
-    if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
       output3 = Facter::Util::Resolution.exec("sudo -u oracle "+name+"/OPatch/opatch lsinventory -patch_id -oh " + name)
     elsif ["windows"].include?os
       output3 = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat lsinventory -patch_id -oh " + name)
     end
 
-    patches = "Patches;"
+    opatches = "Patches;"
     if output3.nil?
-      patches = "Error;"
+      opatches = "Error;"
     else 
-       output3.each_line do |li|
-         #Patch  14389126     : applied on Sun Feb 03 13:49:20 CET 2013
-         patches += li[5, li.index(':')-5 ].strip + ";" if (li['Patch'] and li[': applied on'] )
-       end
-    end
-    
-    Facter.add("ora_inst_patches#{home}") do
-      setcode do
-        patches
+      output3.each_line do |li|
+        opatches += li[5, li.index(':')-5 ].strip + ";" if (li['Patch'] and li[': applied on'] )
       end
     end
-
-
+   
+    return opatches
 end  
 
 
@@ -103,7 +92,7 @@ def get_domain(name,i)
 
   os = Facter.value(:operatingsystem)
 
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
 
     if FileTest.exists?(name+'/admin')
       output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/admin')
@@ -152,7 +141,7 @@ def get_domain(name,i)
 
   output2.split(/\r?\n/).each_with_index do |domain, n|
 
-    if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
       domainfile = name+'/admin/'+domain+'/config/config.xml'
 
     elsif ["windows"].include?os 
@@ -162,7 +151,6 @@ def get_domain(name,i)
     if FileTest.exists?(domainfile)
       file = File.read( domainfile)
       doc = REXML::Document.new file
-
       root = doc.root
 
       Facter.add("ora_mdw_#{i}_domain_#{n}") do
@@ -337,7 +325,7 @@ def get_domain(name,i)
 end
 
 def get_nodemanagers()
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?Facter.value(:operatingsystem)
     output = Facter::Util::Resolution.exec("/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"port:\" , substr(\$0,index(\$0,\"-DListenPort\")+13,4) } '")
     if output.nil?
       return nil
@@ -348,7 +336,7 @@ def get_nodemanagers()
 end
 
 def get_wlsservers()
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?Facter.value(:operatingsystem)
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?Facter.value(:operatingsystem)
     output = Facter::Util::Resolution.exec("/bin/ps -eo pid,cmd | /bin/grep -i weblogic.server | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"name:\" ,substr(\$0,index(\$0,\"weblogic.Name\")+14,12) }'")
     if output.nil?
       return nil 
@@ -360,7 +348,7 @@ end
 
 def get_orainst_loc()
   os = Facter.value(:operatingsystem)
-  if ["centos", "redhat","OracleLinux","ubuntu","debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
     if FileTest.exists?("/etc/oraInst.loc")
       str = ""
       output = File.read("/etc/oraInst.loc")
@@ -379,23 +367,35 @@ def get_orainst_loc()
 end
 
 def get_orainst_products(path)
+  unless path.nil?
     if FileTest.exists?(path+"/ContentsXML/inventory.xml")
       file = File.read( path+"/ContentsXML/inventory.xml" )
       doc = REXML::Document.new file
       software =  ""
       doc.elements.each("/INVENTORY/HOME_LIST/HOME") do |element|
-      	str = element.attributes["LOC"] 
-        software += str + ";"
-        if str.include? "oracle_common"
-          #skip, a bug 
-        else
-          get_opatch_patches(str)
-        end  
+      	str = element.attributes["LOC"]
+      	unless str.nil? 
+          software += str + ";"
+#          if str.include? "oracle_common"
+#            #skip, a bug 
+#          else
+         	  home = str.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
+         	  output = get_opatch_patches(str)
+            Facter.add("ora_inst_patches#{home}") do
+              setcode do
+                output
+              end
+            end
+#          end
+        end    
       end
       return software
     else
       return "NotFound"
     end
+  else
+    return "NotFound" 
+  end
 end
 
 # report all oracle homes / domains
@@ -472,16 +472,17 @@ Facter.add("ora_mdw_cnt") do
 end
 
 # get orainst loc data
+inventory = get_orainst_loc
 Facter.add("ora_inst_loc_data") do
-    setcode do
-      inventory = get_orainst_loc
-    end
+  setcode do
+    inventory
+  end
 end
 
-
 # get orainst products
+inventory2 = get_orainst_products(inventory)
 Facter.add("ora_inst_products") do
   setcode do
-    inventory = get_orainst_products(get_orainst_loc)
+    inventory2
   end
 end

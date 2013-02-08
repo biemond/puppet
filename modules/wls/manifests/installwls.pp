@@ -5,26 +5,20 @@
 # === Examples
 #
 #
-#    $jdkWls12cJDK = 'jdk1.7.0_09'
-#    $wls12cVersion = "1211"
+#  $jdkWls12cJDK  = 'jdk1.7.0_09'
+#  $wls12cVersion = "1211"
 #  
-#  case $operatingsystem {
-#     centos, redhat, OracleLinux, ubuntu, debian: { 
-#       $osWlHome     = "/opt/oracle/wls/wls12c/wlserver_12.1"
-#       $user         = "oracle"
-#       $group        = "dba"
-#     }
-#     windows: { 
-#       $osWlHome     = "c:/oracle/wls/wls12c/wlserver_12.1"
-#       $user         = "Administrator"
-#       $group        = "Administrators"
-#     }
-#  }
+#  $user         = "oracle"
+#  $group        = "dba"
+#  $osOracleHome = "/opt/wls"
+#  $osMdwHome    = "/opt/wls/Middleware11gR1"
 #
 #  # set the defaults
 #  Wls::Installwls {
 #    version      => $wls12cVersion,
 #    fullJDKName  => $jdkWls12cJDK,
+#    oracleHome   => $osOracleHome,
+#    mdwHome      => $osMdwHome,
 #    user         => $user,
 #    group        => $group,    
 #  }
@@ -38,6 +32,8 @@
 
 define wls::installwls( $version     = undef, 
                         $fullJDKName = undef,
+                        $oracleHome  = undef,
+                        $mdwHome     = undef,
                         $user        = 'oracle',
                         $group       = 'dba',
                       ) {
@@ -46,63 +42,42 @@ define wls::installwls( $version     = undef,
 
    $wls1211Parameter     = "1211"
    $wlsFile1211          = "wls1211_generic.jar" 
-   $wlsVersion1211       = "wls12c" 
 
    $wls1036Parameter     = "1036"
    $wlsFile1036          = "wls1036_generic.jar" 
-   $wlsVersion1036       = "wls11g" 
 
-   $wlsFileDefault      = $wlsFile1211 
-   $wlsVersionDefault   = $wlsVersion1211 
-
+   $wlsFileDefault       = $wlsFile1036 
 
    case $operatingsystem {
-      centos, redhat, OracleLinux, ubuntu, debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
         $path             = "/install/"
-
-        $oracleHome       = "/opt/oracle/"
-        $beaHome          = "${oracleHome}wls/"
-
      }
       windows: { 
         $path             = "C:/temp/"
-
-        $oracleHome       = "C:\\oracle\\"
-        $beaHome          = "${oracleHome}wls\\"
       }
       default: { 
         fail("Unrecognized operating system") 
       }
    }
 
-
-
     # check weblogic version like 12c
-
     if $version == undef {
       $wlsFile    =  $wlsFileDefault 
-      $wlsVersion =  $wlsVersionDefault 
     }
-
-    elsif $version == $wls12cParameter  {
+    elsif $version == $wls1211Parameter  {
       $wlsFile    =  $wlsFile1211 
-      $wlsVersion =  $wlsVersion1211 
     } 
-
     elsif $version == $wls1036Parameter  {
       $wlsFile    =  $wlsFile1036 
-      $wlsVersion =  $wlsVersion1036 
     } 
-
     else {
       $wlsFile    =  $wlsFileDefault 
-      $wlsVersion =  $wlsVersionDefault 
     } 
 
 
    # for linux , create a oracle user plus a dba group
    case $operatingsystem {
-      centos, redhat, OracleLinux, ubuntu, debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
         if ! defined(Group[$group]) {
           group { $group : 
                   ensure => present,
@@ -114,7 +89,7 @@ define wls::installwls( $version     = undef,
               ensure     => present, 
               groups     => $group,
               shell      => '/bin/bash',
-              password   => '$1$IX3YD7fb$JndzPUOGNCRYp/FG0GM1y/',  
+              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',  
               home       => '/home/oracle',
               comment    => 'This user oracle was created by Puppet',
               require    => Group[$group],
@@ -126,15 +101,12 @@ define wls::installwls( $version     = undef,
 
    # set the environment related vars		
    case $operatingsystem {
-      centos, redhat, OracleLinux, ubuntu, debian: { 
-        $mdwHome     = "${beaHome}${$wlsVersion}"
-        $checkPath   = "/opt/oracle/wls/${$wlsVersion}"
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+        $beaHome     = $mdwHome
 
      }
       windows: { 
-        $mdwHome     = "${beaHome}${$wlsVersion}"
-        $checkPath   = "c:\\oracle\\wls\\${$wlsVersion}"
-
+        $beaHome     = $mdwHome
       }
       default: { 
         fail("Unrecognized operating system") 
@@ -158,7 +130,6 @@ define wls::installwls( $version     = undef,
 
 
 if ( $continue ) {
-
 
    File{
         owner   => $user,
@@ -191,18 +162,19 @@ if ( $continue ) {
      file { $oracleHome:
        path    => $oracleHome,
        ensure  => directory,
-       recurse => false, 
+       recurse => true, 
        replace => false,
      }
    }
 
+
    if ! defined(File[$beaHome]) {
      file { $beaHome:
-       path    => $beahome,
+       path    => $beaHome,
        ensure  => directory,
-       recurse => false, 
-       require => File[$oracleHome],
+       recurse => true, 
        replace => false,
+       require => File[$oracleHome],
      }
    }
 
@@ -217,8 +189,7 @@ if ( $continue ) {
 
    # install weblogic
    wls::wlsexec{ "installer ${version}":
-      mdwHome     => $mdwHome,
-      checkPath   => $checkPath,
+      mdwHome     => $beaHome,
       fullJDKName => $fullJDKName,
       wlsfile     => "${path}${wlsFile}",
       silentfile  => "${path}silent${version}.xml",
@@ -227,5 +198,5 @@ if ( $continue ) {
       require     => [File[$oracleHome],File[$beaHome],File["silent.xml ${version}"],File["wls.jar ${version}"]],
    }
 
-}
+ }
 }   

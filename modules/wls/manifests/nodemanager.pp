@@ -54,7 +54,7 @@ define wls::nodemanager($wlHome          = undef,
    } 
 
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, ubuntu, debian: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
@@ -89,9 +89,9 @@ define wls::nodemanager($wlHome          = undef,
 
     
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, ubuntu, debian: { 
 
-        file { "nodemanager.properties ux ${version}":
+        file { "nodemanager.properties ux ${title}":
                 path    => "${wlHome}/common/nodemanager/nodemanager.properties",
                 ensure  => present,
                 replace => 'yes',
@@ -105,7 +105,7 @@ define wls::nodemanager($wlHome          = undef,
                           "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/linux/x86_64",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "${checkCommand}",
-          require     => File ["nodemanager.properties ux ${version}"],
+          require     => File ["nodemanager.properties ux ${title}"],
         }    
 
 
@@ -140,7 +140,7 @@ define wls::nodemanager($wlHome          = undef,
           logoutput   => true,
         }    
 
-        file { "nodemanager.properties win ${version}":
+        file { "nodemanager.properties win ${title}":
                 path    => "${wlHome}/common/nodemanager/nodemanager.properties",
                 ensure  => present,
                 replace => 'yes',
@@ -152,7 +152,7 @@ define wls::nodemanager($wlHome          = undef,
                 name       => "Oracle WebLogic NodeManager (${serviceName})",
                 enable     => true,
                 ensure     => true,
-                require    => File ["nodemanager.properties win ${version}"],
+                require    => File ["nodemanager.properties win ${title}"],
         }
 
 

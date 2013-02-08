@@ -6,7 +6,7 @@
 # === Examples
 #  
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, ubuntu, debian: { 
+#     centos, redhat, OracleLinux, Ubuntu, debian: { 
 #       $osMdwHome    = "/opt/oracle/wls/wls11g"
 #       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
 #       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
@@ -101,7 +101,7 @@ if ( $continue ) {
    $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = '/install/'
@@ -146,7 +146,7 @@ if ( $continue ) {
    }
      
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "execwlst ${title}${script}":
           command     => "${javaCommand} ${path}${title}${script}",

@@ -8,7 +8,6 @@
 #   # install weblogic
 #   wls::wlsexec{ "installer ${version}":
 #      mdwHome     => "/opt/oracle/wls/wls11g",
-#      checkPath   => "/opt/oracle/wls/wls11g",
 #      fullJDKName => "jdk1.7.0_09",
 #      wlsfile     => "/install/wls1036_generic.jar",
 #      silentfile  => "/install/silent1036.xml",
@@ -18,7 +17,6 @@
 # 
 
 define wls::wlsexec ( $mdwHome     = undef, 
-                      $checkPath   = undef, 
                       $fullJDKName = undef, 
                       $wlsfile     = undef, 
                       $silentfile  = undef,
@@ -29,7 +27,7 @@ define wls::wlsexec ( $mdwHome     = undef,
 
    # install weblogic
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
 
@@ -40,12 +38,8 @@ define wls::wlsexec ( $mdwHome     = undef,
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           path        => $execPath,
           logoutput   => true,
-#         unless      => "/usr/bin/test -e ${checkPath}",
-          creates     => "${checkPath}",
           user        => $user,
           group       => $group,
-          tries       => 2,
-          try_sleep   => 5,
         }    
      
      }
@@ -59,10 +53,6 @@ define wls::wlsexec ( $mdwHome     = undef,
                           "JAVA_HOME=C:\\oracle\\${fullJDKName}"],
           path        => "${execPath}",
           logoutput   => true,
-          creates     => "${checkPath}",
-#          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${checkPath}",
-          tries       => 2,
-          try_sleep   => 5,
         }    
      }
    }
