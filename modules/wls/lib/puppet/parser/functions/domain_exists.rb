@@ -36,7 +36,7 @@ module Puppet::Parser::Functions
             unless domain.nil?
               domain = domain.strip.downcase
               
-              domain_path = mdw + "/admin/" + domain
+              domain_path = mdw + "/user_projects/domains/" + domain
 
               # do we found the right domain
               if domain_path == mdwArg 

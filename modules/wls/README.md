@@ -358,14 +358,24 @@ WebLogic configuration examples
 
 ### templates_app.pp
 
+
     include wls
     
     class application_osb {
     
-       include wls1036osb, wls_osb_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS
+       include wls1036osb, wls_osb_domain, wls11g_domain
+       #, wls_OSB_application_JDBC, wls_OSB_application_JMS
        #, wls_OSB_application_jar
-       Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
+       Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls11g_domain']
+       #-> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
        # -> Class['wls_OSB_application_jar']
+    }
+    
+    class application_osb_win {
+    
+       include wls1036osb, wls_osb_domain
+       Class['wls1036osb'] -> Class['wls_osb_domain']
+       
     }
     
     class application_wls12 {
@@ -789,7 +799,6 @@ WebLogic configuration examples
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
-           $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
          }
@@ -797,10 +806,9 @@ WebLogic configuration examples
            $osOracleHome = "c:/oracle"
            $osMdwHome    = "c:/oracle/wls11g"
            $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
-           $osDomainPath = "c:/oracle/wls11g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
-           $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
          }
       }
       
@@ -822,7 +830,6 @@ WebLogic configuration examples
        'osbDomain':
        wlsTemplate     => $osTemplate,
        domain          => $wlsDomainName,
-       domainPath      => $osDomainPath,
        adminListenPort => $adminListenPort,
        nodemanagerPort => $nodemanagerPort,
        require         => Wls::Nodemanager['nodemanager11g'];
@@ -848,7 +855,7 @@ WebLogic configuration examples
          script      => 'startWlsServer.py',
          port        => $nodemanagerPort,
          params      =>  ["domain     = '${wlsDomainName}'",
-                          "domainPath = '${osDomainPath}/${wlsDomainName}'",
+                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
                           "wlsServer  = 'AdminServer'"],
          require     => Wls::Wlsdomain['osbDomain'];
       }
@@ -875,7 +882,6 @@ WebLogic configuration examples
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
-           $osDomainPath = "/opt/wls/Middleware11gR1/admin" 
            $user         = "oracle"
            $group        = "dba"
          }
@@ -883,10 +889,9 @@ WebLogic configuration examples
            $osOracleHome = "c:/oracle"
            $osMdwHome    = "c:/oracle/wls11g"
            $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
-           $osDomainPath = "c:/oracle/wls11g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
-           $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
          }
       }
     
@@ -909,7 +914,6 @@ WebLogic configuration examples
        'stdDomain':
        wlsTemplate     => $osTemplate,
        domain          => $wlsDomainName,
-       domainPath      => $osDomainPath,
        adminListenPort => $adminListenPort,
        nodemanagerPort => $nodemanagerPort,
        require         => Wls::Nodemanager['nodemanager11g'];
@@ -936,7 +940,7 @@ WebLogic configuration examples
          script      => 'startWlsServer.py',
          port        =>  $nodemanagerPort,
          params      =>  ["domain = '${wlsDomainName}'",
-                          "domainPath = '${osDomainPath}/${wlsDomainName}'",
+                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
                           "wlsServer = 'AdminServer'"],
          require     => Wls::Wlsdomain['osbDomain'];
     
@@ -965,7 +969,6 @@ WebLogic configuration examples
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware12g"
            $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
-           $osDomainPath = "/opt/wls/Middleware12g/admin"
            $user         = "oracle"
            $group        = "dba"
          }
@@ -973,7 +976,6 @@ WebLogic configuration examples
            $osOracleHome = "c:/oracle"
            $osMdwHome    = "c:/oracle/Middleware12g"
            $osWlHome     = "c:/oracle/Middleware12g/wlserver_12.1"
-           $osDomainPath = "c:/oracle/Middleware12g/admin"
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
@@ -998,7 +1000,6 @@ WebLogic configuration examples
        'stdDomain12c':
        wlsTemplate     => $osTemplate,
        domain          => $wlsDomainName,
-       domainPath      => $osDomainPath,
        adminListenPort => $adminListenPort,
        nodemanagerPort => $nodemanagerPort,
      }
@@ -1023,7 +1024,7 @@ WebLogic configuration examples
          script      => 'startWlsServer.py',
          port        =>  $nodemanagerPort,
          params      =>  ["domain = '${wlsDomainName}'",
-                          "domainPath = '${osDomainPath}/${wlsDomainName}'",
+                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
                           "wlsServer = 'AdminServer'"],
          require     => Wls::Wlsdomain['stdDomain12c'];
     
@@ -1032,4 +1033,4 @@ WebLogic configuration examples
     
     }
     
-    
+        

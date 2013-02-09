@@ -94,8 +94,8 @@ def get_domain(name,i)
 
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
 
-    if FileTest.exists?(name+'/admin')
-      output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/admin')
+    if FileTest.exists?(name+'/user_projects/domains')
+      output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/user_projects/domains')
       if output2.nil?
         Facter.add("ora_mdw_#{i}_domain_cnt") do
           setcode do
@@ -114,8 +114,8 @@ def get_domain(name,i)
     end
 
   elsif ["windows"].include?os 
-    if FileTest.exists?(name+'/admin')
-      output2 = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+name+'\admin')
+    if FileTest.exists?(name+'/user_projects/domains')
+      output2 = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+name+'\user_projects\domains')
       if output2.nil?
         Facter.add("ora_mdw_#{i}_domain_cnt") do
           setcode do
@@ -142,10 +142,10 @@ def get_domain(name,i)
   output2.split(/\r?\n/).each_with_index do |domain, n|
 
     if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
-      domainfile = name+'/admin/'+domain+'/config/config.xml'
+      domainfile = name+'/user_projects/domains/'+domain+'/config/config.xml'
 
     elsif ["windows"].include?os 
-      domainfile = name+'/admin/'+domain+'/config/config.xml'
+      domainfile = name+'/user_projects/domains/'+domain+'/config/config.xml'
     end
 
     if FileTest.exists?(domainfile)
@@ -262,7 +262,7 @@ def get_domain(name,i)
           end
         end
 
-        subfile = File.read( name+'/admin/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
+        subfile = File.read( name+'/user_projects/domains/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
         subdoc = REXML::Document.new subfile
 
         jmsroot = subdoc.root

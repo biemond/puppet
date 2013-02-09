@@ -69,12 +69,16 @@ define wls::wlsdomain ($wlHome          = undef,
                        $nodemanagerPort = '5556',
                        $wlsUser         = "weblogic",
                        $password        = "weblogic1",
-                       $domainPath      = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        ) {
 
    notify {"Domain ${domain} wlHome ${wlHome}":}
+
+   $domainPath  = "${mdwHome}/user_projects/domains"
+   $appPath     = "${mdwHome}/user_projects/applications"
+
+
 
      # check if the domain already exists 
      $found = domain_exists("${domainPath}/${domain}")
@@ -133,7 +137,7 @@ if ( $continue ) {
         File {
                ensure  => present,
                replace => 'yes',
-               mode    => 0555,
+               mode    => 0775,
                owner   => $user,
                group   => $group,
              }     
@@ -162,6 +166,39 @@ if ( $continue ) {
      path    => "${path}domain_${domain}.py",
      content => template($templateFile),
    }
+
+   # make the default domain folders 
+   if ! defined(File["${mdwHome}/user_projects"]) {
+      # check oracle install folder
+      file { "${mdwHome}/user_projects" :
+        ensure  => directory,
+        recurse => false, 
+        replace => false,
+      }
+   }
+
+   if ! defined(File["${mdwHome}/user_projects/domains"]) {
+      # check oracle install folder
+      file { "${mdwHome}/user_projects/domains" :
+        ensure  => directory,
+        recurse => false, 
+        replace => false,
+        require => File["${mdwHome}/user_projects"],
+      }
+   }
+
+   if ! defined(File["${mdwHome}/user_projects/applications"]) {
+      # check oracle install folder
+      file { "${mdwHome}/user_projects/applications" :
+        ensure  => directory,
+        recurse => false, 
+        replace => false,
+        require => File["${mdwHome}/user_projects"],
+      }
+   }
+
+
+
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -173,7 +210,7 @@ if ( $continue ) {
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "/usr/bin/test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
-          require     => File["domain.py ${domain} ${title}"],
+          require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
         }    
 
         exec { "domain.py ${domain} ${title}":
@@ -216,9 +253,8 @@ if ( $continue ) {
           command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-#          unless      => "C:\\Windows\\System32\\cmd.exe /c test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
-          require     => File["domain.py ${domain} ${title}"],
+          require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
         }    
 
         exec {"icacls domain ${title}${script}": 
@@ -226,12 +262,10 @@ if ( $continue ) {
            logoutput  => false,
            subscribe   => Exec["execwlst win ${domain} ${title}"],
            refreshonly => true,
-#           require    => Exec["execwlst win ${domain} ${title}"],
         } 
 
         exec { "domain.py ${domain} ${title}":
            command     => "C:\\Windows\\System32\\cmd.exe /c del ${path_win}domain_${domain}.py",
-#           require => Exec["icacls domain ${title}${script}"],
            subscribe   => Exec["icacls domain ${title}${script}"],
            refreshonly => true,
           }

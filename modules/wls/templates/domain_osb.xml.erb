@@ -1,7 +1,7 @@
 
 WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
-
+APP_PATH='<%= @appPath %>/<%= @domain %>'
 
 print('Start...osb domain with template <%= @template %>')
 readTemplate('<%= @template %>')
@@ -46,7 +46,7 @@ writeDomain('<%= @domainPath %>/<%= @domain %>')
 closeTemplate()
 
 readDomain(DOMAIN_PATH)
-setOption( "AppDir", DOMAIN_PATH+'/applications' )
+setOption( "AppDir", APP_PATH )
 print('Extend...osb domain with template <%= @templateOSB %>')
 
 addTemplate('<%= @templateOSB %>')
@@ -57,7 +57,7 @@ updateDomain()
 closeDomain();
 readDomain(DOMAIN_PATH)
 
-setOption( "AppDir", DOMAIN_PATH+'/applications' )
+setOption( "AppDir", APP_PATH )
 
 cd('Servers/osb_server1')
 set('Machine','LocalMachine')
