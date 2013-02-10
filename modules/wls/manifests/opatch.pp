@@ -43,7 +43,7 @@ define wls::opatch(  $oracleProductHome = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $path             = '/install'
+        $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
 
         
@@ -76,14 +76,6 @@ define wls::opatch(  $oracleProductHome = undef,
      }
    }
 
-   # the patch used by the bsu
-   if ! defined(File["${path}${patchFile}"]) {
-    file { "${path}${patchFile}":
-     source  => "puppet:///modules/wls/${patchFile}",
-    }
-   }
-
-
 
      # check if the opatch already is installed 
      $found = opatch_exists($oracleProductHome,$patchId)
@@ -100,6 +92,15 @@ define wls::opatch(  $oracleProductHome = undef,
      }
 
 if ( $continue ) {
+
+
+   # the patch used by the bsu
+   if ! defined(File["${path}${patchFile}"]) {
+    file { "${path}${patchFile}":
+     source  => "puppet:///modules/wls/${patchFile}",
+    }
+   }
+
 
    # opatch apply -silent -jdk %JDK_HOME% -jre %JDK_HOME%\jre  -oh C:\oracle\MiddlewarePS5\Oracle_OSB1 C:\temp\14389126
    $oPatchCommand  = "opatch apply -silent -jre"

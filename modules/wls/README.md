@@ -19,13 +19,14 @@ WLS WebLogic Features
 ---------------------------
 
 - installs weblogic
-- installs OSB with or without OEPE ( Oracle Eclipse )
+- installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
+- installs Oracle Soa Suite 11g 
 - configures + starts nodemanager
-- domain creation
-- domain OSB creation
+- domain creation + domain pack
+- domain OSB creation + domain pack
 - can start the AdminServer for configuration 
 - apply bsu patch ( WebLogic Patch )
-- apply oracle patch ( OPatch )
+- apply oracle patch ( OPatch for OSB and Soa Suite )
 - create File or JDBC Persistence Store
 - create JMS Server
 - create JMS Module
@@ -56,16 +57,18 @@ WLS WebLogic Facter
 ### Example of the WebLogic Facts 
 
     oracle installed products
-        ora_inst_loc_data /opt/oracle/orainventory
-        ora_inst_products /opt/oracle/wls/wls11g/oracle_common;/opt/oracle/wls/wls11g/Oracle_OSB1;
-        ora_inst_patches_opt_oracle_wls_wls11g_oracle_common Patches;
-        ora_inst_patches_opt_oracle_wls_wls11g_oracle_osb1 Patches;14389126;
+        ora_inst_loc_data	/opt/wls/orainventory
+        ora_inst_patches_opt_wls_middleware11gr1_oracle_common Patches;
+        ora_inst_patches_opt_wls_middleware11gr1_oracle_osb1 Patches;14389126;
+        ora_inst_patches_opt_wls_middleware11gr1_oracle_soa1 Patches;14406487;
+        ora_inst_products	/opt/wls/Middleware11gR1/oracle_common;/opt/wls/Middleware11gR1/Oracle_OSB1;/opt/wls/Middleware11gR1/Oracle_SOA1;
+
         
     Middleware home 0
-        ora_mdw_0 /opt/oracle/wls/wls11g
+        ora_mdw_0 /opt/wls/Middleware11gR1
         
     BSU patches on the Middleware home
-        ora_mdw_0_bsu KZKQ;
+        ora_mdw_0_bsu HYKC;
         
     Domain 0
         ora_mdw_0_domain_0  osbDomain
@@ -103,7 +106,7 @@ WLS WebLogic Facter
         
     Middleware home counts
         ora_mdw_cnt 1
-        ora_mdw_homes /opt/oracle/wls/wls11g;
+        ora_mdw_homes /opt/wls/Middleware11gR1;
         
     Running node managers + WebLogic Servers
         ora_node_mgr_0  pid: 26113 port: 5556
@@ -112,12 +115,17 @@ WLS WebLogic Facter
 
 
 ### My Files folder of the wls module
-    oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
-    ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
-    p13573621_1036_Generic.zip
-    p14389126_111160_Generic.zip
-    wls1036_generic.jar
-    wls1211_generic.jar
+     375895263 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
+    1149088683 ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
+    1629875643 ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip
+    1291863724 ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip
+       1024644 p13573621_1036_Generic.zip
+      17283347 p14389126_111160_Generic.zip
+     653488012 p14406487_111160_Generic.zip
+      42264472 p14736139_1036_Generic.zip
+    1068506707 wls1036_generic.jar
+    1045221652 wls1211_generic.jar
+
     
 WebLogic configuration examples
 -------------------------------
@@ -126,7 +134,7 @@ WebLogic configuration examples
 
     include wls
     
-    
+        
     class osb_oepe{
     
       if $jdkWls11gJDK == undef {
@@ -163,6 +171,8 @@ WebLogic configuration examples
         user         => $user,
         group        => $group,    
       }
+    
+    
     
       # install
       wls::installwls{'11gPS5_hudson':}
@@ -201,7 +211,7 @@ WebLogic configuration examples
     
     
     
-    class wls1036osb{
+    class wls1036osb_soa{
     
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_09'
@@ -226,7 +236,7 @@ WebLogic configuration examples
            $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
            $user         = "Administrator"
            $group        = "Administrators"
-           $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
          }
       }
     
@@ -241,6 +251,15 @@ WebLogic configuration examples
       }
     
       Wls::Installosb {
+        mdwHome      => $osMdwHome,
+        wlHome       => $osWlHome,
+        oracleHome   => $osOracleHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+      }
+    
+      Wls::Installsoa {
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
@@ -278,21 +297,37 @@ WebLogic configuration examples
          require      => Wls::Bsupatch['p14736139'],
        }
     
-      wls::opatch{'14389126_osb_patch':
-        oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
-        fullJDKName       => $jdkWls11gJDK,
-        patchId           => '14389126',	
-        patchFile         => 'p14389126_111160_Generic.zip',	
-        user              => $user,
-        group             => $group, 
-        require           => Wls::Installosb['osbPS5'],
-      }
+       wls::opatch{'14389126_osb_patch':
+         oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
+         fullJDKName       => $jdkWls11gJDK,
+         patchId           => '14389126',	
+         patchFile         => 'p14389126_111160_Generic.zip',	
+         user              => $user,
+         group             => $group, 
+         require           => Wls::Installosb['osbPS5'],
+       }
     
-      #nodemanager configuration and starting
-      wls::nodemanager{'nodemanager11g':
-        listenPort  => '5556',
-        require     => Wls::Opatch['14389126_osb_patch'],
-      }
+       wls::installsoa{'soaPS5':
+         soaFile1      => 'ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip',
+         soaFile2      => 'ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip',
+         require      =>  Wls::Opatch['14389126_osb_patch'],
+       }
+    
+       wls::opatch{'14406487_soa_patch':
+         oracleProductHome => "${osMdwHome}/Oracle_SOA1" ,
+         fullJDKName       => $jdkWls11gJDK,
+         patchId           => '14406487',	
+         patchFile         => 'p14406487_111160_Generic.zip',	
+         user              => $user,
+         group             => $group, 
+         require           => Wls::Installsoa['soaPS5'],
+       }
+    
+       #nodemanager configuration and starting
+       wls::nodemanager{'nodemanager11g':
+         listenPort  => '5556',
+         require     => Wls::Opatch['14406487_soa_patch'],
+       }
     
     }
     
@@ -353,28 +388,25 @@ WebLogic configuration examples
         require      => Wls::Installwls['wls12c'],
       }
     
-    }
+    }     
     
-
 ### templates_app.pp
 
 
     include wls
+
+    class application_osb_soa {
     
-    class application_osb {
-    
-       include wls1036osb, wls_osb_domain, wls11g_domain
-       #, wls_OSB_application_JDBC, wls_OSB_application_JMS
-       #, wls_OSB_application_jar
-       Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls11g_domain']
-       #-> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
-       # -> Class['wls_OSB_application_jar']
+       include wls1036osb_soa, wls_osb_domain
+       #, wls11g_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS, wls_OSB_application_jar
+       Class['wls1036osb_soa'] -> Class['wls_osb_domain'] 
+       #-> Class['wls11g_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS'] -> Class['wls_OSB_application_jar']
     }
     
-    class application_osb_win {
+    class application_osb_soa_win {
     
-       include wls1036osb, wls_osb_domain
-       Class['wls1036osb'] -> Class['wls_osb_domain']
+       include wls1036osb_soa, wls_osb_domain
+       Class['wls1036osb_soa'] -> Class['wls_osb_domain']
        
     }
     

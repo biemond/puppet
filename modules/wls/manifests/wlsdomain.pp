@@ -98,7 +98,6 @@ define wls::wlsdomain ($wlHome          = undef,
 if ( $continue ) {
 
 
-   $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
    
    $template             = "${wlHome}/common/templates/domains/wls.jar"
    $templateOSB          = "${mdwHome}/Oracle_OSB1/common/templates/applications/wlsb.jar"
@@ -123,7 +122,7 @@ if ( $continue ) {
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
-        $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:${wlHome}/common/bin"
         $path             = '/install/'
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         $nodeMgrMachine   = "UnixMachine"
@@ -144,7 +143,7 @@ if ( $continue ) {
      }
      windows: { 
 
-        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
+        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows;${wlHome}\\common\\bin"
         $path             = "c:/temp/" 
         $path_win         = "c:\\temp\\" 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
@@ -197,6 +196,8 @@ if ( $continue ) {
       }
    }
 
+   $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
+	 $packCommand    = "-domain=${domainPath}/${domain} -template=${path}domain_${domain}.jar -template_name=domain_${domain} -log=${path}domain_${domain}.log -log_priority=INFO" 	
 
 
     
@@ -216,14 +217,20 @@ if ( $continue ) {
         exec { "domain.py ${domain} ${title}":
            command     => "rm -I ${path}domain_${domain}.py",
            subscribe   => Exec["execwlst ux ${domain} ${title}"],
-           refreshonly => true
+           refreshonly => true,
+        }
+
+        exec { "pack domain ${domain} ${title}":
+           command     => "pack.sh ${packCommand}",
+           subscribe   => Exec["execwlst ux ${domain} ${title}"],
+           refreshonly => true,
         }
 
         # kill the nodemanager 
         exec { "execwlst ux kill nodemanager ${title}":
           command     => "/bin/kill -9 `/bin/ps -ef | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | /bin/grep -i ${nodemanagerPort} | awk {'print \$2'} | head -1`",
           onlyif      => "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${nodemanagerPort}'",
-          subscribe   => Exec["execwlst ux ${domain} ${title}"],
+          subscribe   => Exec["pack domain ${domain} ${title}"],
           refreshonly => true
         }    
 
@@ -270,9 +277,15 @@ if ( $continue ) {
            refreshonly => true,
           }
 
+        exec { "pack domain ${domain} ${title}":
+           command     => "C:\\Windows\\System32\\cmd.exe /c pack.cmd ${packCommand}",
+           subscribe   => Exec["icacls domain ${title}${script}"],
+           refreshonly => true,
+        }
+
         exec { "domain win stop service ${title}":
           command     => "C:\\Windows\\System32\\cmd.exe /c NET STOP \"Oracle WebLogic NodeManager (${serviceName})\"",
-          subscribe   => Exec["domain.py ${domain} ${title}"],
+          subscribe   => Exec["pack domain ${domain} ${title}"],
           refreshonly => true,
           logoutput   => true,
         } 
