@@ -48,13 +48,14 @@ define wls::installosb($mdwHome         = undef,
                        $oepeHome        = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
+                       $downloadDir     = '/install/',
                     ) {
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath        = "/usr/java/${fullJDKName}/bin;/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-        $path            = '/install/'
+        $path            = $downloadDir
         $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
         $oraInstPath     = "/etc/"
         $oraInventory    = "${oracleHome}/orainventory"
@@ -75,7 +76,7 @@ define wls::installosb($mdwHome         = undef,
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = "c:\\temp\\"
+        $path             = $downloadDir 
         $osbOracleHome    = "${mdwHome}/Oracle_OSB1"
         $oraInventory     = "C:\Program Files\Oracle\Inventory"
         
@@ -143,13 +144,13 @@ if ( $continue ) {
          file { "${oraInstPath}/oraInst.loc":
            ensure  => present,
            content => template("wls/oraInst.loc.erb"),
-           require     => Exec["extract ${osbFile}"],
+           require => [Exec["extract ${osbFile}"],File ["${path}${osbFile}"]],
          }
         }
         
         exec { "install osb ${title}":
           command     => "${path}osb/Disk1/install/linux64/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
-          require     => File ["${oraInstPath}/oraInst.loc"],
+          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}${osbFile}"]],
           creates     => $osbOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
@@ -163,21 +164,25 @@ if ( $continue ) {
      }
      windows: { 
 
-        registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
-          ensure  => present,
-          require => File ["${path}${osbFile}"],
+        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"]) { 
+          registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
+            ensure  => present,
+            require => File ["${path}${osbFile}"],
+          }
         }
 
-        registry_value { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc":
-          type    => string,
-          data    => $oraInventory,
-          require => Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"],
+        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"]) {
+          registry_value { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc":
+            type    => string,
+            data    => $oraInventory,
+            require => Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"],
+          }
         }
 
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
           command => "jar xf ${path}${osbFile}",
-          require => Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"],
+          require => [Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"],File ["${path}${osbFile}"]],
           creates => "${path}Disk1", 
           cwd     => $path,
          }

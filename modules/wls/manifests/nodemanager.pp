@@ -45,6 +45,7 @@ define wls::nodemanager($wlHome          = undef,
                         $user            = 'oracle',
                         $group           = 'dba',
                         $serviceName     = undef,
+                        $downloadDir     = '/install/',
                        ) {
 
    File{
@@ -59,7 +60,7 @@ define wls::nodemanager($wlHome          = undef,
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
         $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${listenPort}'"
-        $path             = '/install/'
+        $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         
         Exec { path      => $execPath,
@@ -75,7 +76,7 @@ define wls::nodemanager($wlHome          = undef,
 
         $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = "c:\\temp\\" 
+        $path             = $downloadDir 
         $JAVA_HOME        = "C:\\oracle\\${fullJDKName}"
 
         Exec { path      => $execPath,

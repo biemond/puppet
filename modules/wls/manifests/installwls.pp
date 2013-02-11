@@ -36,6 +36,7 @@ define wls::installwls( $version     = undef,
                         $mdwHome     = undef,
                         $user        = 'oracle',
                         $group       = 'dba',
+                        $downloadDir = '/install/',
                       ) {
 
    notify {"wls::installwls ${version}":}
@@ -50,10 +51,10 @@ define wls::installwls( $version     = undef,
 
    case $operatingsystem {
       CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
-        $path             = "/install/"
+        $path            = $downloadDir
      }
       windows: { 
-        $path             = "C:/temp/"
+        $path            = $downloadDir 
       }
       default: { 
         fail("Unrecognized operating system") 

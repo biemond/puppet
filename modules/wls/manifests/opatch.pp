@@ -37,13 +37,14 @@ define wls::opatch(  $oracleProductHome = undef,
                      $patchFile         = undef,	
                      $user              = 'oracle',
                      $group             = 'dba',
+                     $downloadDir       = '/install/',
                     ) {
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $path             = '/install/'
+        $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
 
         
@@ -63,7 +64,7 @@ define wls::opatch(  $oracleProductHome = undef,
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = "c:\\temp\\" 
+        $path             = $downloadDir 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
         $oracleHomeWin    = slash_replace($oracleProductHome)
 
@@ -109,13 +110,13 @@ if ( $continue ) {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "extract opatch ${patchFile} ${title}":
-          command => "unzip -n ${path}/${patchFile} -d ${path}",
+          command => "unzip -n ${path}${patchFile} -d ${path}",
           require => File ["${path}${patchFile}"],
           creates => "${path}/${patchId}",
         }
         
         exec { "exec opatch ux ${title}":
-          command     => "${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleProductHome} ${path}/${patchId}",
+          command     => "${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleProductHome} ${path}${patchId}",
           require     => Exec["extract opatch ${patchFile} ${title}"],
         }    
              

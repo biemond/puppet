@@ -70,6 +70,7 @@ define wls::wlstexec ($wlsDomain     = undef,
                       $user          = 'oracle', 
                       $group         = 'dba',
                       $params        = undef,
+                      $downloadDir   = '/install/',
                       ) {
 
    notify {"wls::wlstexec ${title} execute ${wlsDomain}":}
@@ -104,7 +105,7 @@ if ( $continue ) {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-        $path             = '/install/'
+        $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
 
         Exec { path      => $execPath,
@@ -123,8 +124,7 @@ if ( $continue ) {
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $path             = "c:/temp/" 
-        $path_win         = "c:\\temp\\" 
+        $path             = $downloadDir 
 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
 
@@ -173,7 +173,7 @@ if ( $continue ) {
 
 
         exec { "rm ${path}${title}${script}":
-           command => "C:\\Windows\\System32\\cmd.exe /c del c:\\temp\\${title}${script}",
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}${script}",
            require => Exec["execwlst ${title}${script}"],
         }
      }

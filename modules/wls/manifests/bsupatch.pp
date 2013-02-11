@@ -42,13 +42,14 @@ define wls::bsupatch($mdwHome         = undef,
                      $patchFile       = undef,	
                      $user            = 'oracle',
                      $group           = 'dba',
+                     $downloadDir     = '/install/',
                     ) {
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        $path             = '/install/'
+        $path            = $downloadDir
         
         Exec { path      => $execPath,
                user      => $user,
@@ -66,7 +67,7 @@ define wls::bsupatch($mdwHome         = undef,
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = "c:\\temp\\" 
+        $path             = $downloadDir 
 
         Exec { path      => $execPath,
              }

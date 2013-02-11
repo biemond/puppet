@@ -71,6 +71,7 @@ define wls::wlsdomain ($wlHome          = undef,
                        $password        = "weblogic1",
                        $user            = 'oracle',
                        $group           = 'dba',
+                       $downloadDir     = '/install/',
                        ) {
 
    notify {"Domain ${domain} wlHome ${wlHome}":}
@@ -123,7 +124,7 @@ if ( $continue ) {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:${wlHome}/common/bin"
-        $path             = '/install/'
+        $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         $nodeMgrMachine   = "UnixMachine"
 
@@ -144,8 +145,7 @@ if ( $continue ) {
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows;${wlHome}\\common\\bin"
-        $path             = "c:/temp/" 
-        $path_win         = "c:\\temp\\" 
+        $path             = $downloadDir 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
         $nodeMgrMachine   = "Machine"
 
@@ -272,7 +272,7 @@ if ( $continue ) {
         } 
 
         exec { "domain.py ${domain} ${title}":
-           command     => "C:\\Windows\\System32\\cmd.exe /c del ${path_win}domain_${domain}.py",
+           command     => "C:\\Windows\\System32\\cmd.exe /c del ${path}domain_${domain}.py",
            subscribe   => Exec["icacls domain ${title}${script}"],
            refreshonly => true,
           }

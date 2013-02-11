@@ -49,13 +49,14 @@ define wls::installsoa($mdwHome         = undef,
                        $soaFile2        = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
+                       $downloadDir     = '/install/',
                     ) {
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath        = "/usr/java/${fullJDKName}/bin;/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-        $path            = '/install/'
+        $path            = $downloadDir
         $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
         $oraInstPath     = "/etc/"
         $oraInventory    = "${oracleHome}/orainventory"
@@ -76,7 +77,7 @@ define wls::installsoa($mdwHome         = undef,
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = "c:\\temp\\"
+        $path             = $downloadDir 
         $soaOracleHome    = "${mdwHome}/Oracle_SOA1"
         $oraInventory     = "C:\Program Files\Oracle\Inventory"
         
@@ -178,15 +179,19 @@ if ( $continue ) {
      }
      windows: { 
 
-        registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
-          ensure  => present,
-          require => File ["${path}${soaFile2}"],
+        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"]) { 
+          registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
+            ensure  => present,
+            require => [File ["${path}${soaFile1}"],File ["${path}${soaFile2}"]],
+          }
         }
 
-        registry_value { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc":
-          type    => string,
-          data    => $oraInventory,
-          require => Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"],
+        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"]) {
+          registry_value { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc":
+            type    => string,
+            data    => $oraInventory,
+            require => Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"],
+          }
         }
 
   		  if ! defined(File["${path}soa"]) {
@@ -201,13 +206,13 @@ if ( $continue ) {
         exec {"icacls soa folder ${title}": 
            command    => "${checkCommand} icacls ${path}soa\\* /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
-           require    => File["${path}soa"],
+           require    => [File["${path}soa"],File ["${path}${soaFile1}"],File ["${path}${soaFile2}"]],
         } 
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
           command => "jar xf ${path}${soaFile1}",
-          require => [Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"],File["${path}soa"],Exec["icacls soa folder ${title}"]],
+          require => [Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"],File ["${path}${soaFile1}"],File["${path}soa"],Exec["icacls soa folder ${title}"]],
           creates => "${path}soa/Disk1",
           cwd     => "${path}soa",
          }
@@ -216,7 +221,7 @@ if ( $continue ) {
         if ! defined(Exec["extract ${soaFile2}"]) {
          exec { "extract ${soaFile2}":
           command => "jar xf ${path}${soaFile2}",
-          require => [Exec["extract ${soaFile1}"],File["${path}soa"],Exec["icacls soa folder ${title}"]],
+          require => [Exec["extract ${soaFile1}"],File["${path}soa"],File ["${path}${soaFile2}"],Exec["icacls soa folder ${title}"]],
           creates => "${path}soa/Disk5",
           cwd     => "${path}soa",
          }

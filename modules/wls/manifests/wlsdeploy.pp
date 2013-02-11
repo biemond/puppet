@@ -57,6 +57,7 @@ define wls::wlsdeploy ($wlHome        = undef,
                        $artifact      = undef,
                        $customFile    = 'None',
                        $project       = 'None',
+                       $downloadDir   = '/install/',
                       ) {
 
    notify {"wls::wlsdeploy ${title}":}
@@ -67,7 +68,7 @@ define wls::wlsdeploy ($wlHome        = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-        $path             = '/install/'
+        $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         
         if $deployType == 'weblogic' {
@@ -98,8 +99,7 @@ define wls::wlsdeploy ($wlHome        = undef,
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $path             = "c:/temp/" 
-        $path_win         = "c:\\temp\\" 
+        $path             = $downloadDir 
 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
 
@@ -162,7 +162,7 @@ define wls::wlsdeploy ($wlHome        = undef,
 
 
         exec { "rm ${path}${title}importOSB.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del c:\\temp\\${title}importOSB.py",
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}importOSB.py",
            require => Exec["execwlst ${title}importOSB.py"],
         }
      }

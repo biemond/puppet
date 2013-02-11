@@ -135,6 +135,138 @@ WebLogic configuration examples
     include wls
     
         
+    class wls1036osb_soa{
+    
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
+    
+      if $wls11gVersion == undef {
+        $wls11gVersion = "1036"
+      }
+    
+     
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $user         = "oracle"
+           $group        = "dba"
+           $downloadDir  = "/install/"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
+         }
+      }
+    
+      # set the defaults
+      Wls::Installwls {
+        version      => $wls11gVersion,
+        fullJDKName  => $jdkWls11gJDK,
+        oracleHome   => $osOracleHome,
+        mdwHome      => $osMdwHome,
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+      Wls::Installosb {
+        mdwHome      => $osMdwHome,
+        wlHome       => $osWlHome,
+        oracleHome   => $osOracleHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+      Wls::Installsoa {
+        mdwHome      => $osMdwHome,
+        wlHome       => $osWlHome,
+        oracleHome   => $osOracleHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+      
+      Wls::Nodemanager {
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,
+        serviceName  => $serviceName,  
+        downloadDir  => $downloadDir, 
+      }
+    
+      Wls::Bsupatch {
+        mdwHome      => $osMdwHome ,
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,
+        user         => $user,
+        group        => $group,
+        downloadDir  => $downloadDir, 
+      }
+      
+      Wls::Opatch {
+        fullJDKName  => $jdkWls11gJDK,
+        user         => $user,
+        group        => $group,
+    
+        downloadDir  => $downloadDir, 
+      }  
+    
+      # install
+      wls::installwls{'11gPS5':}
+    
+    	# weblogic patch
+      wls::bsupatch{'p14736139':
+         patchId      => 'HYKC',    
+         patchFile    => 'p14736139_1036_Generic.zip',  
+         require      => Wls::Installwls['11gPS5'],
+       }
+    
+    
+       wls::installosb{'osbPS5':
+         osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+         require      => Wls::Bsupatch['p14736139'],
+       }
+    
+       wls::opatch{'14389126_osb_patch':
+         oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
+         patchId           => '14389126',	
+         patchFile         => 'p14389126_111160_Generic.zip',	
+         require           => Wls::Installosb['osbPS5'],
+       }
+    
+       wls::installsoa{'soaPS5':
+         soaFile1      => 'ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip',
+         soaFile2      => 'ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip',
+         require       =>  Wls::Opatch['14389126_osb_patch'],
+       }
+    
+       wls::opatch{'14406487_soa_patch':
+         oracleProductHome => "${osMdwHome}/Oracle_SOA1" ,
+         patchId           => '14406487',	
+         patchFile         => 'p14406487_111160_Generic.zip',	
+         require           => Wls::Installsoa['soaPS5'],
+       }
+    
+       #nodemanager configuration and starting
+       wls::nodemanager{'nodemanager11g':
+         listenPort  => '5556',
+         require     => Wls::Opatch['14406487_soa_patch'],
+       }
+    
+    }
+    
     class osb_oepe{
     
       if $jdkWls11gJDK == undef {
@@ -150,6 +282,7 @@ WebLogic configuration examples
       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
       $user         = "oracle"
       $group        = "dba"
+      $downloadDir  = "/install/"
     
       $oepeFile     = "oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip"
     
@@ -160,7 +293,8 @@ WebLogic configuration examples
         oracleHome   => $osOracleHome,
         mdwHome      => $osMdwHome,
         user         => $user,
-        group        => $group,    
+        group        => $group,
+        downloadDir  => $downloadDir,        
       }
     
       Wls::Installosb {
@@ -170,6 +304,7 @@ WebLogic configuration examples
         fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
+        downloadDir  => $downloadDir, 
       }
     
     
@@ -211,127 +346,6 @@ WebLogic configuration examples
     
     
     
-    class wls1036osb_soa{
-    
-      if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
-      }
-    
-      if $wls11gVersion == undef {
-        $wls11gVersion = "1036"
-      }
-    
-     
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
-           $osOracleHome = "/opt/wls"
-           $osMdwHome    = "/opt/wls/Middleware11gR1"
-           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
-           $user         = "oracle"
-           $group        = "dba"
-         }
-         windows: { 
-           $osOracleHome = "c:/oracle"
-           $osMdwHome    = "c:/oracle/wls11g"
-           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
-           $user         = "Administrator"
-           $group        = "Administrators"
-           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
-         }
-      }
-    
-      # set the defaults
-      Wls::Installwls {
-        version      => $wls11gVersion,
-        fullJDKName  => $jdkWls11gJDK,
-        oracleHome   => $osOracleHome,
-        mdwHome      => $osMdwHome,
-        user         => $user,
-        group        => $group,    
-      }
-    
-      Wls::Installosb {
-        mdwHome      => $osMdwHome,
-        wlHome       => $osWlHome,
-        oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,    
-      }
-    
-      Wls::Installsoa {
-        mdwHome      => $osMdwHome,
-        wlHome       => $osWlHome,
-        oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,    
-      }
-      
-      Wls::Nodemanager {
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,
-        serviceName  => $serviceName,  
-      }
-      
-    
-      # install
-      wls::installwls{'11gPS5':}
-    
-      wls::bsupatch{'p14736139':
-         mdwHome      => $osMdwHome ,
-         wlHome       => $osWlHome,
-         fullJDKName  => $jdkWls11gJDK,
-         patchId      => 'HYKC',    
-         patchFile    => 'p14736139_1036_Generic.zip',  
-         user         => $user,
-         group        => $group, 
-         require      => Wls::Installwls['11gPS5'],
-       }
-    
-    
-       wls::installosb{'osbPS5':
-         osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
-         require      => Wls::Bsupatch['p14736139'],
-       }
-    
-       wls::opatch{'14389126_osb_patch':
-         oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
-         fullJDKName       => $jdkWls11gJDK,
-         patchId           => '14389126',	
-         patchFile         => 'p14389126_111160_Generic.zip',	
-         user              => $user,
-         group             => $group, 
-         require           => Wls::Installosb['osbPS5'],
-       }
-    
-       wls::installsoa{'soaPS5':
-         soaFile1      => 'ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip',
-         soaFile2      => 'ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip',
-         require      =>  Wls::Opatch['14389126_osb_patch'],
-       }
-    
-       wls::opatch{'14406487_soa_patch':
-         oracleProductHome => "${osMdwHome}/Oracle_SOA1" ,
-         fullJDKName       => $jdkWls11gJDK,
-         patchId           => '14406487',	
-         patchFile         => 'p14406487_111160_Generic.zip',	
-         user              => $user,
-         group             => $group, 
-         require           => Wls::Installsoa['soaPS5'],
-       }
-    
-       #nodemanager configuration and starting
-       wls::nodemanager{'nodemanager11g':
-         listenPort  => '5556',
-         require     => Wls::Opatch['14406487_soa_patch'],
-       }
-    
-    }
-    
-    
     class wls12{
     
     
@@ -350,6 +364,7 @@ WebLogic configuration examples
            $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
            $user         = "oracle"
            $group        = "dba"
+           $downloadDir  = "/install/"
          }
          windows: { 
            $osOracleHome = "c:/oracle"
@@ -358,6 +373,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
+           $downloadDir  = "c:\\temp\\"
          }
       }
     
@@ -388,35 +404,13 @@ WebLogic configuration examples
         require      => Wls::Installwls['wls12c'],
       }
     
-    }     
-    
+    }
+        
 ### templates_app.pp
 
 
     include wls
 
-    class application_osb_soa {
-    
-       include wls1036osb_soa, wls_osb_domain
-       #, wls11g_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS, wls_OSB_application_jar
-       Class['wls1036osb_soa'] -> Class['wls_osb_domain'] 
-       #-> Class['wls11g_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS'] -> Class['wls_OSB_application_jar']
-    }
-    
-    class application_osb_soa_win {
-    
-       include wls1036osb_soa, wls_osb_domain
-       Class['wls1036osb_soa'] -> Class['wls_osb_domain']
-       
-    }
-    
-    class application_wls12 {
-    
-       include wls12, wls12c_domain
-       Class['wls12'] -> Class['wls12c_domain']
-    }
-    
-    
     class wls_OSB_application_jar {
     
       if $groupId == undef {
@@ -441,6 +435,7 @@ WebLogic configuration examples
       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
       $user         = "oracle"
       $group        = "dba"
+      $downloadDir  = "/install/"
     
       artifactory::artifact {"/tmp/${artifactId}-${version}.zip":
          ensure     => present,
@@ -472,6 +467,7 @@ WebLogic configuration examples
         wlsUser      => "weblogic",
         password     => "weblogic1",
         port         => "7001",
+        downloadDir  => $downloadDir, 
       }
     
     
@@ -508,6 +504,7 @@ WebLogic configuration examples
            $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
+           $downloadDir  = "/install/"
          }
          windows: { 
            $osMdwHome    = "c:/oracle/wls11g"
@@ -516,6 +513,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
          }
       }
     
@@ -530,6 +528,7 @@ WebLogic configuration examples
         wlsUser      => "weblogic",
         password     => "weblogic1",
         port         => "7001",
+        downloadDir  => $downloadDir, 
       }
     
       # create jdbc datasource for osb_server1 
@@ -571,6 +570,7 @@ WebLogic configuration examples
            $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
+           $downloadDir  = "/install/"
          }
          windows: { 
            $osMdwHome    = "c:/oracle/wls11g"
@@ -579,6 +579,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
          }
       }
     
@@ -593,6 +594,7 @@ WebLogic configuration examples
         wlsUser      => "weblogic",
         password     => "weblogic1",
         port         => "7001",
+        downloadDir  => $downloadDir, 
       }
     
       # create jdbc jms datasource for jms server 
@@ -833,6 +835,7 @@ WebLogic configuration examples
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
            $group        = "dba"
+           $downloadDir  = "/install/"
          }
          windows: { 
            $osOracleHome = "c:/oracle"
@@ -841,6 +844,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
          }
       }
       
@@ -852,6 +856,7 @@ WebLogic configuration examples
         fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
+        downloadDir  => $downloadDir, 
       }
     
     
@@ -879,6 +884,7 @@ WebLogic configuration examples
         address      => $address,
         wlsUser      => $wlsUser,
         password     => $password,
+        downloadDir  => $downloadDir, 
       }
       
       # start AdminServers for configuration of WLS Domain
@@ -916,6 +922,7 @@ WebLogic configuration examples
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
            $group        = "dba"
+           $downloadDir  = "/install/"
          }
          windows: { 
            $osOracleHome = "c:/oracle"
@@ -924,6 +931,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
          }
       }
     
@@ -936,6 +944,7 @@ WebLogic configuration examples
         fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
+        downloadDir  => $downloadDir, 
       }
     
     
@@ -963,6 +972,7 @@ WebLogic configuration examples
         address      => $address,
         wlsUser      => $wlsUser,
         password     => $password,
+        downloadDir  => $downloadDir, 
       }
       
       # start AdminServers for configuration of both domains myTestDomain
@@ -1003,6 +1013,7 @@ WebLogic configuration examples
            $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
            $user         = "oracle"
            $group        = "dba"
+           $downloadDir  = "/install/"
          }
          windows: { 
            $osOracleHome = "c:/oracle"
@@ -1011,6 +1022,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
+           $downloadDir  = "c:\\temp\\"
          }
       }
     
@@ -1022,6 +1034,7 @@ WebLogic configuration examples
         fullJDKName  => $jdkWls12gJDK,	
         user         => $user,
         group        => $group,    
+        downloadDir  => $downloadDir, 
       }
     
     
@@ -1047,6 +1060,7 @@ WebLogic configuration examples
         address      => $address,
         wlsUser      => $wlsUser,
         password     => $password,
+        downloadDir  => $downloadDir, 
       }
       
       # start AdminServers for configuration of both domains myTestDomain
