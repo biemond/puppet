@@ -54,7 +54,7 @@ define wls::installosb($mdwHome         = undef,
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
-        $execPath        = "/usr/java/${fullJDKName}/bin;/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
         $oraInstPath     = "/etc/"

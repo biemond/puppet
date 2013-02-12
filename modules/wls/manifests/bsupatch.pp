@@ -48,7 +48,7 @@ define wls::bsupatch($mdwHome         = undef,
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
-        $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
+        $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin'
         $path            = $downloadDir
         
         Exec { path      => $execPath,
@@ -111,13 +111,13 @@ define wls::bsupatch($mdwHome         = undef,
 if ( $continue ) {
 
    
-   $bsuCommand  = "-prod_dir=${wlHome} -patchlist=${patchId} -verbose -install"
+   $bsuCommand  = "-install -patchlist=${patchId} -prod_dir=${wlHome} -verbose"
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "extract ${patchFile}":
-          command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
+          command => "unzip -n ${path}${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
           require => File ["${path}${patchFile}"],
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
         }
@@ -126,6 +126,9 @@ if ( $continue ) {
           command     => "${mdwHome}/utils/bsu/bsu.sh ${bsuCommand}",
           require     => Exec["extract ${patchFile}"],
           cwd         => "${mdwHome}/utils/bsu",
+          environment => ["USER=${user}",
+                          "HOME=/home/${user}",
+                          "LOGNAME=${user}"],
         }    
              
      }
