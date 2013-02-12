@@ -111,23 +111,23 @@ if ( $continue ) {
       $osbTemplate =  "wls/silent_osb_oepe.xml.erb"
    }
 
-   if ! defined(File["${path}silent_osb.xml"]) {
-     file { "${path}silent_osb.xml":
+#   if ! defined(File["${path}${title}silent_osb.xml"]) {
+     file { "${path}${title}silent_osb.xml":
        ensure  => present,
        content => template($osbTemplate),
      }
-   }
+#   }
 
    # weblogic generic installer zip
    if ! defined(File["${path}${osbFile}"]) {
     file { "${path}${osbFile}":
      source  => "puppet:///modules/wls/${osbFile}",
-     require => File ["${path}silent_osb.xml"],
+     require => File ["${path}${title}silent_osb.xml"],
     }
    }
 
    
-   $command  = "-silent -response ${path}silent_osb.xml "
+   $command  = "-silent -response ${path}${title}silent_osb.xml "
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -135,7 +135,7 @@ if ( $continue ) {
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
           command => "unzip ${path}${osbFile} -d ${path}/osb",
-          require => File ["${path}${osbFile}"],
+          require => [File ["${path}${osbFile}"],File ["${path}${title}silent_osb.xml"]],
           creates => "${path}/osb",
          }
         }
@@ -144,13 +144,13 @@ if ( $continue ) {
          file { "${oraInstPath}/oraInst.loc":
            ensure  => present,
            content => template("wls/oraInst.loc.erb"),
-           require => [Exec["extract ${osbFile}"],File ["${path}${osbFile}"]],
+#           require => [Exec["extract ${osbFile}"],File ["${path}${osbFile}"]],
          }
         }
         
         exec { "install osb ${title}":
           command     => "${path}osb/Disk1/install/linux64/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}${osbFile}"]],
+          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
@@ -167,7 +167,7 @@ if ( $continue ) {
         if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"]) { 
           registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
             ensure  => present,
-            require => File ["${path}${osbFile}"],
+#            require => File ["${path}${osbFile}"],
           }
         }
 
@@ -182,7 +182,7 @@ if ( $continue ) {
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
           command => "jar xf ${path}${osbFile}",
-          require => [Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"],File ["${path}${osbFile}"]],
+          require => File ["${path}${osbFile}"],
           creates => "${path}Disk1", 
           cwd     => $path,
          }
@@ -197,7 +197,7 @@ if ( $continue ) {
         exec { "install osb ${title}":
           command     => "${path}Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
-          require     => Exec["icacls osb disk ${title}"],
+          require     => [Exec["icacls osb disk ${title}"],File ["${path}${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome, 
         }    
 

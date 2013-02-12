@@ -103,23 +103,22 @@ define wls::installsoa($mdwHome         = undef,
        }
      }
 
-
 if ( $continue ) {
 
    $soaTemplate =  "wls/silent_soa.xml.erb"
 
-   if ! defined(File["${path}silent_soa.xml"]) {
-     file { "${path}silent_soa.xml":
+#   if ! defined(File["${path}${title}silent_soa.xml"]) {
+     file { "${path}${title}silent_soa.xml":
        ensure  => present,
        content => template($soaTemplate),
      }
-   }
+#   }
 
    # soa file 1 installer zip
    if ! defined(File["${path}${soaFile1}"]) {
     file { "${path}${soaFile1}":
      source  => "puppet:///modules/wls/${soaFile1}",
-     require => File ["${path}silent_soa.xml"],
+     require => File ["${path}${title}silent_soa.xml"],
     }
    }
 
@@ -127,13 +126,13 @@ if ( $continue ) {
    if ! defined(File["${path}${soaFile2}"]) {
     file { "${path}${soaFile2}":
      source  => "puppet:///modules/wls/${soaFile2}",
-     require => [File ["${path}silent_soa.xml"],File["${path}${soaFile1}"]],
+     require => [File ["${path}${title}silent_soa.xml"],File["${path}${soaFile1}"]],
     }
    }
 
 
    
-   $command  = "-silent -response ${path}silent_soa.xml "
+   $command  = "-silent -response ${path}${title}silent_soa.xml "
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -159,13 +158,13 @@ if ( $continue ) {
          file { "${oraInstPath}/oraInst.loc":
            ensure  => present,
            content => template("wls/oraInst.loc.erb"),
-           require     => Exec["extract ${soaFile2}"],
+#           require     => Exec["extract ${soaFile2}"],
          }
         }
         
         exec { "install soa ${title}":
           command     => "${path}soa/Disk1/install/linux64/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
-          require     => File ["${oraInstPath}/oraInst.loc"],
+          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
           creates     => $soaOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
@@ -231,13 +230,13 @@ if ( $continue ) {
         exec {"icacls soa disk ${title}": 
            command    => "${checkCommand} icacls ${path}soa\\* /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
-           require    => Exec["extract ${soaFile2}"],
+           require    => [Exec["extract ${soaFile2}"],Exec["extract ${soaFile1}"]],
         } 
 
         exec { "install soa ${title}":
           command     => "${path}soa\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
-          require     => Exec["icacls soa disk ${title}"],
+          require     => [Exec["icacls soa disk ${title}"],File["${path}${title}silent_soa.xml"],Exec["extract ${soaFile2}"],Exec["extract ${soaFile1}"]],
           creates     => $osbOracleHome, 
         }    
 
