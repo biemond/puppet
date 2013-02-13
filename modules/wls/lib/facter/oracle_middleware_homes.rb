@@ -33,7 +33,7 @@ def get_bsu_patches(name)
 
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
    if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
-    output2 = Facter::Util::Resolution.exec('java -Xms256m -Xmx512m -jar '+ name+'/utils/bsu/patch-client.jar -report -bea_home='+name+' -output_format=xml')
+    output2 = Facter::Util::Resolution.exec("su -l oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
     if output2.nil?
       return "empty"
     end
