@@ -24,6 +24,7 @@ WLS WebLogic Features
 - configures + starts nodemanager
 - domain creation + domain pack
 - domain OSB creation + domain pack
+- domain OSB + SOA creation + domain pack
 - can start the AdminServer for configuration 
 - apply bsu patch ( WebLogic Patch )
 - apply oracle patch ( OPatch for OSB and Soa Suite )
@@ -410,7 +411,394 @@ WebLogic configuration examples
 
 
     include wls
-
+    
+    class application_osb_soa {
+    
+       include wls1036osb_soa , wls_osb_domain
+       #, wls11g_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS, wls_OSB_application_jar
+       Class['wls1036osb_soa'] -> Class['wls_osb_domain'] 
+       #-> Class['wls11g_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS'] -> Class['wls_OSB_application_jar']
+    }
+    
+    class application_osb_soa_win {
+    
+       include wls1036osb_soa
+       #, wls_osb_domain
+       #Class['wls1036osb_soa'] -> Class['wls_osb_domain']
+       
+    }
+    
+    class application_wls12 {
+    
+       include wls12, wls12c_domain
+       Class['wls12'] -> Class['wls12c_domain']
+    }
+    
+    class wls_osb_soa_domain{
+    
+    
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
+    
+      $wlsDomainName   = "osbSoaDomain"
+      $osTemplate      = "osb_soa"
+      $adminListenPort = "7001"
+      $nodemanagerPort = "5556"
+      $address         = "localhost"
+      $wlsUser         = "weblogic"
+      $password        = "weblogic1"
+    
+    	$reposUrl        = "master.alfa.local:1521:osb"
+    	$reposPrefix     = "DEV"
+    	$reposPassword   = "xxx"
+    
+     
+     
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $user         = "oracle"
+           $group        = "dba"
+           $downloadDir  = "/data/install/"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
+         }
+      }
+      
+      # set the defaults
+    
+      Wls::Wlsdomain {
+        wlHome       => $osWlHome,
+        mdwHome      => $osMdwHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+    
+    
+      # install SOA OSB domain
+      wls::wlsdomain{'osbSoaDomain':
+       wlsTemplate     => $osTemplate,
+       domain          => $wlsDomainName,
+    	 reposDbUrl      => $reposUrl,
+    	 reposPrefix     => $reposPrefix,
+    	 reposPassword   => $reposPassword,
+       adminListenPort => $adminListenPort,
+       nodemanagerPort => $nodemanagerPort,
+      }
+    
+    
+      # default parameters for the wlst scripts
+      Wls::Wlstexec {
+        wlsDomain    => "${osDomainPath}/${wlsDomainName}",
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,
+        address      => $address,
+        wlsUser      => $wlsUser,
+        password     => $password,
+        downloadDir  => $downloadDir, 
+      }
+      
+      # start AdminServers for configuration of WLS Domain
+      wls::wlstexec { 
+        'startOSBSOAAdminServer':
+         script      => 'startWlsServer.py',
+         port        => $nodemanagerPort,
+         params      =>  ["domain     = '${wlsDomainName}'",
+                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+                          "wlsServer  = 'AdminServer'"],
+         require     => Wls::Wlsdomain['osbSoaDomain'];
+      }
+    
+    
+    }
+    
+    
+    
+    class wls_osb_domain{
+    
+    
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
+    
+      $wlsDomainName   = "osbDomain"
+      $osTemplate      = "osb"
+      $adminListenPort = "7001"
+      $nodemanagerPort = "5556"
+      $address         = "localhost"
+      $wlsUser         = "weblogic"
+      $password        = "weblogic1"
+     
+     
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $user         = "oracle"
+           $group        = "dba"
+           $downloadDir  = "/data/install/"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
+         }
+      }
+      
+      # set the defaults
+    
+      Wls::Wlsdomain {
+        wlHome       => $osWlHome,
+        mdwHome      => $osMdwHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+    
+    
+     # install OSB domain
+     wls::wlsdomain{
+     
+       'osbDomain':
+       wlsTemplate     => $osTemplate,
+       domain          => $wlsDomainName,
+       adminListenPort => $adminListenPort,
+       nodemanagerPort => $nodemanagerPort,
+       require         => Wls::Nodemanager['nodemanager11g'];
+       
+     }
+    
+    
+      # default parameters for the wlst scripts
+      Wls::Wlstexec {
+        wlsDomain    => "${osDomainPath}/${wlsDomainName}",
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,
+        address      => $address,
+        wlsUser      => $wlsUser,
+        password     => $password,
+        downloadDir  => $downloadDir, 
+      }
+      
+      # start AdminServers for configuration of WLS Domain
+      wls::wlstexec { 
+        'startOSBAdminServer':
+         script      => 'startWlsServer.py',
+         port        => $nodemanagerPort,
+         params      =>  ["domain     = '${wlsDomainName}'",
+                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+                          "wlsServer  = 'AdminServer'"],
+         require     => Wls::Wlsdomain['osbDomain'];
+      }
+    
+    
+    }
+    
+    class wls11g_domain{
+    
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
+    
+      $wlsDomainName   = "stdDomain"
+      $osTemplate      = "standard"
+      $adminListenPort = "9001"
+      $nodemanagerPort = "5556"
+      $address         = "localhost"
+      $wlsUser         = "weblogic"
+      $password        = "weblogic1"
+    
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $user         = "oracle"
+           $group        = "dba"
+           $downloadDir  = "/data/install/"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
+         }
+      }
+    
+    
+      # set the defaults
+    
+      Wls::Wlsdomain {
+        wlHome       => $osWlHome,
+        mdwHome      => $osMdwHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+    
+    
+     # install domain
+     wls::wlsdomain{
+     
+       'stdDomain':
+       wlsTemplate     => $osTemplate,
+       domain          => $wlsDomainName,
+       adminListenPort => $adminListenPort,
+       nodemanagerPort => $nodemanagerPort,
+       require         => Wls::Nodemanager['nodemanager11g'];
+       
+     }
+    
+    
+      # default parameters for the wlst scripts
+      Wls::Wlstexec {
+        wlsDomain    => "${osDomainPath}/${wlsDomainName}",
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,
+        address      => $address,
+        wlsUser      => $wlsUser,
+        password     => $password,
+        downloadDir  => $downloadDir, 
+      }
+      
+      # start AdminServers for configuration of both domains myTestDomain
+      wls::wlstexec { 
+      
+        'startWLSAdminServer':
+         script      => 'startWlsServer.py',
+         port        =>  $nodemanagerPort,
+         params      =>  ["domain = '${wlsDomainName}'",
+                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+                          "wlsServer = 'AdminServer'"],
+         require     => Wls::Wlsdomain['osbDomain'];
+    
+      }
+    
+    
+    }
+    
+    class wls12c_domain{
+    
+    
+      if $jdkWls12gJDK == undef {
+        $jdkWls12gJDK = 'jdk1.7.0_09'
+      }
+    
+      $wlsDomainName   = "stdDomain12c"
+      $osTemplate      = "standard"
+      $adminListenPort = "8001"
+      $nodemanagerPort = "5656"
+      $address         = "localhost"
+      $wlsUser         = "weblogic"
+      $password        = "weblogic1"
+     
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware12g"
+           $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
+           $user         = "oracle"
+           $group        = "dba"
+           $downloadDir  = "/data/install/"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/Middleware12g"
+           $osWlHome     = "c:/oracle/Middleware12g/wlserver_12.1"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
+           $downloadDir  = "c:\\temp\\"
+         }
+      }
+    
+      # set the defaults
+    
+      Wls::Wlsdomain {
+        wlHome       => $osWlHome,
+        mdwHome      => $osMdwHome,
+        fullJDKName  => $jdkWls12gJDK,	
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+    
+    
+     # install domain
+     wls::wlsdomain{
+     
+       'stdDomain12c':
+       wlsTemplate     => $osTemplate,
+       domain          => $wlsDomainName,
+       adminListenPort => $adminListenPort,
+       nodemanagerPort => $nodemanagerPort,
+     }
+    
+    
+      # default parameters for the wlst scripts
+      Wls::Wlstexec {
+        wlsDomain    => "${osDomainPath}/${wlsDomainName}",
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls12gJDK,	
+        user         => $user,
+        group        => $group,
+        address      => $address,
+        wlsUser      => $wlsUser,
+        password     => $password,
+        downloadDir  => $downloadDir, 
+      }
+      
+      # start AdminServers for configuration of both domains myTestDomain
+      wls::wlstexec { 
+      
+        'startWLSAdminServer12c':
+         script      => 'startWlsServer.py',
+         port        =>  $nodemanagerPort,
+         params      =>  ["domain = '${wlsDomainName}'",
+                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+                          "wlsServer = 'AdminServer'"],
+         require     => Wls::Wlsdomain['stdDomain12c'];
+    
+      }
+    
+    
+    }
+    
+    
+    
+    
     class wls_OSB_application_jar {
     
       if $groupId == undef {
@@ -435,7 +823,7 @@ WebLogic configuration examples
       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
       $user         = "oracle"
       $group        = "dba"
-      $downloadDir  = "/install/"
+      $downloadDir  = "/data/install/"
     
       artifactory::artifact {"/tmp/${artifactId}-${version}.zip":
          ensure     => present,
@@ -504,7 +892,7 @@ WebLogic configuration examples
            $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
-           $downloadDir  = "/install/"
+           $downloadDir  = "/data/install/"
          }
          windows: { 
            $osMdwHome    = "c:/oracle/wls11g"
@@ -570,7 +958,7 @@ WebLogic configuration examples
            $osDomainPath = "/opt/wls/Middleware11gR1/admin"
            $user         = "oracle"
            $group        = "dba"
-           $downloadDir  = "/install/"
+           $downloadDir  = "/data/install/"
          }
          windows: { 
            $osMdwHome    = "c:/oracle/wls11g"
@@ -811,272 +1199,4 @@ WebLogic configuration examples
     
     
     
-    
-    class wls_osb_domain{
-    
-    
-      if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
-      }
-    
-      $wlsDomainName   = "osbDomain"
-      $osTemplate      = "osb"
-      $adminListenPort = "7001"
-      $nodemanagerPort = "5556"
-      $address         = "localhost"
-      $wlsUser         = "weblogic"
-      $password        = "weblogic1"
-     
-     
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
-           $osOracleHome = "/opt/wls"
-           $osMdwHome    = "/opt/wls/Middleware11gR1"
-           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
-           $user         = "oracle"
-           $group        = "dba"
-           $downloadDir  = "/install/"
-         }
-         windows: { 
-           $osOracleHome = "c:/oracle"
-           $osMdwHome    = "c:/oracle/wls11g"
-           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
-           $user         = "Administrator"
-           $group        = "Administrators"
-           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
-           $downloadDir  = "c:\\temp\\"
-         }
-      }
-      
-      # set the defaults
-    
-      Wls::Wlsdomain {
-        wlHome       => $osWlHome,
-        mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,    
-        downloadDir  => $downloadDir, 
-      }
-    
-    
-    
-     # install OSB domain
-     wls::wlsdomain{
-     
-       'osbDomain':
-       wlsTemplate     => $osTemplate,
-       domain          => $wlsDomainName,
-       adminListenPort => $adminListenPort,
-       nodemanagerPort => $nodemanagerPort,
-       require         => Wls::Nodemanager['nodemanager11g'];
-       
-     }
-    
-    
-      # default parameters for the wlst scripts
-      Wls::Wlstexec {
-        wlsDomain    => "${osDomainPath}/${wlsDomainName}",
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,
-        address      => $address,
-        wlsUser      => $wlsUser,
-        password     => $password,
-        downloadDir  => $downloadDir, 
-      }
-      
-      # start AdminServers for configuration of WLS Domain
-      wls::wlstexec { 
-        'startOSBAdminServer':
-         script      => 'startWlsServer.py',
-         port        => $nodemanagerPort,
-         params      =>  ["domain     = '${wlsDomainName}'",
-                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-                          "wlsServer  = 'AdminServer'"],
-         require     => Wls::Wlsdomain['osbDomain'];
-      }
-    
-    
-    }
-    
-    class wls11g_domain{
-    
-      if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
-      }
-    
-      $wlsDomainName   = "stdDomain"
-      $osTemplate      = "standard"
-      $adminListenPort = "9001"
-      $nodemanagerPort = "5556"
-      $address         = "localhost"
-      $wlsUser         = "weblogic"
-      $password        = "weblogic1"
-    
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
-           $osOracleHome = "/opt/wls"
-           $osMdwHome    = "/opt/wls/Middleware11gR1"
-           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
-           $user         = "oracle"
-           $group        = "dba"
-           $downloadDir  = "/install/"
-         }
-         windows: { 
-           $osOracleHome = "c:/oracle"
-           $osMdwHome    = "c:/oracle/wls11g"
-           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
-           $user         = "Administrator"
-           $group        = "Administrators"
-           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
-           $downloadDir  = "c:\\temp\\"
-         }
-      }
-    
-    
-      # set the defaults
-    
-      Wls::Wlsdomain {
-        wlHome       => $osWlHome,
-        mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,    
-        downloadDir  => $downloadDir, 
-      }
-    
-    
-    
-     # install domain
-     wls::wlsdomain{
-     
-       'stdDomain':
-       wlsTemplate     => $osTemplate,
-       domain          => $wlsDomainName,
-       adminListenPort => $adminListenPort,
-       nodemanagerPort => $nodemanagerPort,
-       require         => Wls::Nodemanager['nodemanager11g'];
-       
-     }
-    
-    
-      # default parameters for the wlst scripts
-      Wls::Wlstexec {
-        wlsDomain    => "${osDomainPath}/${wlsDomainName}",
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,
-        address      => $address,
-        wlsUser      => $wlsUser,
-        password     => $password,
-        downloadDir  => $downloadDir, 
-      }
-      
-      # start AdminServers for configuration of both domains myTestDomain
-      wls::wlstexec { 
-      
-        'startWLSAdminServer':
-         script      => 'startWlsServer.py',
-         port        =>  $nodemanagerPort,
-         params      =>  ["domain = '${wlsDomainName}'",
-                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-                          "wlsServer = 'AdminServer'"],
-         require     => Wls::Wlsdomain['osbDomain'];
-    
-      }
-    
-    
-    }
-    
-    class wls12c_domain{
-    
-    
-      if $jdkWls12gJDK == undef {
-        $jdkWls12gJDK = 'jdk1.7.0_09'
-      }
-    
-      $wlsDomainName   = "stdDomain12c"
-      $osTemplate      = "standard"
-      $adminListenPort = "8001"
-      $nodemanagerPort = "5656"
-      $address         = "localhost"
-      $wlsUser         = "weblogic"
-      $password        = "weblogic1"
-     
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
-           $osOracleHome = "/opt/wls"
-           $osMdwHome    = "/opt/wls/Middleware12g"
-           $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
-           $user         = "oracle"
-           $group        = "dba"
-           $downloadDir  = "/install/"
-         }
-         windows: { 
-           $osOracleHome = "c:/oracle"
-           $osMdwHome    = "c:/oracle/Middleware12g"
-           $osWlHome     = "c:/oracle/Middleware12g/wlserver_12.1"
-           $user         = "Administrator"
-           $group        = "Administrators"
-           $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
-           $downloadDir  = "c:\\temp\\"
-         }
-      }
-    
-      # set the defaults
-    
-      Wls::Wlsdomain {
-        wlHome       => $osWlHome,
-        mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls12gJDK,	
-        user         => $user,
-        group        => $group,    
-        downloadDir  => $downloadDir, 
-      }
-    
-    
-    
-     # install domain
-     wls::wlsdomain{
-     
-       'stdDomain12c':
-       wlsTemplate     => $osTemplate,
-       domain          => $wlsDomainName,
-       adminListenPort => $adminListenPort,
-       nodemanagerPort => $nodemanagerPort,
-     }
-    
-    
-      # default parameters for the wlst scripts
-      Wls::Wlstexec {
-        wlsDomain    => "${osDomainPath}/${wlsDomainName}",
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls12gJDK,	
-        user         => $user,
-        group        => $group,
-        address      => $address,
-        wlsUser      => $wlsUser,
-        password     => $password,
-        downloadDir  => $downloadDir, 
-      }
-      
-      # start AdminServers for configuration of both domains myTestDomain
-      wls::wlstexec { 
-      
-        'startWLSAdminServer12c':
-         script      => 'startWlsServer.py',
-         port        =>  $nodemanagerPort,
-         params      =>  ["domain = '${wlsDomainName}'",
-                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-                          "wlsServer = 'AdminServer'"],
-         require     => Wls::Wlsdomain['stdDomain12c'];
-    
-      }
-    
-    
-    }
-    
-        
+            

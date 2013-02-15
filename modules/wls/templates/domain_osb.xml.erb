@@ -3,6 +3,10 @@ WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
 APP_PATH='<%= @appPath %>/<%= @domain %>'
 
+ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1g -Xmx1g'
+OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Xmx2g'
+
+
 print('Start...osb domain with template <%= @template %>')
 readTemplate('<%= @template %>')
 
@@ -20,6 +24,14 @@ set('Machine','LocalMachine')
 # address and port
 #set('ListenAddress','<%= @adminListenAdr %>')
 set('ListenPort',<%= @adminListenPort %>)
+
+setOption( "AppDir", APP_PATH )
+
+create('AdminServer','ServerStart')
+cd('ServerStart/AdminServer')
+set('Arguments', ADM_JAVA_ARGUMENTS)
+
+
 print('Set password...')
 cd('/')
 cd('Security/base_domain/User/weblogic')
@@ -47,8 +59,13 @@ closeTemplate()
 
 readDomain(DOMAIN_PATH)
 setOption( "AppDir", APP_PATH )
-print('Extend...osb domain with template <%= @templateOSB %>')
 
+print 'Adding EM Template'
+addTemplate('<%= @templateEM %>')
+
+dumpStack();
+
+print('Extend...osb domain with template <%= @templateOSB %>')
 addTemplate('<%= @templateOSB %>')
 
 dumpStack();
@@ -62,9 +79,10 @@ setOption( "AppDir", APP_PATH )
 cd('Servers/osb_server1')
 set('Machine','LocalMachine')
 
-#cd('/SecurityConfiguration/<%= @domain %>')
-#set('NodeManagerUsername', '<%= @wlsUser %>')
-#set('NodeManagerPassword', '<%= @password %>')
+create('osb_server1','ServerStart')
+cd('ServerStart/osb_server1')
+set('Arguments', OSB_JAVA_ARGUMENTS)
+
 
 dumpStack();
 updateDomain()

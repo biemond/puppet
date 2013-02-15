@@ -72,6 +72,9 @@ define wls::wlsdomain ($wlHome          = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install/',
+                       $reposDbUrl      = undef,
+                       $reposPrefix     = undef,
+                       $reposPassword   = undef,
                        ) {
 
    notify {"Domain ${domain} wlHome ${wlHome}":}
@@ -98,27 +101,32 @@ define wls::wlsdomain ($wlHome          = undef,
 
 if ( $continue ) {
 
-
    
    $template             = "${wlHome}/common/templates/domains/wls.jar"
+   $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
+
    $templateOSB          = "${mdwHome}/Oracle_OSB1/common/templates/applications/wlsb.jar"
    $templateSOAAdapters  = "${mdwHome}/Oracle_OSB1/common/templates/applications/oracle.soa.common.adapters_template_11.1.1.jar"
-   $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
+
+   $templateSOA          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.soa_template_11.1.1.jar"
+
    $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
+   $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
+   $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
+   $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
    
    if $wlsTemplate == 'standard' {
-
       $templateFile  = "wls/domain.xml.erb"
 
    } elsif $wlsTemplate == 'osb' {
-
       $templateFile  = "wls/domain_osb.xml.erb"
 
-   } else {
+   } elsif $wlsTemplate == 'osb_soa' {
+      $templateFile  = "wls/domain_osb_soa.xml.erb"
 
+   } else {
       $templateFile  = "wls/domain.xml.erb"
    } 
-   
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -214,16 +222,20 @@ if ( $continue ) {
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
         }    
 
+        exec { "setDebugFlagOnFalse ${domain} ${title}":
+        	command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
+          onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
+          require => Exec["execwlst ux ${domain} ${title}"],
+        }
+
         exec { "domain.py ${domain} ${title}":
            command     => "rm -I ${path}domain_${domain}.py",
-           subscribe   => Exec["execwlst ux ${domain} ${title}"],
-           refreshonly => true,
+           require     => Exec["execwlst ux ${domain} ${title}"],
         }
 
         exec { "pack domain ${domain} ${title}":
            command     => "pack.sh ${packCommand}",
-           subscribe   => Exec["execwlst ux ${domain} ${title}"],
-           refreshonly => true,
+           require     => Exec["setDebugFlagOnFalse ${domain} ${title}"],
         }
 
         # kill the nodemanager 

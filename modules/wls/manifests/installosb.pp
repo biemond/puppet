@@ -58,7 +58,7 @@ define wls::installosb($mdwHome         = undef,
         $path            = $downloadDir
         $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
         $oraInstPath     = "/etc/"
-        $oraInventory    = "${oracleHome}/orainventory"
+        $oraInventory    = "${oracleHome}/oraInventory"
         
         Exec { path      => $execPath,
                user      => $user,

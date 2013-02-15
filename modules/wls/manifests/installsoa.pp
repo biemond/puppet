@@ -59,7 +59,7 @@ define wls::installsoa($mdwHome         = undef,
         $path            = $downloadDir
         $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
         $oraInstPath     = "/etc/"
-        $oraInventory    = "${oracleHome}/orainventory"
+        $oraInventory    = "${oracleHome}/oraInventory"
         
         Exec { path      => $execPath,
                user      => $user,
