@@ -30,6 +30,14 @@ setOption( "AppDir", APP_PATH )
 create('AdminServer','ServerStart')
 cd('ServerStart/AdminServer')
 set('Arguments', ADM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('../..')
+create('AdminServer','SSL')
+cd('SSL/AdminServer')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
 
 
 print('Set password...')
@@ -66,6 +74,7 @@ addTemplate('<%= @templateEM %>')
 dumpStack();
 
 print('Extend...osb domain with template <%= @templateOSB %>')
+addTemplate('<%= @templateWS %>')
 addTemplate('<%= @templateOSB %>')
 
 dumpStack();
@@ -82,7 +91,15 @@ set('Machine','LocalMachine')
 create('osb_server1','ServerStart')
 cd('ServerStart/osb_server1')
 set('Arguments', OSB_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
 
+
+cd('../..')
+create('osb_server1','SSL')
+cd('SSL/osb_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
 
 dumpStack();
 updateDomain()

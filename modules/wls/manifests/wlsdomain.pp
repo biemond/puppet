@@ -99,6 +99,16 @@ define wls::wlsdomain ($wlHome          = undef,
      }
 
 
+     $found2 = rcu_exists($reposDbUrl,$reposPrefix,$reposPassword)
+     if $found2 == undef {
+     } else {
+      if ( $found2 ) {
+         notify {"wls::wlsdomain ${title} rcu already exists":}
+      } else {
+         notify {"wls::wlsdomain ${title} rcu does not exists":}
+      }
+     }
+
 if ( $continue ) {
 
    
@@ -110,6 +120,7 @@ if ( $continue ) {
 
    $templateSOA          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.soa_template_11.1.1.jar"
 
+   $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
    $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
    $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
    $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
