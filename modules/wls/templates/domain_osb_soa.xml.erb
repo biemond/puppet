@@ -30,6 +30,16 @@ setOption( "AppDir", APP_PATH )
 create('AdminServer','ServerStart')
 cd('ServerStart/AdminServer')
 set('Arguments', ADM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('../..')
+create('AdminServer','SSL')
+cd('SSL/AdminServer')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
 
 print('Set password...')
 cd('/')
@@ -125,6 +135,16 @@ set('Machine','LocalMachine')
 create('soa_server1','ServerStart')
 cd('ServerStart/soa_server1')
 set('Arguments', SOA_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('../..')
+create('soa_server1','SSL')
+cd('SSL/soa_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
 
 dumpStack();
 updateDomain()
@@ -158,9 +178,19 @@ set('Machine','LocalMachine')
 create('osb_server1','ServerStart')
 cd('ServerStart/osb_server1')
 set('Arguments', OSB_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('../..')
+create('osb_server1','SSL')
+cd('SSL/osb_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
 
 cd('/JDBCSystemResource/wlsbjmsrpDataSource/JdbcResource/wlsbjmsrpDataSource/JDBCDriverParams/NO_NAME_0')
 set('URL',SOA_REPOS_DBURL)
+set('DriverName','oracle.jdbc.OracleDriver')
 set('PasswordEncrypted',SOA_REPOS_DBUSER_PREFIX+'_SOAINFRA')
 cd('Properties/NO_NAME_0/Property/user')
 set('Value',SOA_REPOS_DBUSER_PREFIX+'_SOAINFRA')

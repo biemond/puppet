@@ -7,7 +7,7 @@ created by Edwin Biemond
 
 for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
 
-Windows agents
+Windows Puppet agents
 --------------
 for windows puppet agents it is necessary to install unxutils tools and extract this on the c drive C:\unxutils<br>
 For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder).<br>
@@ -15,19 +15,25 @@ For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the s
 Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) and install this forge module on the puppet master<br>
 puppet module install puppetlabs/registry
 
+For other agents like RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
+
 WLS WebLogic Features
 ---------------------------
 
-- installs weblogic
+- installs WebLogic 10g,11g,12c
+- apply bsu patch ( WebLogic Patch )
+
 - installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
 - installs Oracle Soa Suite 11g 
+- apply oracle patch ( OPatch for OSB and Soa Suite )
+
 - configures + starts nodemanager
+
 - domain creation + domain pack
 - domain OSB creation + domain pack
 - domain OSB + SOA creation + domain pack
+
 - can start the AdminServer for configuration 
-- apply bsu patch ( WebLogic Patch )
-- apply oracle patch ( OPatch for OSB and Soa Suite )
 - create File or JDBC Persistence Store
 - create JMS Server
 - create JMS Module
@@ -44,12 +50,18 @@ WLS WebLogic Features
 - run every wlst script with the flexible WLST define
 - deploy an OSB project to the OSB server
 
+![Oracle WebLogic Console](https://github.com/biemond/puppet/tree/master/modules/wls/wlsconsole.png)
+
+![Oracle Enterprise Manager Console](https://github.com/biemond/puppet/tree/master/modules/wls/em.png)
+
 
 WLS WebLogic Facter
 -------------------
-
-- Contains WebLogic Facter which displays 
+Contains WebLogic Facter which displays the following 
 - Middleware homes
+- Oracle Software
+- BSU patches
+- Opatch patches
 - Domains
 - Domain configuration ( deployments, datasource, JMS, SAF)
 - running nodemanagers
@@ -113,7 +125,7 @@ WLS WebLogic Facter
         ora_node_mgr_0  pid: 26113 port: 5556
         ora_wls_0 pid: 26198 name: AdminServer
 
-
+![Oracle Puppet Facts](https://github.com/biemond/puppet/tree/master/modules/wls/facts.png)
 
 ### My Files folder of the wls module
      375895263 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
@@ -127,15 +139,39 @@ WLS WebLogic Facter
     1068506707 wls1036_generic.jar
     1045221652 wls1211_generic.jar
 
+![Oracle Puppet Facts](https://github.com/biemond/puppet/tree/master/modules/wls/modulefiles.png)
     
 WebLogic configuration examples
 -------------------------------
+
+    class application_osb_soa {
+    
+       include wls1036osb_soa , wls_osb_soa_domain
+       #, wls_OSB_application_JDBC, wls_OSB_application_JMS, wls_OSB_application_jar
+       Class['wls1036osb_soa'] -> Class['wls_osb_soa_domain'] 
+       # -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS'] -> Class['wls_OSB_application_jar']
+    }
+    
+    class application_osb {
+    
+       include wls1036osb, wls_osb_domain
+       Class['wls1036osb'] -> Class['wls_osb_domain'] 
+    }
+    
+    
+    class application_wls12 {
+    
+       include wls12, wls12c_domain
+       Class['wls12'] -> Class['wls12c_domain']
+    }
+    
+
 
 ### templates.pp
 
     include wls
     
-        
+            
     class wls1036osb_soa{
     
       if $jdkWls11gJDK == undef {
@@ -154,7 +190,7 @@ WebLogic configuration examples
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
            $group        = "dba"
-           $downloadDir  = "/install/"
+           $downloadDir  = "/data/install/"
          }
          windows: { 
            $osOracleHome = "c:/oracle"
@@ -267,6 +303,119 @@ WebLogic configuration examples
        }
     
     }
+    
+    class wls1036osb{
+    
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
+    
+      if $wls11gVersion == undef {
+        $wls11gVersion = "1036"
+      }
+    
+     
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           $osOracleHome = "/opt/wls"
+           $osMdwHome    = "/opt/wls/Middleware11gR1"
+           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
+           $user         = "oracle"
+           $group        = "dba"
+           $downloadDir  = "/data/install/"
+         }
+         windows: { 
+           $osOracleHome = "c:/oracle"
+           $osMdwHome    = "c:/oracle/wls11g"
+           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
+           $user         = "Administrator"
+           $group        = "Administrators"
+           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
+           $downloadDir  = "c:\\temp\\"
+         }
+      }
+    
+      # set the defaults
+      Wls::Installwls {
+        version      => $wls11gVersion,
+        fullJDKName  => $jdkWls11gJDK,
+        oracleHome   => $osOracleHome,
+        mdwHome      => $osMdwHome,
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+      Wls::Installosb {
+        mdwHome      => $osMdwHome,
+        wlHome       => $osWlHome,
+        oracleHome   => $osOracleHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,    
+        downloadDir  => $downloadDir, 
+      }
+    
+      
+      Wls::Nodemanager {
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,	
+        user         => $user,
+        group        => $group,
+        serviceName  => $serviceName,  
+        downloadDir  => $downloadDir, 
+      }
+    
+      Wls::Bsupatch {
+        mdwHome      => $osMdwHome ,
+        wlHome       => $osWlHome,
+        fullJDKName  => $jdkWls11gJDK,
+        user         => $user,
+        group        => $group,
+        downloadDir  => $downloadDir, 
+      }
+      
+      Wls::Opatch {
+        fullJDKName  => $jdkWls11gJDK,
+        user         => $user,
+        group        => $group,
+    
+        downloadDir  => $downloadDir, 
+      }  
+    
+      # install
+      wls::installwls{'11gPS5':}
+    
+    	# weblogic patch
+      wls::bsupatch{'p14736139':
+         patchId      => 'HYKC',    
+         patchFile    => 'p14736139_1036_Generic.zip',  
+         require      => Wls::Installwls['11gPS5'],
+       }
+    
+    
+       wls::installosb{'osbPS5':
+         osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
+         require      => Wls::Bsupatch['p14736139'],
+       }
+    
+       wls::opatch{'14389126_osb_patch':
+         oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
+         patchId           => '14389126',	
+         patchFile         => 'p14389126_111160_Generic.zip',	
+         require           => Wls::Installosb['osbPS5'],
+       }
+    
+    
+       #nodemanager configuration and starting
+       wls::nodemanager{'nodemanager11g':
+         listenPort  => '5556',
+         require     => Wls::Opatch['14389126_osb_patch'],
+       }
+    
+    }
+    
+    
     
     class osb_oepe{
     
@@ -405,34 +554,13 @@ WebLogic configuration examples
         require      => Wls::Installwls['wls12c'],
       }
     
-    }
+    } 
+    
         
 ### templates_app.pp
 
 
     include wls
-    
-    class application_osb_soa {
-    
-       include wls1036osb_soa , wls_osb_domain
-       #, wls11g_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS, wls_OSB_application_jar
-       Class['wls1036osb_soa'] -> Class['wls_osb_domain'] 
-       #-> Class['wls11g_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS'] -> Class['wls_OSB_application_jar']
-    }
-    
-    class application_osb_soa_win {
-    
-       include wls1036osb_soa
-       #, wls_osb_domain
-       #Class['wls1036osb_soa'] -> Class['wls_osb_domain']
-       
-    }
-    
-    class application_wls12 {
-    
-       include wls12, wls12c_domain
-       Class['wls12'] -> Class['wls12c_domain']
-    }
     
     class wls_osb_soa_domain{
     
@@ -448,8 +576,8 @@ WebLogic configuration examples
       $address         = "localhost"
       $wlsUser         = "weblogic"
       $password        = "weblogic1"
-    
-    	$reposUrl        = "master.alfa.local:1521:osb"
+
+	    $reposUrl        = "jdbc:oracle:thin:@master.alfa.local:1521/XE"
     	$reposPrefix     = "DEV"
     	$reposPassword   = "xxx"
     
@@ -1197,6 +1325,6 @@ WebLogic configuration examples
     
     
     
-    
-    
+
+
             
