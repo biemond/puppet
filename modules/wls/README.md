@@ -50,9 +50,9 @@ WLS WebLogic Features
 - run every wlst script with the flexible WLST define
 - deploy an OSB project to the OSB server
 
-![Oracle WebLogic Console](https://github.com/biemond/puppet/tree/master/modules/wls/wlsconsole.png)
+![Oracle WebLogic Console](https://github.com/biemond/puppet/blob/master/modules/wls/wlsconsole.png)
 
-![Oracle Enterprise Manager Console](https://github.com/biemond/puppet/tree/master/modules/wls/em.png)
+![Oracle Enterprise Manager Console](https://github.com/biemond/puppet/blob/master/modules/wls/em.png)
 
 
 WLS WebLogic Facter
@@ -125,7 +125,7 @@ Contains WebLogic Facter which displays the following
         ora_node_mgr_0  pid: 26113 port: 5556
         ora_wls_0 pid: 26198 name: AdminServer
 
-![Oracle Puppet Facts](https://github.com/biemond/puppet/tree/master/modules/wls/facts.png)
+![Oracle Puppet Facts](https://github.com/biemond/puppet/blob/master/modules/wls/facts.png)
 
 ### My Files folder of the wls module
      375895263 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
@@ -139,7 +139,7 @@ Contains WebLogic Facter which displays the following
     1068506707 wls1036_generic.jar
     1045221652 wls1211_generic.jar
 
-![Oracle Puppet Facts](https://github.com/biemond/puppet/tree/master/modules/wls/modulefiles.png)
+![Oracle Puppet Facts](https://github.com/biemond/puppet/blob/master/modules/wls/modulefiles.png)
     
 WebLogic configuration examples
 -------------------------------
