@@ -27,6 +27,8 @@ WLS WebLogic Features
 - installs Oracle Soa Suite 11g 
 - apply oracle patch ( OPatch for OSB and Soa Suite )
 
+- installs Oracle JDeveloper 11g + soa suite plugin
+
 - configures + starts nodemanager
 
 - domain creation + domain pack
@@ -138,7 +140,9 @@ Contains WebLogic Facter which displays the following
       42264472 p14736139_1036_Generic.zip
     1068506707 wls1036_generic.jar
     1045221652 wls1211_generic.jar
-
+    208538583  soa-jdev-extension.zip
+    1887405692 jdevstudio11116install.jar
+    
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/modulefiles.png)
     
 WebLogic configuration examples
@@ -415,8 +419,31 @@ WebLogic configuration examples
     
     }
     
+
+
+    class jdeveloper_soa {
     
+      if $jdkWls11gJDK == undef {
+        $jdkWls11gJDK = 'jdk1.7.0_09'
+      }
     
+      $osMdwHome    = "/opt/jdeveloper11gR1PS5"
+      $user         = "oracle"
+      $group        = "dba"
+      $downloadDir  = "/install/"
+    
+      wls::installjdev {'jdevstudio11116':
+        jdevFile     => "jdevstudio11116install.jar",
+        fullJDKName  => $jdkWls11gJDK,
+        mdwHome      => $osMdwHome,
+        soaAddon     => true,
+        user         => $user,
+        group        => $group,
+        downloadDir  => $downloadDir,        
+      }
+    
+    }    
+        
     class osb_oepe{
     
       if $jdkWls11gJDK == undef {
