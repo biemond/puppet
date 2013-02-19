@@ -79,7 +79,7 @@ define wls::installsoa($mdwHome         = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = $downloadDir 
         $soaOracleHome    = "${mdwHome}/Oracle_SOA1"
-        $oraInventory     = "C:\Program Files\Oracle\Inventory"
+        $oraInventory     = "C:\\Program Files\\Oracle\\Inventory"
         
         Exec { path      => $execPath,
              }
@@ -178,18 +178,18 @@ if ( $continue ) {
      }
      windows: { 
 
-        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"]) { 
-          registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
+        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 
+          registry_key { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle":
             ensure  => present,
             require => [File ["${path}${soaFile1}"],File ["${path}${soaFile2}"]],
           }
         }
 
-        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"]) {
-          registry_value { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc":
+        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]) {
+          registry_value { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc":
             type    => string,
             data    => $oraInventory,
-            require => Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"],
+            require => Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"],
           }
         }
 
@@ -211,7 +211,7 @@ if ( $continue ) {
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
           command => "jar xf ${path}${soaFile1}",
-          require => [Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"],File ["${path}${soaFile1}"],File["${path}soa"],Exec["icacls soa folder ${title}"]],
+          require => [Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],File ["${path}${soaFile1}"],File["${path}soa"],Exec["icacls soa folder ${title}"]],
           creates => "${path}soa/Disk1",
           cwd     => "${path}soa",
          }

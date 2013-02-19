@@ -78,7 +78,7 @@ define wls::installosb($mdwHome         = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = $downloadDir 
         $osbOracleHome    = "${mdwHome}/Oracle_OSB1"
-        $oraInventory     = "C:\Program Files\Oracle\Inventory"
+        $oraInventory     = "C:\\Program Files\\Oracle\\Inventory"
         
         Exec { path      => $execPath,
              }
@@ -164,18 +164,18 @@ if ( $continue ) {
      }
      windows: { 
 
-        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"]) { 
-          registry_key { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle":
+        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 
+          registry_key { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle":
             ensure  => present,
 #            require => File ["${path}${osbFile}"],
           }
         }
 
-        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc"]) {
-          registry_value { "HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\inst_loc":
+        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]) {
+          registry_value { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc":
             type    => string,
             data    => $oraInventory,
-            require => Registry_Key["HKEY_LOCAL_MACHINE\SOFTWARE\Oracle"],
+            require => Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"],
           }
         }
 
