@@ -1,93 +1,76 @@
 # javaexec 
+# unpack the java tar.gz
+# set the default java links
+# set this java as default
+# update urandom for weblogic
 
-define javaexec ($version     = undef, 
-                 $path        = undef, 
+define javaexec ($path        = undef, 
                  $fullversion = undef, 
                  $jdkfile     = undef,
                  $user        = undef,
                  $group       = undef,) {
 
-   notify {"install7.pp params ${title} ${path} ${fullversion} ${jdkfile}":}
-
-
    # install jdk
    case $operatingsystem {
-     centos, redhat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
-        Exec { path        => $execPath,
-               creates     => "/usr/java/${fullversion}/bin/java",
-               logoutput   => true,
-             }
+      $execPath         = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+			$javaInstall      = "/usr/java/"
 
-        # for java version 6 we need to accept the license
-        if $version in ['6u36','6u35', '6u34', '6u33'] {
+      Exec {
+       path        => $execPath, 
+       logoutput   => true,
+       user        => $user,
+       group       => $group,   
+      }
 
-           # download answer file for the installer to the client
-           if ! defined(File["${path}answer_file${version}.txt"]) {
-            file {"${path}answer_file${version}.txt":
-              ensure => present,
-              source => "puppet:///modules/jdk7/answer_file.txt",
-              mode   => 0770,
-            } 
-           } 
-            exec {"jdk_install${version} ${title}": 
-              command     => "${path}${jdkfile} < ${path}answer_file${version}.txt",
-              require     => File["answerfile${version}"],
-            }      
-        } else { 
-            # java 7 supports RPM
-            exec {"jdk_install${version} ${title}": 
-              command     =>  "/bin/rpm -Uvh --replacepkgs ${path}${jdkfile}",
-            }      
+      # check java install folder
+      if ! defined(File[$javaInstall]) {
+        file { $javaInstall :
+          path    => $javaInstall,
+          ensure  => directory,
+          mode    => 0755,
         }
+      }
+      
+      # extract gz file in /usr/java
+      exec { "extract java ${fullversion}":
+        cwd     => "${javaInstall}",
+        command => "tar -xzf ${path}${jdkfile}",
+        creates => "${javaInstall}/${fullversion}",
+        require => File[$javaInstall],
+      }
+
+			# java link to latest
+      file { '/usr/java/latest':
+        ensure      => link,
+        target      => "/usr/java/${fullversion}",
+        mode        => 0755,
+        require     => Exec["extract java ${fullversion}"],
+      }
+
+			# java link to default
+      file { '/usr/java/default':
+        ensure      => link,
+        target      => "/usr/java/latest",
+        mode        => 0755,
+        require     => File['/usr/java/latest'],
+      }
+
+			# set the java default
+      exec { "default java alternatives ${fullversion}":
+        command => "alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
+        require => File['/usr/java/default'],
+      }
+
+      exec { "set urandom ${fullversion}":
+       	command => "sed -i -e's/securerandom.source=file:\/dev\/urandom/securerandom.source=file:\/dev\/.\/urandom/g' /usr/java/${fullversion}/jre/lib/security/java.security",
+        onlyif  => "/bin/grep securerandom.source=file:/dev/urandom /usr/java/${fullversion}/jre/lib/security/java.security | /usr/bin/wc -l",
+        require => Exec["default java alternatives ${fullversion}"],
+      }
+
+     
      }
-     windows: { 
-
-        # we use unxutils http://sourceforge.net/projects/unxutils/files/latest/download
-        # unzip and put it on c:\
-        $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-
-        Exec {  path       => $execPath,
-#               logoutput  => true,
-             }
-
-
-        # install jdk on default place
-        if ! defined(File["jdk_install${version}"]) {
-        exec {"jdk_install${version}": 
-           command    => "${path}${jdkfile} /s ADDLOCAL=\"ToolsFeature\"",
-           unless     => "C:\\Windows\\System32\\cmd.exe /c dir \"C:/Program Files/Java/${fullversion}\"",
-#           creates    => "\"C:\\Program Files\\Java\\${fullversion}\"",
-        }
-        }      
-
-        # add oracle folder
-        if ! defined(File["c:/oracle"]) {
-          file { "c:/oracle":
-            ensure  => directory,
-            recurse => false, 
-            owner   => $user,
-            group   => $group,
-            mode    => 0770,
-            replace => false,
-            require => Exec ["jdk_install${version}"],
-          }
-        }
-
-        # move jdk to oracle folder because of space in path name
-        exec {"copy jdk_install${version}": 
-           command    => "C:\\Windows\\System32\\cmd.exe /c xcopy \"C:\\Program Files\\Java\\${fullversion}\" c:\\oracle\\${fullversion} /E /I /H",
-#          unless     => "C:\\Windows\\System32\\cmd.exe /c  test -e c:\\oracle\\${fullversion}",
-           creates    => "c:\\oracle\\${fullversion}",
-           require    => File ["c:/oracle"],
-        }      
-        exec {"icacls jdk_install${version}": 
-           command    => "C:\\Windows\\System32\\cmd.exe /c icacls C:\\oracle\\${fullversion}\\* /T /C /grant Administrator:F Administrators:F",
-           require    => Exec ["copy jdk_install${version}"],
-        }      
-
-
-    }
    }
-   
+
 }
