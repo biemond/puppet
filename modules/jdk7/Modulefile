@@ -1,6 +1,7 @@
 name 'biemond-jdk7'
-version '0.1.0'
+version '0.1.2'
 author 'Edwin Biemond'
+summary 'Oracle JDK7 puppet module optimized for weblogic'
 source 'https://github.com/biemond/puppet/tree/master/modules/jdk7'
 description "Oracle JDK7 puppet module"
 project_page 'http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/'
