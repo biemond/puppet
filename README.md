@@ -28,6 +28,25 @@ example usage
   		x64         =>  "true",
   		downloadDir =>  "/data/install/",
 	  }
+
+Oracle Database Linux puppet module
+=================================================
+
+created by Edwin Biemond   
+[biemond.blogspot.com](http://biemond.blogspot.com)    
+[Github homepage](https://github.com/biemond/puppet)    
+
+Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
+
+Oracle Database Features
+---------------------------
+
+- installs oracle database 11.2.0.3
+
+Coming in next release
+
+- Create database instances
+- Apply OPatch
  
   
 
