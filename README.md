@@ -17,18 +17,6 @@ add the jdk-7u7-linux-x64.tar.gz (downloaded from Oracle website) to the files f
 - set this java as default
 - updates urandom device for weblogic performance in java.security
 
-example usage
--------------
-
-    include jdk7
-
-    jdk7::install7{ 'jdk1.7.0_17':
-      version     =>  "7u17" , 
-      fullVersion =>  "jdk1.7.0_17", 
-  		x64         =>  "true",
-  		downloadDir =>  "/data/install/",
-	  }
-
 Oracle Database Linux puppet module
 =================================================
 
@@ -41,12 +29,15 @@ Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without
 Oracle Database Features
 ---------------------------
 
-- Oracle Database 11.2.0.3 installation  
+- Oracle Database 11.2.0.3 Linux installation
+- Oracle Database 11.2.0.1 Linux installation
+- Oracle Database Listener  
 - Apply OPatch
 
 Coming in next release
 
 - Create database instances
+- Oracle Database 11.2.0.1 Linux Client installation
   
 
 Oracle WebLogic / Fusion Middleware puppet module

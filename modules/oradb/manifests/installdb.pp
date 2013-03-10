@@ -5,8 +5,20 @@
 # SE     : Standard Edition                                  
 # SEONE  : Standard Edition One
 #
-#    class { 'oradb::installdb':
+#    oradb::installdb{ '112030_Linux-x86-64':
+#            version      => '11.2.0.3', 
 #            file         => 'p10404530_112030_Linux-x86-64',
+#            databaseType => 'SE',
+#            oracleBase   => '/oracle',
+#            oracleHome   => '/oracle/product/11.2/db',
+#            user         => 'oracle',
+#            group        => 'dba',
+#            downloadDir  => '/install/',  
+#         }
+#
+#    oradb::installdb{ '112010_Linux-x86-64':
+#            version      => '11.2.0.1', 
+#            file         => 'linux.x64_11gR2_database',
 #            databaseType => 'SE',
 #            oracleBase   => '/oracle',
 #            oracleHome   => '/oracle/product/11.2/db',
@@ -18,19 +30,18 @@
 #
 #
 
-class oradb::installdb( $file         = 'p10404530_112030_Linux-x86-64',
-												$databaseType = 'SE',
-                        $oracleBase   = undef,
-                        $oracleHome   = undef,
-                        $user         = 'oracle',
-                        $group        = 'dba',
-                        $downloadDir  = '/install/',
+define oradb::installdb( $version      = undef,
+										 	 	 $file         = undef,
+												 $databaseType = 'SE',
+                         $oracleBase   = undef,
+                         $oracleHome   = undef,
+                         $user         = 'oracle',
+                         $group        = 'dba',
+                         $downloadDir  = '/install/',
     
     )
   
   {
-
-  notify {"oradb installdb.pp":}
 
 
   # check if the oracle software already exists
@@ -54,7 +65,7 @@ if ( $continue ) {
 
         $execPath        = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
-        $oraInstPath     = "/etc/"
+        $oraInstPath     = "/etc"
         $oraInventory    = "${oracleBase}/oraInventory"
         
         Exec { path      => $execPath,
@@ -105,7 +116,34 @@ if ( $continue ) {
       }
    }
 
+ if $version == '11.2.0.1' {  
 
+   # db file 1 installer zip
+   file { "${path}${file}_1of2.zip":
+     source  => "puppet:///modules/oradb/${file}_1of2.zip",
+     require => File[$path],
+   }
+
+
+   exec { "extract ${path}${file}_1of2.zip":
+      command => "unzip ${path}${file}_1of2.zip -d ${path}${file}",
+      require => File["${path}${file}_1of2.zip"],
+   }
+       
+
+   # db file 2 installer zip
+   file { "${path}${file}_2of2.zip":
+     source  => "puppet:///modules/oradb/${file}_2of2.zip",
+     require => File["${path}${file}_1of2.zip"],
+   }
+
+   exec { "extract ${path}${file}_2of2.zip":
+      command => "unzip ${path}${file}_2of2.zip -d ${path}${file}",
+      require => File["${path}${file}_2of2.zip"],
+   }
+ }
+
+ if $version == '11.2.0.3' {  
 
    # db file 1 installer zip
    file { "${path}${file}_1of7.zip":
@@ -192,7 +230,7 @@ if ( $continue ) {
       command => "unzip ${path}${file}_7of7.zip -d ${path}${file}",
       require => File["${path}${file}_7of7.zip"],
    }
-
+ }
 
    if ! defined(File["${oraInstPath}/oraInst.loc"]) {
      file { "${oraInstPath}/oraInst.loc":
@@ -211,33 +249,50 @@ if ( $continue ) {
       }
    }
 
-   if ! defined(File["${path}db_install.rsp"]) {
-     file { "${path}db_install.rsp":
+   if ! defined(File["${path}db_install_${version}.rsp"]) {
+     file { "${path}db_install_${version}.rsp":
             ensure  => present,
-            content => template("oradb/db_install.rsp.erb"),
+            content => template("oradb/db_install_${version}.rsp.erb"),
             require => File["${oraInstPath}/oraInst.loc"],
           }
    }
 
-        
-   exec { "install oracle database":
-          command     => "${path}${file}/database/runInstaller -silent -responseFile ${path}db_install.rsp",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}db_install.rsp"],Exec["extract ${path}${file}_7of7.zip"]],
-          creates     => $oracleHome,
-   } 
+   if $version == '11.2.0.3' {     
+     exec { "install oracle database ${title}":
+            command     => "${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp",
+            require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}db_install_${version}.rsp"],Exec["extract ${path}${file}_7of7.zip"]],
+            creates     => $oracleHome,
+            notify      => Exec["sleep 4 min for oracle db install ${title}"]
+     } 
+   }
+
+   if $version == '11.2.0.1' {     
+     exec { "install oracle database ${title}":
+            command     => "${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp",
+            require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}db_install_${version}.rsp"],Exec["extract ${path}${file}_2of2.zip"]],
+            creates     => $oracleHome,
+            notify      => Exec["sleep 4 min for oracle db install ${title}"]
+     } 
+   }
+   
+   
 
    if ! defined(File["/home/${user}/.bash_profile"]) {
      file { "/home/${user}/.bash_profile":
             ensure  => present,
             content => template("oradb/bash_profile.erb"),
-            require => Exec["install oracle database"],
           }
    }
 
-
-   exec { "sleep 4 min for oracle db install":
+   exec { "sleep 4 min for oracle db install ${title}":
           command     => "/bin/sleep 240",
-          require     => [Exec ["install oracle database"],File["/home/${user}/.bash_profile"]],
+   }    
+
+   exec { "run root.sh script ${title}":
+          command   => "${oracleHome}/root.sh",
+          user      => 'root',
+          group     => 'root',
+          require   => Exec["sleep 4 min for oracle db install ${title}"],          
    }    
 
 }

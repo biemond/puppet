@@ -10,20 +10,25 @@ Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without
 Oracle Database Features
 ---------------------------
 
-- Oracle Database 11.2.0.3 installation  
+- Oracle Database 11.2.0.3 Linux installation
+- Oracle Database 11.2.0.1 Linux installation
+- Oracle Database Listener  
 - Apply OPatch
 
 Coming in next release
 
 - Create database instances
+- Oracle Database 11.2.0.1 Linux Client installation
                                          
 Files
 -----
-Download oracle database software from support.oracle.com  
+For 11.2.0.3 Download oracle database linux software from http://support.oracle.com  
 Patch 10404530: 11.2.0.3.0 PATCH SET FOR ORACLE DATABASE SERVER  
 and upload this to the files folder of the oradb puppet module  
 
-# database files
+For 11.2.0.1 Download oracle database linux software from http://otn.oracle.com
+
+# database files of linux 11.2.0.3 ( support.oracle.com )
 1358454646 Mar  9 17:31 p10404530_112030_Linux-x86-64_1of7.zip  
 1142195302 Mar  9 17:47 p10404530_112030_Linux-x86-64_2of7.zip  
  979195792 Mar  9 18:01 p10404530_112030_Linux-x86-64_3of7.zip  
@@ -31,10 +36,18 @@ and upload this to the files folder of the oradb puppet module
  616473105 Mar  9 18:19 p10404530_112030_Linux-x86-64_5of7.zip  
  479890040 Mar  9 18:26 p10404530_112030_Linux-x86-64_6of7.zip  
  113915106 Mar  9 18:28 p10404530_112030_Linux-x86-64_7of7.zip  
-# opatch database patch
-  25556377 Mar 10 12:48 p14727310_112030_Linux-x86-64.zip
-# patches opatch
-  32551315 Mar 10 13:10 p6880880_112000_Linux-x86-64.zip
+
+# database files of linux 11.2.0.1 ( otn.oracle.com )  
+ 1239269270 Mar 10 17:05 linux.x64_11gR2_database_1of2.zip  
+ 1111416131 Mar 10 17:17 linux.x64_11gR2_database_2of2.zip  
+
+# opatch database patch  
+  25556377 Mar 10 12:48 p14727310_112030_Linux-x86-64.zip  
+# patches opatch for 11.2.0.3   
+  32551315 Mar 10 13:10 p6880880_112000_Linux-x86-64.zip  
+
+# database client linux 11.2.0.1 ( otn.oracle.com )  
+ 706187979 Mar 10 16:48 linux.x64_11gR2_client.zip  
 
 important support node
 [ID 1441282.1] Requirements for Installing Oracle 11gR2 RDBMS on RHEL6 or OL6 64-bit (x86-64)  
@@ -60,27 +73,54 @@ The databaseType value should contain only one of these choices.
 - SE     : Standard Edition                                  
 - SEONE  : Standard Edition One
 
-     class { 'oradb::installdb':
-              file         => 'p10404530_112030_Linux-x86-64',
-              databaseType => 'SE',
-              oracleBase   => '/oracle',
-              oracleHome   => '/oracle/product/11.2/db',
-              user         => 'oracle',
-              group        => 'dba',
-              downloadDir  => '/install/',  
-           }
+     oradb::installdb{ '112030_Linux-x86-64':
+            version      => '11.2.0.3',
+            file         => 'p10404530_112030_Linux-x86-64',
+            databaseType => 'SE',
+            oracleBase   => '/oracle',
+            oracleHome   => '/oracle/product/11.2/db',
+            user         => 'oracle',
+            group        => 'dba',
+            downloadDir  => '/install/',  
+     }
+
+or 
+
+    oradb::installdb{ '112010_Linux-x86-64':
+            version      => '11.2.0.1', 
+            file         => 'linux.x64_11gR2_database',
+            databaseType => 'SE',
+            oracleBase   => '/oracle',
+            oracleHome   => '/oracle/product/11.2/db',
+            user         => 'oracle',
+            group        => 'dba',
+            downloadDir  => '/install/',  
+     }
+
   
-     #for this example patch, the OPatch utility must be upgraded (6880880)
+     # for this example OPatch 14727310
+     # the OPatch utility must be upgraded ( patch 6880880)
+     # after that 'cd $ORACLE_HOME/OPatch' and run 'ocm/bin/emocmrsp'
      oradb::opatch{'14727310_db_patch':
        oracleProductHome => '/oracle/product/11.2/db' ,
        patchId           => '14727310', 
        patchFile         => 'p14727310_112030_Linux-x86-64.zip',  
        user              => 'oracle',
        group             => 'dba',
-       downloadDir       => '/install/',   
-       require           => Class['oradb::installdb'],
+       downloadDir       => '/install/',
+       ocmrf             => 'true',   
+       require           => Oradb::Installdb['112030_Linux-x86-64'],
      }
   
+     oradb::listener{'start listener':
+            oracleBase   => '/oracle',
+            oracleHome   => '/oracle/product/11.2/db',
+            user         => 'oracle',
+            group        => 'dba',
+            action       => 'start',  
+            require      => Oradb::Opatch['14727310_db_patch'],
+     }
+
 
 site.pp
 -------
@@ -88,8 +128,8 @@ site.pp
 install the following module to set the database kernel parameters  
 *puppet module install fiddyspence-sysctl*  
 
-install the following module to set the database user limits parameters
-puppet module install erwbgy-limits
+install the following module to set the database user limits parameters  
+*puppet module install erwbgy-limits*
 
      
      node database {
@@ -275,6 +315,15 @@ puppet module install erwbgy-limits
        package { 'sysstat.x86_64':
          ensure  => present,
        }
+
+       package { 'unixODBC-devel':
+         ensure  => present,
+       }
+
+       package { 'glibc.i686':
+         ensure  => present,
+       }
+
      
      
      }

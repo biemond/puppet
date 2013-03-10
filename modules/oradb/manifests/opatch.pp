@@ -13,6 +13,7 @@
 #     user              => 'oracle',
 #     group             => 'dba',
 #     downloadDir       => '/install/',   
+#     ocmrf             => 'true',
 #     require           => Class['oradb::installdb'],
 #   }
 #
@@ -25,6 +26,7 @@ define oradb::opatch(  $oracleProductHome = undef,
                        $user              = 'oracle',
                        $group             = 'dba',
                        $downloadDir       = '/install/',
+                       $ocmrf             = 'true',
                     ) {
 
    case $operatingsystem {
@@ -86,10 +88,18 @@ if ( $continue ) {
           creates => "${path}/${patchId}",
         }
         
-        exec { "exec opatch ux ${title}":
-          command     => "${oracleProductHome}/OPatch/${oPatchCommand} -oh ${oracleProductHome} ${path}${patchId}",
-          require     => Exec["extract opatch ${patchFile} ${title}"],
-        }    
+        if $ocmrf == 'true' {
+        
+          exec { "exec opatch ux ocmrf ${title}":
+            command     => "${oracleProductHome}/OPatch/${oPatchCommand} -ocmrf ${oracleProductHome}/OPatch/ocm.rsp -oh ${oracleProductHome} ${path}${patchId}",
+            require     => Exec["extract opatch ${patchFile} ${title}"],
+          } 
+        } else {
+          exec { "exec opatch ux ${title}":
+            command     => "${oracleProductHome}/OPatch/${oPatchCommand} -oh ${oracleProductHome} ${path}${patchId}",
+            require     => Exec["extract opatch ${patchFile} ${title}"],
+          }         
+        }  
              
      }
    }
