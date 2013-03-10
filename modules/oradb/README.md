@@ -10,63 +10,85 @@ Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without
 Oracle Database Features
 ---------------------------
 
-- installs oracle database 11.2.0.3
+- Oracle Database 11.2.0.3 installation  
+- Apply OPatch
 
 Coming in next release
 
 - Create database instances
-- Apply OPatch
-
+                                         
 Files
 -----
 Download oracle database software from support.oracle.com  
 Patch 10404530: 11.2.0.3.0 PATCH SET FOR ORACLE DATABASE SERVER  
 and upload this to the files folder of the oradb puppet module  
 
-1358454646 Mar  9 17:31 p10404530_112030_Linux-x86-64_1of7.zip
-1142195302 Mar  9 17:47 p10404530_112030_Linux-x86-64_2of7.zip
- 979195792 Mar  9 18:01 p10404530_112030_Linux-x86-64_3of7.zip
- 659229728 Mar  9 18:11 p10404530_112030_Linux-x86-64_4of7.zip
- 616473105 Mar  9 18:19 p10404530_112030_Linux-x86-64_5of7.zip
- 479890040 Mar  9 18:26 p10404530_112030_Linux-x86-64_6of7.zip
- 113915106 Mar  9 18:28 p10404530_112030_Linux-x86-64_7of7.zip
+# database files
+1358454646 Mar  9 17:31 p10404530_112030_Linux-x86-64_1of7.zip  
+1142195302 Mar  9 17:47 p10404530_112030_Linux-x86-64_2of7.zip  
+ 979195792 Mar  9 18:01 p10404530_112030_Linux-x86-64_3of7.zip  
+ 659229728 Mar  9 18:11 p10404530_112030_Linux-x86-64_4of7.zip  
+ 616473105 Mar  9 18:19 p10404530_112030_Linux-x86-64_5of7.zip  
+ 479890040 Mar  9 18:26 p10404530_112030_Linux-x86-64_6of7.zip  
+ 113915106 Mar  9 18:28 p10404530_112030_Linux-x86-64_7of7.zip  
+# opatch database patch
+  25556377 Mar 10 12:48 p14727310_112030_Linux-x86-64.zip
+# patches opatch
+  32551315 Mar 10 13:10 p6880880_112000_Linux-x86-64.zip
+
+important support node
+[ID 1441282.1] Requirements for Installing Oracle 11gR2 RDBMS on RHEL6 or OL6 64-bit (x86-64)  
 
 
-important support nodes
-Requirements for Installing Oracle 11gR2 RDBMS on RHEL6 or OL6 64-bit (x86-64) [ID 1441282.1]  
-./sqlplus: error on libnnz11.so: cannot restore segment prot after reloc [ID 454196.1]  
-Installing 11.2.0.3 32-bit (x86) or 64-bit (x86-64) on RHEL6 Reports That Packages "elfutils-libelf-devel-0.97" and "pdksh-5.2.14" are missing (PRVF-7532) [ID 1454982.1]
+Oracle Database Facter
+-------------------
+Contains Oracle Facter which displays the following 
+- Oracle Software
+- Opatch patches
 
+### Example of the Oracle Database Facts 
 
-
+    ora_inst_loc_data /oracle/oraInventory
+    ora_inst_patches_oracle_product_11.2_db Patches;14727310;
+    ora_inst_products /oracle/product/11.2/db;
 
 templates.pp
 ------------
 
-# The databaseType value should contain only one of these choices.        
-# EE     : Enterprise Edition                                
-# SE     : Standard Edition                                  
-# SEONE  : Standard Edition One
+The databaseType value should contain only one of these choices.        
+- EE     : Enterprise Edition                                
+- SE     : Standard Edition                                  
+- SEONE  : Standard Edition One
 
-      class { 'oradb::installdb':
-            file         => 'p10404530_112030_Linux-x86-64',
-            databaseType => 'SE',
-            oracleBase   => '/oracle',
-            oracleHome   => '/oracle/product/11.2/db',
-            user         => 'oracle',
-            group        => 'dba',
-            downloadDir  => '/install/',  
-      }
-
-
+     class { 'oradb::installdb':
+              file         => 'p10404530_112030_Linux-x86-64',
+              databaseType => 'SE',
+              oracleBase   => '/oracle',
+              oracleHome   => '/oracle/product/11.2/db',
+              user         => 'oracle',
+              group        => 'dba',
+              downloadDir  => '/install/',  
+           }
+  
+     #for this example patch, the OPatch utility must be upgraded (6880880)
+     oradb::opatch{'14727310_db_patch':
+       oracleProductHome => '/oracle/product/11.2/db' ,
+       patchId           => '14727310', 
+       patchFile         => 'p14727310_112030_Linux-x86-64.zip',  
+       user              => 'oracle',
+       group             => 'dba',
+       downloadDir       => '/install/',   
+       require           => Class['oradb::installdb'],
+     }
+  
 
 site.pp
 -------
 
-install the following module to set the kernel parameters  
+install the following module to set the database kernel parameters  
 *puppet module install fiddyspence-sysctl*  
 
-install the following module to set the user limits parameters
+install the following module to set the database user limits parameters
 puppet module install erwbgy-limits
 
      
