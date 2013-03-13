@@ -15,7 +15,7 @@ Actions
 6. Remove ${osDownloadFolder}/soa  
 7  Remove ${osDownloadFolder}/*.xml  
 
-**showStatus.sh** 
+**showStatus.sh**  
 1. Shows if the AdminServer, Soa and OSB server is running plus the PIDs  
 2. Shows if the NodeManager is running plus the PID  
 
