@@ -106,5 +106,4 @@ Generates WLS Scripts in /opt/scripts/wls
 3. startNodeManager.sh
 4. stopNodeManager.sh
 5. startWeblogicAdmin.sh
-6. stopWeblogicAdmin.sh
-                                          
+6. stopWeblogicAdmin.sh                                            
