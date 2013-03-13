@@ -8,18 +8,18 @@ Generates WLS Scripts in /opt/scripts/wls
 Remove all Oracle WebLogic existence so you can deploy again  
 Actions  
 
-1. Remove domain pack files, ${osDownloadFolder}/domain_*.*
-2. Remove mdwhome, $osOracleHome"
-3. Remove beahome list of user $oraUser"
-4. Remove /etc/oraInst.loc"
-5. Remove ${osDownloadFolder}/osb"
-6. Remove ${osDownloadFolder}/soa"
-7  Remove ${osDownloadFolder}/*.xml"
+1. Remove domain pack files, ${osDownloadFolder}/domain_*.*  
+2. Remove mdwhome, $osOracleHome  
+3. Remove beahome list of user $oraUser  
+4. Remove /etc/oraInst.loc  
+5. Remove ${osDownloadFolder}/osb  
+6. Remove ${osDownloadFolder}/soa  
+7  Remove ${osDownloadFolder}/*.xml  
 
 **showStatus.sh** 
  
-1. Shows if the AdminServer, Soa and OSB server is running plus the PIDs
-2. Shows if the NodeManager is running plus the PID
+1. Shows if the AdminServer, Soa and OSB server is running plus the PIDs  
+2. Shows if the NodeManager is running plus the PID  
 
 **startNodeManager.sh**  
 Starts the nodemanager
@@ -29,15 +29,15 @@ Stops the nodemanager
 
 **startWeblogicAdmin.sh**  
 
-1. Checks first if the nodemanager is running
-2. Check if the AdminServer is already started
-3. Start the WebLogic Adminserver from the nodemanager 
+1. Checks first if the nodemanager is running  
+2. Check if the AdminServer is already started  
+3. Start the WebLogic Adminserver from the nodemanager   
 
 **stopWeblogicAdmin.sh**  
 
-1. Checks first if the nodemanager is running
-2. Check if the AdminServer is running
-3. Stops the WebLogic Adminserver from the nodemanager
+1. Checks first if the nodemanager is running  
+2. Check if the AdminServer is running  
+3. Stops the WebLogic Adminserver from the nodemanager  
 
 change the params.pp class so the defaults match with your environment or add extra changes based on the hostname  
 
