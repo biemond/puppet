@@ -93,4 +93,18 @@ WLS WebLogic Features
 - create Foreign Servers entries
 - run every wlst script with the flexible WLST define
 - deploy an OSB project to the OSB server
+
+
+Oracle WebLogic orautils puppet module
+=======================================================
+
+Generates WLS Scripts in /opt/scripts/wls
+-----------------------------------------
+
+1 cleanOracleEnvironment.sh**
+2 showStatus.sh**
+3 startNodeManager.sh**
+4 stopNodeManager.sh**
+5 startWeblogicAdmin.sh**
+6 stopWeblogicAdmin.sh**
                                           

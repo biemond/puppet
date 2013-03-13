@@ -1,0 +1,21 @@
+echo "Starting the Weblogic NodeManager...."
+echo "Checking if the Weblogic NodeManager is already started...."
+
+pid=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+
+if [[ ${pid} ]]
+then
+  echo "The NodeManager is already running.. NodeManager NOT started again...."
+else
+  echo "The NodeManager is not running yet.. Starting NodeManager now...."
+  sleep 3
+  <%= @osWlHome %>/server/bin/startNodeManager.sh & 
+  sleep 5
+  pid=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+  if [[ ${pid} ]]
+  then
+    echo "NodeManager is started with pid : $pid...."
+  else
+    echo "Error while starting NodeManager...."
+  fi
+fi

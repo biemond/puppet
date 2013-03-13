@@ -1,0 +1,39 @@
+#!/bin/sh
+# *************************************************************************
+# This script can be used to clean the oracle environment
+#
+osOracleHome=<%= @osOracleHome %>
+osDownloadFolder=<%= @osDownloadFolder %>
+osMdwHome=<%= @osMdwHome %>
+osWlHome=<%= @osWlHome %>
+oraUser=<%= @oraUser %>
+echo "vars=${osOracleHome} ${osDownloadFolder} ${osMdwHome} ${osWlHome} ${oraUser}"
+
+PID=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+AdminPID=`/bin/ps -eo pid,cmd | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
+
+if [ ${PID} ]
+then
+   echo "Kill first the NodeManager with process ID ${PID}..."
+else
+  if [ ${AdminPID} ]
+  then
+    echo "Kill first the AdminServer with process ID ${AdminPID}..."
+  else
+    echo "Clean oracle environment"
+    echo "Step 1 Remove domain pack files, ${osDownloadFolder}/domain_*.*"
+    rm -rf $osDownloadFolder/domain_*.*
+    echo "Step 2 Remove mdwhome, $osOracleHome"
+    rm -rf $osOracleHome
+    echo "Step 3 Remove beahome list of user $oraUser"
+    rm -rf "/home/${oraUser}/bea"
+    echo "Step 4 Remove /etc/oraInst.loc"
+    rm -rf /etc/oraInst.loc  
+    echo "Step 5 Remove ${osDownloadFolder}/osb"
+    rm -rf "${osDownloadFolder}/osb"  
+    echo "Step 6 Remove ${osDownloadFolder}/soa"
+    rm -rf "${osDownloadFolder}/soa"   
+    echo "Step 7 Remove ${osDownloadFolder}/*.xml"
+    rm -rf $osDownloadFolder/*.xml   
+  fi
+fi

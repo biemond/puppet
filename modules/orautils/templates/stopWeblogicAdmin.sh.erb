@@ -1,0 +1,36 @@
+#!/bin/sh
+# *************************************************************************
+osWlHome=<%= @osWlHome %>
+osDomain=<%= @osDomain %>
+osDomainPath=<%= @osDomainPath %>
+nodeMgrPort=<%= @nodeMgrPort %>
+hostname=<%= @hostname %>
+user=<%= @wlsUser %>
+password=<%= @wlsPassword %>
+wlsAdminServer=<%= @wlsAdminServer %>
+
+echo "Stopping Weblogic ${wlsAdminServer} for domain ${osDomain}...."
+echo "Checking if Weblogic ${wlsAdminServer} for domain ${osDomain} is up...."
+pid=`/bin/ps -eo pid,cmd | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
+nodePid=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+
+if [ ${pid} ]
+then
+  if [[ ${nodePid} ]]
+  then
+    echo "The Weblogic ${wlsAdminServer} for domain ${osDomain} is running.. Stopping ${wlsAdminServer} NOW...."
+    $osWlHome/common/bin/wlst.sh <<-EOF
+nmConnect('${user}','${password}','${hostname}','${nodeMgrPort}','${osDomain}','${osDomainPath}','ssl')
+nmKill('${wlsAdminServer}')
+nmDisconnect() 
+EOF
+
+  else
+    echo "NodeManager is not running on this machine ${hostname}" 
+    echo "Start the NodeManager first" 
+  fi
+else
+  echo "The Weblogic ${wlsAdminServer} for domain ${osDomain} is NOT running...."
+fi
+echo "Done...."
+
