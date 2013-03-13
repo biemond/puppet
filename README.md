@@ -101,10 +101,10 @@ Oracle WebLogic orautils puppet module
 Generates WLS Scripts in /opt/scripts/wls
 -----------------------------------------
 
-1 cleanOracleEnvironment.sh**
-2 showStatus.sh**
-3 startNodeManager.sh**
-4 stopNodeManager.sh**
-5 startWeblogicAdmin.sh**
-6 stopWeblogicAdmin.sh**
+1. cleanOracleEnvironment.sh**
+2. showStatus.sh**
+3. startNodeManager.sh**
+4. stopNodeManager.sh**
+5. startWeblogicAdmin.sh**
+6. stopWeblogicAdmin.sh**
                                           
