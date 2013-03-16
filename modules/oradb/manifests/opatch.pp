@@ -8,8 +8,8 @@
 #
 #   oradb::opatch{'14727310_db_patch':
 #     oracleProductHome => '/oracle/product/11.2/db' ,
-#     patchId           => '14727310',	
-#     patchFile         => 'p14727310_112030_Linux-x86-64.zip',	
+#     patchId           => '14727310',  
+#     patchFile         => 'p14727310_112030_Linux-x86-64.zip', 
 #     user              => 'oracle',
 #     group             => 'dba',
 #     downloadDir       => '/install/',   
@@ -22,7 +22,7 @@
 
 define oradb::opatch(  $oracleProductHome = undef,
                        $patchId           = undef,
-                       $patchFile         = undef,	
+                       $patchFile         = undef,  
                        $user              = 'oracle',
                        $group             = 'dba',
                        $downloadDir       = '/install/',

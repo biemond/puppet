@@ -24,19 +24,20 @@ created by Edwin Biemond
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
-Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
+Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux 
 
 Oracle Database Features
 ---------------------------
 
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
-- Oracle Database Listener  
-- Apply OPatch
+- Oracle Database Listener   
+- Apply OPatch  
+- Create database instances  
+- Stop/Start database instances  
 
 Coming in next release
 
-- Create database instances
 - Oracle Database 11.2.0.1 Linux Client installation
   
 

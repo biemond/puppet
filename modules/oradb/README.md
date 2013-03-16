@@ -5,19 +5,20 @@ created by Edwin Biemond
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
-Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
+Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux 
 
 Oracle Database Features
 ---------------------------
 
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
-- Oracle Database Listener  
-- Apply OPatch
+- Oracle Database Listener   
+- Apply OPatch  
+- Create database instances  
+- Stop/Start database instances  
 
 Coming in next release
 
-- Create database instances
 - Oracle Database 11.2.0.1 Linux Client installation
                                          
 Files
@@ -111,8 +112,8 @@ or
        ocmrf             => 'true',   
        require           => Oradb::Installdb['112030_Linux-x86-64'],
      }
-  
-     oradb::listener{'start listener':
+
+     oradb::listener{'stop listener':
             oracleBase   => '/oracle',
             oracleHome   => '/oracle/product/11.2/db',
             user         => 'oracle',
@@ -120,6 +121,72 @@ or
             action       => 'start',  
             require      => Oradb::Opatch['14727310_db_patch'],
      }
+
+  
+     oradb::listener{'start listener':
+            oracleBase   => '/oracle',
+            oracleHome   => '/oracle/product/11.2/db',
+            user         => 'oracle',
+            group        => 'dba',
+            action       => 'start',  
+            require      => Oradb::Listener['stop listener'],
+     }
+
+
+     oradb::database{ 'testDb_Create': 
+                      oracleBase              => '/oracle',
+                      oracleHome              => '/oracle/product/11.2/db',
+                      user                    => 'oracle',
+                      group                   => 'dba',
+                      downloadDir             => '/install/',
+                      action                  => 'create',
+                      dbName                  => 'test',
+                      dbDomain                => 'oracle.com',
+                      sysPassword             => 'Welcome01',
+                      systemPassword          => 'Welcome01',
+                      dataFileDestination     => "/oracle/oradata",
+                      recoveryAreaDestination => "/oracle/flash_recovery_area",
+                      characterSet            => "AL32UTF8",
+                      nationalCharacterSet    => "UTF8",
+                      initParams              => "open_cursors=1000,processes=600,job_queue_processes=4,compatible=11.2.0.0.0",
+                      sampleSchema            => 'TRUE',
+                      memoryPercentage        => "40",
+                      memoryTotal             => "800",
+                      databaseType            => "MULTIPURPOSE",                         
+                      require                 => Oradb::Listener['start listener'],
+     }
+  
+    oradb::dbactions{ 'stop testDb': 
+                     oracleHome              => '/oracle/product/11.2/db',
+                     user                    => 'oracle',
+                     group                   => 'dba',
+                     action                  => 'stop',
+                     dbName                  => 'test',
+                     require                 => Oradb::Database['testDb'],
+    }
+  
+    oradb::dbactions{ 'start testDb': 
+                     oracleHome              => '/oracle/product/11.2/db',
+                     user                    => 'oracle',
+                     group                   => 'dba',
+                     action                  => 'start',
+                     dbName                  => 'test',
+                     require                 => Oradb::Dbactions['stop testDb'],
+    }
+  
+    oradb::database{ 'testDb_Delete': 
+                      oracleBase              => '/oracle',
+                      oracleHome              => '/oracle/product/11.2/db',
+                      user                    => 'oracle',
+                      group                   => 'dba',
+                      downloadDir             => '/install/',
+                      action                  => 'delete',
+                      dbName                  => 'test',
+                      sysPassword             => 'Welcome01',
+                      require                 => Oradb::Dbactions['start testDb'],
+    }
+  
+
 
 
 site.pp
