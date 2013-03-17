@@ -1,5 +1,5 @@
 name    'biemond-oradb'
-version '0.4.0'
+version '0.5.0'
 author 'Edwin Biemond'
 source 'https://github.com/biemond/puppet/tree/master/modules/oradb'
 summary 'Oracle Database 11g R2 11.2 linux'

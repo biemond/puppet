@@ -12,6 +12,7 @@ Oracle Database Features
 
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
+- Oracle Database Net configuration   
 - Oracle Database Listener   
 - Apply OPatch  
 - Create database instances  
@@ -98,6 +99,8 @@ or
             downloadDir  => '/install/',  
      }
 
+
+other
   
      # for this example OPatch 14727310
      # the OPatch utility must be upgraded ( patch 6880880)
@@ -113,13 +116,23 @@ or
        require           => Oradb::Installdb['112030_Linux-x86-64'],
      }
 
+     oradb::net{ 'config net8':
+            oracleHome   => '/oracle/product/11.2/db',
+            user         => 'oracle',
+            group        => 'dba',
+            downloadDir  => '/install/',
+            require      => Oradb::Opatch['14727310_db_patch'],
+     }
+
+
+
      oradb::listener{'stop listener':
             oracleBase   => '/oracle',
             oracleHome   => '/oracle/product/11.2/db',
             user         => 'oracle',
             group        => 'dba',
             action       => 'start',  
-            require      => Oradb::Opatch['14727310_db_patch'],
+            require      => Oradb::Net['config net8'],
      }
 
   

@@ -31,6 +31,7 @@ Oracle Database Features
 
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
+- Oracle Database Net configuration    
 - Oracle Database Listener   
 - Apply OPatch  
 - Create database instances  
