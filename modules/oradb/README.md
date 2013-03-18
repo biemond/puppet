@@ -191,7 +191,7 @@ other
                      require                 => Oradb::Dbactions['stop testDb'],
     }
 
-   oradb::rcusoa{    'DEV3_PS5':
+    oradb::rcusoa{    'DEV3_PS5':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip',
                      version          => '11.1.1.6',  
                      oracleHome       => '/oracle/product/11.2/db',
@@ -207,7 +207,7 @@ other
                      require          => Oradb::Dbactions['start testDb'],
     }
 
-   oradb::rcusoa{    'Delete_DEV3_PS5':
+    oradb::rcusoa{    'Delete_DEV3_PS5':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip',
                      version          => '11.1.1.6',  
                      oracleHome       => '/oracle/product/11.2/db',
