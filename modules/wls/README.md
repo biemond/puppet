@@ -1351,7 +1351,292 @@ WebLogic configuration examples
     }  
     
     
+Required packages , ulimits and kernel parameters
+-------------------------------------------------
+
+install the following module to set the weblogic kernel parameters  
+*puppet module install fiddyspence-sysctl*  
+
+install the following module to set the weblogic user limits parameters  
+*puppet module install erwbgy-limits*
+
+    
+      # Controls the default maxmimum size of a mesage queue
+      sysctl { 'kernel.msgmnb':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '65536',
+      }
+    
+      # Controls the maximum size of a message, in bytes
+      sysctl { 'kernel.msgmax':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '65536',
+      }
+    
+      # Controls the maximum number of shared memory segments, in pages
+      sysctl { 'kernel.shmmax':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '2147483648',
+      }
+    
+      # Controls the maximum shared segment size, in bytes
+      sysctl { 'kernel.shmall':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '2097152',
+      }
+    
+    
+    
+      sysctl { 'fs.file-max':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '344030',
+      }
+    
+      # The interval between the last data packet sent (simple ACKs are not considered data) and the first keepalive probe
+      sysctl { 'net.ipv4.tcp_keepalive_time':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '1800',
+      }
+    
+      # The interval between subsequential keepalive probes, regardless of what the connection has exchanged in the meantime
+      sysctl { 'net.ipv4.tcp_keepalive_intvl':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '30',
+      }
+    
+      # The number of unacknowledged probes to send before considering the connection dead and notifying the application layer
+      sysctl { 'net.ipv4.tcp_keepalive_probes':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '5',
+      }
+    
+      # The time that must elapse before TCP/IP can release a closed connection and reuse its resources. During this TIME_WAIT state, reopening the connection to the client costs less than establishing a new connection. By reducing the value of this entry, TCP/IP can release closed connections faster, making more resources available for new connections.
+      sysctl { 'net.ipv4.tcp_fin_timeout':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '30',
+      }
+    
+    
+      class { 'limits':
+        config => {
+                   '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
+                                 },
+                   '@oracle'  => { 'nofile'  => { soft => '16384'  , hard => '16384',  },
+                                   'nproc'   => { soft => '2048'   , hard => '2048',   },
+                                   'memlock' => { soft => '1048576', hard => '1048576',},
+                                 },
+                   },
+        use_hiera => false,
+      }
+    
+    }
+    
+    node database {
+    
+      class { 'vmwaretools': 
+        autoupgrade           => true,
+        ensure                => 'present',
+      }
+    
+      # Controls the default maxmimum size of a mesage queue
+      sysctl { 'kernel.msgmnb':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '65536',
+      }
+    
+      # Controls the maximum size of a message, in bytes
+      sysctl { 'kernel.msgmax':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '65536',
+      }
+    
+      # Controls the maximum number of shared memory segments, in pages
+      sysctl { 'kernel.shmmax':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '2147483648',
+      }
+    
+      # Controls the maximum shared segment size, in bytes
+      sysctl { 'kernel.shmall':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '2097152',
+      }
+    
+      sysctl { 'fs.file-max':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '6815744',
+      }
+    
+      sysctl { 'kernel.shmmni':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '4096',
+      }
+    
+      sysctl { 'fs.aio-max-nr':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '1048576',
+      }
+      sysctl { 'kernel.sem':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '250 32000 100 128',
+      }
+    
+    
+      # The interval between the last data packet sent (simple ACKs are not considered data) and the first keepalive probe
+      sysctl { 'net.ipv4.tcp_keepalive_time':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '1800',
+      }
+    
+      # The interval between subsequential keepalive probes, regardless of what the connection has exchanged in the meantime
+      sysctl { 'net.ipv4.tcp_keepalive_intvl':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '30',
+      }
+    
+      # The number of unacknowledged probes to send before considering the connection dead and notifying the application layer
+      sysctl { 'net.ipv4.tcp_keepalive_probes':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '5',
+      }
+    
+      # The time that must elapse before TCP/IP can release a closed connection and reuse its resources. During this TIME_WAIT state, reopening the connection to the client costs less than establishing a new connection. By reducing the value of this entry, TCP/IP can release closed connections faster, making more resources available for new connections.
+      sysctl { 'net.ipv4.tcp_fin_timeout':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '30',
+      }
+    
+      sysctl { 'net.ipv4.ip_local_port_range':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '9000 65500',
+      }
+    
+      sysctl { 'net.core.rmem_default':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '262144',
+      }
+    
+      sysctl { 'net.core.rmem_max':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '4194304',
+      }
+    
+      sysctl { 'net.core.wmem_default':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '262144',
+      }
+    
+      sysctl { 'net.core.wmem_max':
+        ensure    => 'present',
+        permanent => 'yes',
+        value     => '1048576',
+      }
     
 
+      class { 'limits':
+        config => {
+                   '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
+                                 },
+                   '@oracle'  => { 'nofile'  => { soft => '1024'   , hard => '65536',  },
+                                   'nproc'   => { soft => '2048'   , hard => '16384',   },
+                                   'stack'   => { soft => '10240'  ,},
+                                 },
+                   },
+        use_hiera => false,
+      }
+       
+
+    
+      package { 'binutils.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'compat-libstdc++-33.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'glibc.x86_64':
+        ensure  => present,
+      }
+      package { 'ksh.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'libaio.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'libgcc.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'libstdc++.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'make.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'compat-libcap1.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'gcc.x86_64':
+        ensure  => present,
+      }
+      package { 'gcc-c++.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'glibc-devel.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'libaio-devel.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'libstdc++-devel.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'sysstat.x86_64':
+        ensure  => present,
+      }
+    
+      package { 'unixODBC-devel':
+        ensure  => present,
+      }
+      package { 'glibc.i686':
+        ensure  => present,
+      }
+        
+    
 
             
