@@ -31,15 +31,17 @@ Oracle Database Features
 
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
-- Oracle Database Net configuration    
+- Oracle Database Net configuration   
 - Oracle Database Listener   
 - Apply OPatch  
 - Create database instances  
 - Stop/Start database instances  
+- Installs RCU repositoy for Oracle SOA Suite   
 
 Coming in next release
 
 - Oracle Database 11.2.0.1 Linux Client installation
+   
   
 
 Oracle WebLogic / Fusion Middleware puppet module

@@ -17,6 +17,7 @@ Oracle Database Features
 - Apply OPatch  
 - Create database instances  
 - Stop/Start database instances  
+- Installs RCU repositoy for Oracle SOA Suite   
 
 Coming in next release
 
@@ -50,6 +51,9 @@ For 11.2.0.1 Download oracle database linux software from http://otn.oracle.com
 
 # database client linux 11.2.0.1 ( otn.oracle.com )  
  706187979 Mar 10 16:48 linux.x64_11gR2_client.zip  
+
+# rcu linux installer
+ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip  
 
 important support node
 [ID 1441282.1] Requirements for Installing Oracle 11gR2 RDBMS on RHEL6 or OL6 64-bit (x86-64)  
@@ -186,7 +190,39 @@ other
                      dbName                  => 'test',
                      require                 => Oradb::Dbactions['stop testDb'],
     }
-  
+
+   oradb::rcusoa{    'DEV3_PS5':
+                     rcuFile          => 'ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip',
+                     version          => '11.1.1.6',  
+                     oracleHome       => '/oracle/product/11.2/db',
+                     user             => 'oracle',
+                     group            => 'dba',
+                     downloadDir      => '/install/',
+                     action           => 'create',
+                     dbServer         => 'dbagent1.alfa.local:1521',  
+                     dbService        => 'test.oracle.com',
+                     sysPassword      => 'Welcome01',
+                     schemaPrefix     => 'DEV3',
+                     reposPassword    => 'Welcome02',
+                     require          => Oradb::Dbactions['start testDb'],
+    }
+
+   oradb::rcusoa{    'Delete_DEV3_PS5':
+                     rcuFile          => 'ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip',
+                     version          => '11.1.1.6',  
+                     oracleHome       => '/oracle/product/11.2/db',
+                     user             => 'oracle',
+                     group            => 'dba',
+                     downloadDir      => '/install/',
+                     action           => 'delete',
+                     dbServer         => 'dbagent1.alfa.local:1521',  
+                     dbService        => 'test.oracle.com',
+                     sysPassword      => 'Welcome01',
+                     schemaPrefix     => 'DEV3',
+                     reposPassword    => 'Welcome02',
+                     require          => Oradb::Rcusoa['DEV3_PS5'],
+    }
+
     oradb::database{ 'testDb_Delete': 
                       oracleBase              => '/oracle',
                       oracleHome              => '/oracle/product/11.2/db',
@@ -196,7 +232,7 @@ other
                       action                  => 'delete',
                       dbName                  => 'test',
                       sysPassword             => 'Welcome01',
-                      require                 => Oradb::Dbactions['start testDb'],
+                      require                 => Oradb::Rcusoa['Delete_DEV3_PS5'],
     }
   
 
