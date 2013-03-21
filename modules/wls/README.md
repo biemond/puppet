@@ -604,9 +604,11 @@ WebLogic configuration examples
       $wlsUser         = "weblogic"
       $password        = "weblogic1"
 
-	    $reposUrl        = "jdbc:oracle:thin:@master.alfa.local:1521/XE"
+      # rcu soa repository
+	    $reposUrl        = "jdbc:oracle:thin:@dbagent1.alfa.local:1521/test.oracle.com"
     	$reposPrefix     = "DEV"
-    	$reposPassword   = "xxx"
+      # rcu soa repository schema password
+      $reposPassword   = "Welcome02"
     
      
      
