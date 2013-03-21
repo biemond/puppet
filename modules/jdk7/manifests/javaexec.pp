@@ -58,14 +58,14 @@ define javaexec ($path        = undef,
       }
 
       case $operatingsystem {
-        CentOS, RedHat, OracleLinux, Debian: {
+        CentOS, RedHat, OracleLinux: {
 			    # set the java default
           exec { "default java alternatives ${fullversion}":
             command => "alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
             require => File['/usr/java/default'],
           }
         }
-        Ubuntu:{
+        Ubuntu, Debian:{
 			    # set the java default
           exec { "default java alternatives ${fullversion}":
             command => "update-alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
