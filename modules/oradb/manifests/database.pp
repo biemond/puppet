@@ -49,7 +49,7 @@ define oradb::database(  $oracleBase              = undef,
                          $sampleSchema            = TRUE,
                          $memoryPercentage        = "40",
                          $memoryTotal             = "800",
-                         $databaseType            = "MULTIPURPOSE",                         
+                         $databaseType            = "MULTIPURPOSE",
     ){
 
   $continue = true

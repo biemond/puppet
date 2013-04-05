@@ -38,7 +38,7 @@ define oradb::installdb( $version      = undef,
                          $user         = 'oracle',
                          $group        = 'dba',
                          $downloadDir  = '/install/',
-    
+                         $puppetDownloadMntPoint  = undef,      
     )
   
   {
@@ -59,6 +59,7 @@ define oradb::installdb( $version      = undef,
   }
 
 if ( $continue ) {
+
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -83,6 +84,12 @@ if ( $continue ) {
      default: { 
         fail("Unrecognized operating system") 
      }
+   }
+
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/oradb/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
    }
 
    if ! defined(Group[$group]) {
@@ -120,7 +127,7 @@ if ( $continue ) {
 
    # db file 1 installer zip
    file { "${path}${file}_1of2.zip":
-     source  => "puppet:///modules/oradb/${file}_1of2.zip",
+     source  => "${mountPoint}/${file}_1of2.zip",
      require => File[$path],
    }
 
@@ -133,7 +140,7 @@ if ( $continue ) {
 
    # db file 2 installer zip
    file { "${path}${file}_2of2.zip":
-     source  => "puppet:///modules/oradb/${file}_2of2.zip",
+     source  => "${mountPoint}/${file}_2of2.zip",
      require => File["${path}${file}_1of2.zip"],
    }
 
@@ -147,7 +154,7 @@ if ( $continue ) {
 
    # db file 1 installer zip
    file { "${path}${file}_1of7.zip":
-     source  => "puppet:///modules/oradb/${file}_1of7.zip",
+     source  => "${mountPoint}/${file}_1of7.zip",
      require => File[$path],
    }
 
@@ -160,7 +167,7 @@ if ( $continue ) {
 
    # db file 2 installer zip
    file { "${path}${file}_2of7.zip":
-     source  => "puppet:///modules/oradb/${file}_2of7.zip",
+     source  => "${mountPoint}/${file}_2of7.zip",
      require => File["${path}${file}_1of7.zip"],
    }
 
@@ -172,7 +179,7 @@ if ( $continue ) {
 
    # db file 3 installer zip
    file { "${path}${file}_3of7.zip":
-     source  => "puppet:///modules/oradb/${file}_3of7.zip",
+     source  => "${mountPoint}/${file}_3of7.zip",
      require => File["${path}${file}_2of7.zip"],
    }
 
@@ -185,7 +192,7 @@ if ( $continue ) {
 
    # db file 4 installer zip
    file { "${path}${file}_4of7.zip":
-     source  => "puppet:///modules/oradb/${file}_4of7.zip",
+     source  => "${mountPoint}/${file}_4of7.zip",
      require => File["${path}${file}_3of7.zip"],
    }
 
@@ -197,7 +204,7 @@ if ( $continue ) {
 
    # db file 5 installer zip
    file { "${path}${file}_5of7.zip":
-     source  => "puppet:///modules/oradb/${file}_5of7.zip",
+     source  => "${mountPoint}/${file}_5of7.zip",
      require => File["${path}${file}_4of7.zip"],
    }
 
@@ -210,7 +217,7 @@ if ( $continue ) {
 
    # db file 6 installer zip
    file { "${path}${file}_6of7.zip":
-     source  => "puppet:///modules/oradb/${file}_6of7.zip",
+     source  => "${mountPoint}/${file}_6of7.zip",
      require => File["${path}${file}_5of7.zip"],
    }
 
@@ -222,7 +229,7 @@ if ( $continue ) {
 
    # db file 7 installer zip
    file { "${path}${file}_7of7.zip":
-     source  => "puppet:///modules/oradb/${file}_7of7.zip",
+     source  => "${mountPoint}/${file}_7of7.zip",
      require => File["${path}${file}_6of7.zip"],
    }
                                    

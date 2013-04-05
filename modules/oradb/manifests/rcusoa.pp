@@ -30,6 +30,7 @@ define oradb::rcusoa(    $rcuFile                 = undef,
                          $sysPassword             = undef,
                          $schemaPrefix            = undef,
                          $reposPassword           = undef,
+                         $puppetDownloadMntPoint  = undef, 
     ){
 
 
@@ -56,6 +57,13 @@ define oradb::rcusoa(    $rcuFile                 = undef,
      }
    }
 
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/oradb/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
+
    # put check_rcu.sql 
    file { "${path}/rcu_${version}/rcu_checks_${title}.sql":
            ensure  => present,
@@ -73,24 +81,21 @@ define oradb::rcusoa(    $rcuFile                 = undef,
 
    
    # put rcu software 
-   if ! defined(File["${path}${rcuFile}"]) {
-    file { "${path}${rcuFile}":
-     source  => "puppet:///modules/oradb/${rcuFile}",
-    }
+   file { "${path}${rcuFile}":
+     source  => "${mountPoint}/${rcuFile}",
    }
 
    # unzip rcu software 
-   if ! defined(Exec["extract ${rcuFile}"]) {
-     exec { "extract ${rcuFile}":
+   exec { "extract ${rcuFile}":
        command => "unzip ${path}${rcuFile} -d ${path}/rcu_${version}",
        require => File ["${path}${rcuFile}"],
        creates => "${path}/rcu_${version}",
-     }
    }
 
 
    file { "${path}/rcu_${version}/rcu_passwords_${title}.txt":
            ensure  => present,
+           require => Exec ["extract ${rcuFile}"],
            content => template("oradb/rcu_passwords.txt.erb"),
    }
 
@@ -98,15 +103,27 @@ define oradb::rcusoa(    $rcuFile                 = undef,
    if $action == 'create' {
      exec { "install rcu soa repos ${title}":
             command     => "${path}/rcu_${version}/rcuHome/bin/rcu -silent -createRepository -databaseType ORACLE -connectString ${dbServer}:${dbService} -dbUser SYS -dbRole SYSDBA -schemaPrefix ${schemaPrefix} -component SOAINFRA -component ORASDPM -component MDS -component OPSS -component BAM -f < ${path}/rcu_${version}/rcu_passwords_${title}.txt",
-            require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
+            require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}${rcuFile}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
             unless      => "/bin/grep -c found /tmp/check_rcu_${schemaPrefix}.txt",
      }
+     exec { "install rcu soa repos ${title} 2":
+            command     => "${path}/rcu_${version}/rcuHome/bin/rcu -silent -createRepository -databaseType ORACLE -connectString ${dbServer}:${dbService} -dbUser SYS -dbRole SYSDBA -schemaPrefix ${schemaPrefix} -component SOAINFRA -component ORASDPM -component MDS -component OPSS -component BAM -f < ${path}/rcu_${version}/rcu_passwords_${title}.txt",
+            require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}${rcuFile}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
+            onlyif      => "/bin/grep -c ORA-00942 /tmp/check_rcu_${schemaPrefix}.txt",
+     }
+
    } elsif $action == 'delete' {
      exec { "delete rcu soa repos ${title}":
             command     => "${path}/rcu_${version}/rcuHome/bin/rcu -silent -dropRepository -databaseType ORACLE -connectString ${dbServer}:${dbService} -dbUser SYS -dbRole SYSDBA -schemaPrefix ${schemaPrefix} -component SOAINFRA -component ORASDPM -component MDS -component OPSS -component BAM -f < ${path}/rcu_${version}/rcu_passwords_${title}.txt",
-            require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
+            require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}${rcuFile}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
             onlyif      => "/bin/grep -c found /tmp/check_rcu_${schemaPrefix}.txt",
      }
+     exec { "delete rcu soa repos ${title} 2":
+            command     => "${path}/rcu_${version}/rcuHome/bin/rcu -silent -dropRepository -databaseType ORACLE -connectString ${dbServer}:${dbService} -dbUser SYS -dbRole SYSDBA -schemaPrefix ${schemaPrefix} -component SOAINFRA -component ORASDPM -component MDS -component OPSS -component BAM -f < ${path}/rcu_${version}/rcu_passwords_${title}.txt",
+            require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}${rcuFile}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
+            unless      => "/bin/grep -c ORA-00942 /tmp/check_rcu_${schemaPrefix}.txt",
+     }
+
    } 
   
 }    

@@ -17,11 +17,17 @@ Oracle Database Features
 - Apply OPatch  
 - Create database instances  
 - Stop/Start database instances  
-- Installs RCU repositoy for Oracle SOA Suite   
+- Installs RCU repositoy for Oracle SOA Suite ( 11.1.1.6.0 and 11.1.1.7.0 )   
+
+Some manifests like installdb.pp, opatch.pp or rcusoa.pp supports an alternative mountpoint for the big oracle files.  
+When not provided it uses the files location of the oradb puppet module  
+else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/"  
 
 Coming in next release
 
 - Oracle Database 11.2.0.1 Linux Client installation
+- Auto startup scripts
+
                                          
 Files
 -----
@@ -53,7 +59,8 @@ For 11.2.0.1 Download oracle database linux software from http://otn.oracle.com
  706187979 Mar 10 16:48 linux.x64_11gR2_client.zip  
 
 # rcu linux installer
-ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip  
+ 408989041 Mar 17 20:17 ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip  
+ 411498103 Apr  1 21:23 ofm_rcu_linux_11.1.1.7.0_32_disk1_1of1.zip  
 
 important support node
 [ID 1441282.1] Requirements for Installing Oracle 11gR2 RDBMS on RHEL6 or OL6 64-bit (x86-64)  
@@ -191,9 +198,26 @@ other
                      require                 => Oradb::Dbactions['stop testDb'],
     }
 
-    oradb::rcusoa{    'DEV3_PS5':
-                     rcuFile          => 'ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip',
-                     version          => '11.1.1.6',  
+
+
+    oradb::database{ 'testDb_Delete': 
+                      oracleBase              => '/oracle',
+                      oracleHome              => '/oracle/product/11.2/db',
+                      user                    => 'oracle',
+                      group                   => 'dba',
+                      downloadDir             => '/install/',
+                      action                  => 'delete',
+                      dbName                  => 'test',
+                      sysPassword             => 'Welcome01',
+                      require                 => Oradb::Dbactions['start testDb'],
+    }
+  
+
+Oracle SOA Suite Repository Creation Utility (RCU)
+
+    oradb::rcusoa{    'DEV_PS6':
+                     rcuFile          => 'ofm_rcu_linux_11.1.1.7.0_32_disk1_1of1.zip',
+                     version          => '11.1.1.7',  
                      oracleHome       => '/oracle/product/11.2/db',
                      user             => 'oracle',
                      group            => 'dba',
@@ -202,9 +226,8 @@ other
                      dbServer         => 'dbagent1.alfa.local:1521',  
                      dbService        => 'test.oracle.com',
                      sysPassword      => 'Welcome01',
-                     schemaPrefix     => 'DEV3',
+                     schemaPrefix     => 'DEV',
                      reposPassword    => 'Welcome02',
-                     require          => Oradb::Dbactions['start testDb'],
     }
 
     oradb::rcusoa{    'Delete_DEV3_PS5':
@@ -220,21 +243,10 @@ other
                      sysPassword      => 'Welcome01',
                      schemaPrefix     => 'DEV3',
                      reposPassword    => 'Welcome02',
-                     require          => Oradb::Rcusoa['DEV3_PS5'],
+                     require          => Oradb::Rcusoa['DEV3_PS6'],
     }
 
-    oradb::database{ 'testDb_Delete': 
-                      oracleBase              => '/oracle',
-                      oracleHome              => '/oracle/product/11.2/db',
-                      user                    => 'oracle',
-                      group                   => 'dba',
-                      downloadDir             => '/install/',
-                      action                  => 'delete',
-                      dbName                  => 'test',
-                      sysPassword             => 'Welcome01',
-                      require                 => Oradb::Rcusoa['Delete_DEV3_PS5'],
-    }
-  
+
 
 
 

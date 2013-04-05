@@ -27,6 +27,7 @@ define oradb::opatch(  $oracleProductHome = undef,
                        $group             = 'dba',
                        $downloadDir       = '/install/',
                        $ocmrf             = 'true',
+                       $puppetDownloadMntPoint  = undef, 
                     ) {
 
    case $operatingsystem {
@@ -67,11 +68,17 @@ define oradb::opatch(  $oracleProductHome = undef,
 
 if ( $continue ) {
 
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/oradb/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
 
    # the patch used by the opatch
    if ! defined(File["${path}${patchFile}"]) {
     file { "${path}${patchFile}":
-     source  => "puppet:///modules/oradb/${patchFile}",
+     source  => "${mountPoint}/${patchFile}",
     }
    }
 
