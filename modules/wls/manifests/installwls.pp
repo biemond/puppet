@@ -37,6 +37,7 @@ define wls::installwls( $version     = undef,
                         $user        = 'oracle',
                         $group       = 'dba',
                         $downloadDir = '/install/',
+                        $puppetDownloadMntPoint  = undef,  
                       ) {
 
    notify {"wls::installwls ${version}":}
@@ -132,6 +133,13 @@ define wls::installwls( $version     = undef,
 
 if ( $continue ) {
 
+
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/wls/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
    File{
         owner   => $user,
         group   => $group,
@@ -153,7 +161,7 @@ if ( $continue ) {
    file { "wls.jar ${version}":
      path    => "${path}${wlsFile}",
      ensure  => file,
-     source  => "puppet:///modules/wls/${wlsFile}",
+     source  => "${mountPoint}/${wlsFile}",
      require => File[$path],
      replace => false,
      backup  => false,

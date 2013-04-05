@@ -38,6 +38,7 @@ define wls::opatch(  $oracleProductHome = undef,
                      $user              = 'oracle',
                      $group             = 'dba',
                      $downloadDir       = '/install/',
+                     $puppetDownloadMntPoint  = undef,  
                     ) {
 
    case $operatingsystem {
@@ -94,11 +95,17 @@ define wls::opatch(  $oracleProductHome = undef,
 
 if ( $continue ) {
 
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/wls/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
 
    # the patch used by the bsu
    if ! defined(File["${path}${patchFile}"]) {
     file { "${path}${patchFile}":
-     source  => "puppet:///modules/wls/${patchFile}",
+     source  => "${mountPoint}/${patchFile}",
     }
    }
 

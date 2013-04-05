@@ -13,7 +13,15 @@ define wls::installjdev( $jdevFile     = undef,
                          $user         = 'oracle',
                          $group        = 'dba',
                          $downloadDir  = '/install/',
+                         $puppetDownloadMntPoint  = undef,   
                       ) {
+
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/wls/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
 
 
    case $operatingsystem {
@@ -87,7 +95,7 @@ define wls::installjdev( $jdevFile     = undef,
    file { "${jdevFile}":
      path    => "${path}${jdevFile}",
      ensure  => file,
-     source  => "puppet:///modules/wls/${jdevFile}",
+     source  => "${mountPoint}/${jdevFile}",
      require => File[$path],
      replace => false,
      backup  => false,
@@ -117,7 +125,7 @@ define wls::installjdev( $jdevFile     = undef,
        path    => "${path}${soaAddonFile}",
        ensure  => present,
        replace => 'no',
-       source  => "puppet:///modules/wls/${soaAddonFile}",
+       source  => "${mountPoint}/${soaAddonFile}",
        require => [File[$path],Exec["installjdev ${jdevFile}"]],
      }
      exec { "extract soa addon ${title}":

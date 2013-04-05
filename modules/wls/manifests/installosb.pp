@@ -49,6 +49,7 @@ define wls::installosb($mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install/',
+                       $puppetDownloadMntPoint  = undef,  
                     ) {
 
    case $operatingsystem {
@@ -105,6 +106,13 @@ define wls::installosb($mdwHome         = undef,
 
 if ( $continue ) {
 
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/wls/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
+
    if $oepeHome == undef {
       $osbTemplate =  "wls/silent_osb.xml.erb"
    } else {
@@ -121,7 +129,7 @@ if ( $continue ) {
    # weblogic generic installer zip
    if ! defined(File["${path}${osbFile}"]) {
     file { "${path}${osbFile}":
-     source  => "puppet:///modules/wls/${osbFile}",
+     source  => "${mountPoint}/${osbFile}",
      require => File ["${path}${title}silent_osb.xml"],
     }
    }

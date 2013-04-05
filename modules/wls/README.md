@@ -17,6 +17,11 @@ puppet module install puppetlabs/registry
 
 For other agents like RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
 
+Some manifests like installwls.pp, opatch.pp, bsupatch.pp, installjdev, installosb, installsoa supports an alternative mountpoint for the big oracle files.  
+When not provided it uses the files location of the wls puppet module  
+else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/"  
+
+
 WLS WebLogic Features
 ---------------------------
 

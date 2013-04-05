@@ -43,6 +43,7 @@ define wls::bsupatch($mdwHome         = undef,
                      $user            = 'oracle',
                      $group           = 'dba',
                      $downloadDir     = '/install/',
+                     $puppetDownloadMntPoint  = undef,  
                     ) {
 
    case $operatingsystem {
@@ -76,21 +77,6 @@ define wls::bsupatch($mdwHome         = undef,
              }   
      }
    }
-   if ! defined(File["${mdwHome}/utils/bsu/cache_dir"]) {
-     file { "${mdwHome}/utils/bsu/cache_dir":
-       ensure  => directory,
-       recurse => false, 
-     }
-   }
-
-   # the patch used by the bsu
-   if ! defined(File["${path}${patchFile}"]) {
-    file { "${path}${patchFile}":
-     source  => "puppet:///modules/wls/${patchFile}",
-     require => File ["${mdwHome}/utils/bsu/cache_dir"],
-    }
-   }
-
 
 
      # check if the bsu already is installed 
@@ -109,6 +95,29 @@ define wls::bsupatch($mdwHome         = undef,
 
 
 if ( $continue ) {
+
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/wls/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
+   if ! defined(File["${mdwHome}/utils/bsu/cache_dir"]) {
+     file { "${mdwHome}/utils/bsu/cache_dir":
+       ensure  => directory,
+       recurse => false, 
+     }
+   }
+
+   # the patch used by the bsu
+   if ! defined(File["${path}${patchFile}"]) {
+    file { "${path}${patchFile}":
+     source  => "${mountPoint}/${patchFile}",
+     require => File ["${mdwHome}/utils/bsu/cache_dir"],
+    }
+   }
+
+
 
    
    $bsuCommand  = "-install -patchlist=${patchId} -prod_dir=${wlHome} -verbose"

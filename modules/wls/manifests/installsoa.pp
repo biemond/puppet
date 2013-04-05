@@ -50,6 +50,7 @@ define wls::installsoa($mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install/',
+                       $puppetDownloadMntPoint  = undef,  
                     ) {
 
    case $operatingsystem {
@@ -105,6 +106,13 @@ define wls::installsoa($mdwHome         = undef,
 
 if ( $continue ) {
 
+   if $puppetDownloadMntPoint == undef {
+     $mountPoint =  "puppet:///modules/wls/"    	
+   } else {
+     $mountPoint =	$puppetDownloadMntPoint
+   }
+
+
    $soaTemplate =  "wls/silent_soa.xml.erb"
 
 #   if ! defined(File["${path}${title}silent_soa.xml"]) {
@@ -117,7 +125,7 @@ if ( $continue ) {
    # soa file 1 installer zip
    if ! defined(File["${path}${soaFile1}"]) {
     file { "${path}${soaFile1}":
-     source  => "puppet:///modules/wls/${soaFile1}",
+     source  => "${mountPoint}/${soaFile1}",
      require => File ["${path}${title}silent_soa.xml"],
     }
    }
@@ -125,7 +133,7 @@ if ( $continue ) {
    # soa file 2 installer zip
    if ! defined(File["${path}${soaFile2}"]) {
     file { "${path}${soaFile2}":
-     source  => "puppet:///modules/wls/${soaFile2}",
+     source  => "${mountPoint}/${soaFile2}",
      require => [File ["${path}${title}silent_soa.xml"],File["${path}${soaFile1}"]],
     }
    }
