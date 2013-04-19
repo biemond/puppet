@@ -79,18 +79,22 @@ define oradb::rcusoa(    $rcuFile                 = undef,
                            "LD_LIBRARY_PATH=${oracleHome}/lib"],
    }
 
-   
-   # put rcu software 
-   file { "${path}${rcuFile}":
-     source  => "${mountPoint}/${rcuFile}",
+   # put rcu software
+   if ! defined(File["${path}${rcuFile}"]) {
+    file { "${path}${rcuFile}":
+     source  => "puppet:///modules/oradb/${rcuFile}",
+    }
    }
-
-   # unzip rcu software 
-   exec { "extract ${rcuFile}":
+ 
+   # unzip rcu software
+   if ! defined(Exec["extract ${rcuFile}"]) {
+     exec { "extract ${rcuFile}":
        command => "unzip ${path}${rcuFile} -d ${path}/rcu_${version}",
        require => File ["${path}${rcuFile}"],
        creates => "${path}/rcu_${version}",
+     }
    }
+
 
 
    file { "${path}/rcu_${version}/rcu_passwords_${title}.txt":

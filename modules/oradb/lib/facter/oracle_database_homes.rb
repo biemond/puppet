@@ -51,9 +51,13 @@ def get_orainst_products(path)
       	str = element.attributes["LOC"]
       	unless str.nil? 
           software += str + ";"
-#          if str.include? "oracle_common"
-#            #skip, a bug 
-#          else
+          if str.include? "plugins"
+            #skip EM agent
+          elsif str.include? "agent"
+            #skip EM agent 
+          elsif str.include? "OraPlaceHolderDummyHome"
+            #skip EM agent
+          else
          	  home = str.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
          	  output = get_opatch_patches(str)
             Facter.add("ora_inst_patches#{home}") do
@@ -61,7 +65,7 @@ def get_orainst_products(path)
                 output
               end
             end
-#          end
+          end
         end    
       end
       return software
