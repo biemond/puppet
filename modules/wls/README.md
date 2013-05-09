@@ -5,6 +5,12 @@ created by Edwin Biemond
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
+Version updates
+---------------
+
+- 0.9.2 added (FMW & WLS ) log folder location to the domain and nodemanager   
+
+
 for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
 
 Windows Puppet agents
@@ -39,6 +45,7 @@ WLS WebLogic Features
 - domain creation + domain pack
 - domain OSB creation + domain pack
 - domain OSB + SOA creation + domain pack
+- set the log folder of the WebLogic Domain, Managed servers and FMW   
 
 - can start the AdminServer for configuration 
 - create File or JDBC Persistence Store
@@ -249,7 +256,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -259,7 +266,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -267,7 +274,7 @@ WebLogic configuration examples
       
       Wls::Nodemanager {
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         serviceName  => $serviceName,  
@@ -286,7 +293,7 @@ WebLogic configuration examples
       # install
       wls::installwls{'11gPS5':}
     
-      # weblogic patch
+    	# weblogic patch
       wls::bsupatch{'p14736139':
          patchId      => 'HYKC',    
          patchFile    => 'p14736139_1036_Generic.zip',  
@@ -308,6 +315,7 @@ WebLogic configuration examples
        #nodemanager configuration and starting
        wls::nodemanager{'nodemanager11g':
          listenPort  => '5556',
+         logDir      => '/data/logs',
          require     =>  Wls::Installsoa['soaPS6'],
        }
     
@@ -361,7 +369,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -371,7 +379,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -379,7 +387,7 @@ WebLogic configuration examples
       
       Wls::Nodemanager {
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         serviceName  => $serviceName,  
@@ -399,14 +407,13 @@ WebLogic configuration examples
         fullJDKName  => $jdkWls11gJDK,
         user         => $user,
         group        => $group,
-    
         downloadDir  => $downloadDir, 
       }  
     
       # install
       wls::installwls{'11gPS5':}
     
-      # weblogic patch
+    	# weblogic patch
       wls::bsupatch{'p14736139':
          patchId      => 'HYKC',    
          patchFile    => 'p14736139_1036_Generic.zip',  
@@ -421,8 +428,8 @@ WebLogic configuration examples
     
        wls::opatch{'14389126_osb_patch':
          oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
-         patchId           => '14389126', 
-         patchFile         => 'p14389126_111160_Generic.zip', 
+         patchId           => '14389126',	
+         patchFile         => 'p14389126_111160_Generic.zip',	
          require           => Wls::Installosb['osbPS5'],
        }
     
@@ -434,14 +441,15 @@ WebLogic configuration examples
     
        wls::opatch{'14406487_soa_patch':
          oracleProductHome => "${osMdwHome}/Oracle_SOA1" ,
-         patchId           => '14406487', 
-         patchFile         => 'p14406487_111160_Generic.zip', 
+         patchId           => '14406487',	
+         patchFile         => 'p14406487_111160_Generic.zip',	
          require           => Wls::Installsoa['soaPS5'],
        }
     
        #nodemanager configuration and starting
        wls::nodemanager{'nodemanager11g':
          listenPort  => '5556',
+         logDir      => '/data/logs',
          require     => Wls::Opatch['14406487_soa_patch'],
        }
     
@@ -494,7 +502,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -503,7 +511,7 @@ WebLogic configuration examples
       
       Wls::Nodemanager {
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         serviceName  => $serviceName,  
@@ -522,7 +530,7 @@ WebLogic configuration examples
       # install
       wls::installwls{'11gPS5':}
     
-      # weblogic patch
+    	# weblogic patch
       wls::bsupatch{'p14736139':
          patchId      => 'HYKC',    
          patchFile    => 'p14736139_1036_Generic.zip',  
@@ -538,6 +546,7 @@ WebLogic configuration examples
        #nodemanager configuration and starting
        wls::nodemanager{'nodemanager11g':
          listenPort  => '5556',
+         logDir      => '/data/logs',
          require     => Wls::Installosb['osbPS5'],
        }
     
@@ -590,7 +599,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -599,7 +608,7 @@ WebLogic configuration examples
       
       Wls::Nodemanager {
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         serviceName  => $serviceName,  
@@ -625,7 +634,7 @@ WebLogic configuration examples
       # install
       wls::installwls{'11gPS5':}
     
-      # weblogic patch
+    	# weblogic patch
       wls::bsupatch{'p14736139':
          patchId      => 'HYKC',    
          patchFile    => 'p14736139_1036_Generic.zip',  
@@ -640,8 +649,8 @@ WebLogic configuration examples
     
        wls::opatch{'14389126_osb_patch':
          oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
-         patchId           => '14389126', 
-         patchFile         => 'p14389126_111160_Generic.zip', 
+         patchId           => '14389126',	
+         patchFile         => 'p14389126_111160_Generic.zip',	
          require           => Wls::Installosb['osbPS5'],
        }
     
@@ -649,6 +658,7 @@ WebLogic configuration examples
        #nodemanager configuration and starting
        wls::nodemanager{'nodemanager11g':
          listenPort  => '5556',
+         logDir      => '/data/logs',
          require     => Wls::Opatch['14389126_osb_patch'],
        }
     
@@ -735,7 +745,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -813,7 +823,7 @@ WebLogic configuration examples
         mdwHome      => $osMdwHome,
         wlHome       => $osWlHome,
         oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -901,7 +911,7 @@ WebLogic configuration examples
       
       Wls::Nodemanager {
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls12cJDK,  
+        fullJDKName  => $jdkWls12cJDK,	
         user         => $user,
         group        => $group,
         serviceName  => $serviceName,  
@@ -913,11 +923,12 @@ WebLogic configuration examples
       #nodemanager configuration and starting
       wls::nodemanager{'nodemanager':
         listenPort   => '5656',
+        logDir       => '/data/logs',
         require      => Wls::Installwls['wls12c'],
       }
     
-    }     
-        
+    }         
+    
 ### templates_app.pp
 
 
@@ -939,17 +950,17 @@ WebLogic configuration examples
       $password        = "weblogic1"
      
       # rcu soa repository
-      $reposUrl        = "jdbc:oracle:thin:@dbagent1.alfa.local:1521/test.oracle.com"
+    	$reposUrl        = "jdbc:oracle:thin:@dbagent1.alfa.local:1521/test.oracle.com"
     
       if $hostname == 'devagent1' {
-        $reposPrefix     = "DEV"
+    	  $reposPrefix     = "DEV"
     
-      } elsif $hostname == 'devagent4' {
-        $reposPrefix     = "DEV2"
+    	} elsif $hostname == 'devagent4' {
+    	  $reposPrefix     = "DEV2"
     
-      } else {
-        $reposPrefix     = "DEV"
-      }
+    	} else {
+    	  $reposPrefix     = "DEV"
+    	}
       # rcu soa repository schema password
       $reposPassword   = "Welcome02"
     
@@ -980,7 +991,7 @@ WebLogic configuration examples
       Wls::Wlsdomain {
         wlHome       => $osWlHome,
         mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -992,11 +1003,12 @@ WebLogic configuration examples
       wls::wlsdomain{'osbSoaDomain':
        wlsTemplate     => $osTemplate,
        domain          => $wlsDomainName,
-       reposDbUrl      => $reposUrl,
-       reposPrefix     => $reposPrefix,
-       reposPassword   => $reposPassword,
+    	 reposDbUrl      => $reposUrl,
+    	 reposPrefix     => $reposPrefix,
+    	 reposPassword   => $reposPassword,
        adminListenPort => $adminListenPort,
        nodemanagerPort => $nodemanagerPort,
+       logDir          => '/data/logs',
       }
     
     
@@ -1004,7 +1016,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/${wlsDomainName}",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => $address,
@@ -1024,6 +1036,37 @@ WebLogic configuration examples
          require     => Wls::Wlsdomain['osbSoaDomain'];
       }
     
+      Wls::Changefmwlogdir {
+        mdwHome      => $osMdwHome,
+        user         => $user,
+        group        => $group,
+        address      => $address,
+        port         => $adminListenPort,
+        wlsUser      => $wlsUser,
+        password     => $password,
+        downloadDir  => $downloadDir, 
+      }
+    
+      wls::changefmwlogdir{
+       'AdminServer':
+        wlsServer    => "AdminServer",
+        logDir       => "/data/logs",
+        require      => Wls::Wlstexec['startOSBSOAAdminServer'],
+      }
+    
+      wls::changefmwlogdir{
+       'soa_server1':
+        wlsServer    => "soa_server1",
+        logDir       => "/data/logs",
+        require      => Wls::Changefmwlogdir['AdminServer'],
+      }
+    
+      wls::changefmwlogdir{
+       'osb_server1':
+        wlsServer    => "osb_server1",
+        logDir       => "/data/logs",
+        require      => Wls::Changefmwlogdir['soa_server1'],
+      }
     
     }
     
@@ -1070,7 +1113,7 @@ WebLogic configuration examples
       Wls::Wlsdomain {
         wlHome       => $osWlHome,
         mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -1086,8 +1129,8 @@ WebLogic configuration examples
        domain          => $wlsDomainName,
        adminListenPort => $adminListenPort,
        nodemanagerPort => $nodemanagerPort,
+       logDir          => '/data/logs',
        require         => Wls::Nodemanager['nodemanager11g'];
-       
      }
     
     
@@ -1095,7 +1138,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/${wlsDomainName}",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => $address,
@@ -1113,6 +1156,32 @@ WebLogic configuration examples
                           "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
                           "wlsServer  = 'AdminServer'"],
          require     => Wls::Wlsdomain['osbDomain'];
+      }
+    
+      Wls::Changefmwlogdir {
+        mdwHome      => $osMdwHome,
+        user         => $user,
+        group        => $group,
+        address      => $address,
+        port         => $adminListenPort,
+        wlsUser      => $wlsUser,
+        password     => $password,
+        downloadDir  => $downloadDir, 
+      }
+    
+      wls::changefmwlogdir{
+       'AdminServer':
+        wlsServer    => "AdminServer",
+        logDir       => "/data/logs",
+        require      => Wls::Wlstexec['startOSBAdminServer'],
+      }
+    
+    
+      wls::changefmwlogdir{
+       'osb_server1':
+        wlsServer    => "osb_server1",
+        logDir       => "/data/logs",
+        require      => Wls::Changefmwlogdir['AdminServer'],
       }
     
     
@@ -1158,7 +1227,7 @@ WebLogic configuration examples
       Wls::Wlsdomain {
         wlHome       => $osWlHome,
         mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -1183,7 +1252,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/${wlsDomainName}",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => $address,
@@ -1248,7 +1317,7 @@ WebLogic configuration examples
       Wls::Wlsdomain {
         wlHome       => $osWlHome,
         mdwHome      => $osMdwHome,
-        fullJDKName  => $jdkWls12gJDK,  
+        fullJDKName  => $jdkWls12gJDK,	
         user         => $user,
         group        => $group,    
         downloadDir  => $downloadDir, 
@@ -1271,7 +1340,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/${wlsDomainName}",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls12gJDK,  
+        fullJDKName  => $jdkWls12gJDK,	
         user         => $user,
         group        => $group,
         address      => $address,
@@ -1348,7 +1417,7 @@ WebLogic configuration examples
       Wls::Wlsdeploy {
         wlHome       => $osWlHome,
         osbHome      => $osbHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => "localhost",
@@ -1409,7 +1478,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/osbDomain",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => "localhost",
@@ -1475,7 +1544,7 @@ WebLogic configuration examples
       Wls::Wlstexec {
         wlsDomain    => "${osDomainPath}/osbDomain",
         wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
+        fullJDKName  => $jdkWls11gJDK,	
         user         => $user,
         group        => $group,
         address      => "localhost",
@@ -1695,4 +1764,8 @@ WebLogic configuration examples
     
     }  
     
+    
+    
+    
+
                 

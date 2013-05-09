@@ -3,9 +3,10 @@ WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
 APP_PATH='<%= @appPath %>/<%= @domain %>'
 
-ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1g'
-OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g'
-SOA_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g'
+ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
+OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @osbNodeMgrLogDir %>/osb_server1.out -Dweblogic.Stderr=<%= @osbNodeMgrLogDir %>/osb_server1_err.out'
+SOA_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @soaNodeMgrLogDir %>/soa_server1.out -Dweblogic.Stderr=<%= @soaNodeMgrLogDir %>/soa_server1_err.out'
+
 
 SOA_REPOS_DBURL='<%= @reposDbUrl %>'
 SOA_REPOS_DBUSER_PREFIX='<%= @reposPrefix %>'
@@ -14,11 +15,20 @@ SOA_REPOS_DBPASSWORD='<%= @reposPassword %>'
 print('Start...osb domain with template <%= @template %>')
 readTemplate('<%= @template %>')
 
+create('base_domain','Log')
+cd('/Log/base_domain')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
 
-cd('/')
-cd('Servers/AdminServer')
+
+cd('/Servers/AdminServer')
 # name of adminserver
 set('Name','<%= @adminServerName %>' )
+
+cd('/Servers/<%= @adminServerName %>')
 
 # address and port
 #set('ListenAddress','<%= @adminListenAdr %>')
@@ -27,18 +37,26 @@ set('ListenPort',<%= @adminListenPort %>)
 
 setOption( "AppDir", APP_PATH )
 
-create('AdminServer','ServerStart')
-cd('ServerStart/AdminServer')
+create('<%= @adminServerName %>','ServerStart')
+cd('ServerStart/<%= @adminServerName %>')
 set('Arguments', ADM_JAVA_ARGUMENTS)
 set('JavaVendor','Sun')
 set('JavaHome', '<%= @JAVA_HOME %>')
 
-cd('../..')
-create('AdminServer','SSL')
-cd('SSL/AdminServer')
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','SSL')
+cd('SSL/<%= @adminServerName %>')
 set('Enabled', 'False')
 set('HostNameVerificationIgnored', 'True')
 
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','Log')
+cd('/Server/<%= @adminServerName %>/Log/<%= @adminServerName %>')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
 
 
 print('Set password...')
@@ -138,12 +156,21 @@ set('Arguments', SOA_JAVA_ARGUMENTS)
 set('JavaVendor','Sun')
 set('JavaHome', '<%= @JAVA_HOME %>')
 
-cd('../..')
+cd('/Server/soa_server1')
 create('soa_server1','SSL')
 cd('SSL/soa_server1')
 set('Enabled', 'False')
 set('HostNameVerificationIgnored', 'True')
 
+
+cd('/Server/soa_server1')
+create('soa_server1','Log')
+cd('/Server/soa_server1/Log/soa_server1')
+set('FileName','<%= @soaNodeMgrLogDir %>/soa_server1.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
 
 
 dumpStack();
@@ -181,11 +208,20 @@ set('Arguments', OSB_JAVA_ARGUMENTS)
 set('JavaVendor','Sun')
 set('JavaHome', '<%= @JAVA_HOME %>')
 
-cd('../..')
+cd('/Server/osb_server1')
 create('osb_server1','SSL')
 cd('SSL/osb_server1')
 set('Enabled', 'False')
 set('HostNameVerificationIgnored', 'True')
+
+cd('/Server/osb_server1')
+create('osb_server1','Log')
+cd('/Server/osb_server1/Log/osb_server1')
+set('FileName','<%= @osbNodeMgrLogDir %>/osb_server1.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
 
 
 cd('/JDBCSystemResource/wlsbjmsrpDataSource/JdbcResource/wlsbjmsrpDataSource/JDBCDriverParams/NO_NAME_0')

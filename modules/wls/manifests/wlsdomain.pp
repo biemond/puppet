@@ -71,6 +71,7 @@ define wls::wlsdomain ($wlHome          = undef,
                        $password        = "weblogic1",
                        $user            = 'oracle',
                        $group           = 'dba',
+                       $logDir          = undef,
                        $downloadDir     = '/install/',
                        $reposDbUrl      = undef,
                        $reposPrefix     = undef,
@@ -178,6 +179,25 @@ if ( $continue ) {
      }
    }
 
+
+   if $logDir == undef {
+      $adminNodeMgrLogDir = "${domainPath}/${domain}/servers/${adminServerName}/logs"
+      $osbNodeMgrLogDir   = "${domainPath}/${domain}/servers/osb_server1/logs"
+      $soaNodeMgrLogDir   = "${domainPath}/${domain}/servers/soa_server1/logs"
+   } else {
+      $adminNodeMgrLogDir = "${logDir}"
+      $osbNodeMgrLogDir   = "${logDir}"
+      $soaNodeMgrLogDir   = "${logDir}"
+
+      if ! defined(File["${logDir}"]) {
+        file { "${logDir}" :
+          ensure  => directory,
+          recurse => false, 
+          replace => false,
+        }
+      }    
+   }
+
     
    # the domain.py used by the wlst
    file { "domain.py ${domain} ${title}":
@@ -215,6 +235,8 @@ if ( $continue ) {
       }
    }
 
+
+
    $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 	 $packCommand    = "-domain=${domainPath}/${domain} -template=${path}domain_${domain}.jar -template_name=domain_${domain} -log=${path}domain_${domain}.log -log_priority=INFO" 	
 
@@ -249,30 +271,6 @@ if ( $continue ) {
            require     => Exec["setDebugFlagOnFalse ${domain} ${title}"],
         }
 
-        # kill the nodemanager 
-        exec { "execwlst ux kill nodemanager ${title}":
-          command     => "/bin/kill -9 `/bin/ps -ef | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | /bin/grep -i ${nodemanagerPort} | awk {'print \$2'} | head -1`",
-          onlyif      => "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${nodemanagerPort}'",
-          subscribe   => Exec["pack domain ${domain} ${title}"],
-          refreshonly => true
-        }    
-
-        $javaNodeCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -DListenPort=${nodemanagerPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
-
-        # start the nodemanager
-        exec { "execwlst ux start nodemanager ${title}":
-          command     => "/usr/bin/nohup ${javaNodeCommand} &",
-          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=${JAVA_HOME}",
-                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/linux/x86_64",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          unless      =>  "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${nodemanagerPort}'",
-          cwd         => "${wlHome}/common/nodemanager",
-          subscribe   => Exec["execwlst ux kill nodemanager ${title}"],
-          refreshonly => true
-        }    
-
-
      
      }
      windows: { 
@@ -305,20 +303,6 @@ if ( $continue ) {
            subscribe   => Exec["icacls domain ${title}${script}"],
            refreshonly => true,
         }
-
-        exec { "domain win stop service ${title}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c NET STOP \"Oracle WebLogic NodeManager (${serviceName})\"",
-          subscribe   => Exec["pack domain ${domain} ${title}"],
-          refreshonly => true,
-          logoutput   => true,
-        } 
-
-        exec { "domain win start service ${title}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c NET START \"Oracle WebLogic NodeManager (${serviceName})\"",
-          subscribe   => Exec ["domain win stop service ${title}"],
-          refreshonly => true,
-          logoutput   => true,
-        } 
 
 
      }

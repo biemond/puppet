@@ -45,6 +45,7 @@ define wls::nodemanager($wlHome          = undef,
                         $user            = 'oracle',
                         $group           = 'dba',
                         $serviceName     = undef,
+                        $logDir          = undef,
                         $downloadDir     = '/install/',
                        ) {
 
@@ -52,7 +53,23 @@ define wls::nodemanager($wlHome          = undef,
         owner   => $user,
         group   => $group,
         mode    => 0770,
-   } 
+   }
+
+   if $logDir == undef {
+      $nodeLogDir = "${wlHome}/common/nodemanager/nodemanager.log"
+   } else {
+      $nodeLogDir = "${logDir}/nodemanager.log"
+
+      if ! defined(File["${logDir}"]) {
+        file { "${logDir}" :
+          ensure  => directory,
+          recurse => false, 
+          replace => false,
+        }
+      }    
+   }
+
+
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, ubuntu, debian: { 
