@@ -1,8 +1,12 @@
 # == Define: wls::changefmwlogdir
 #
-# generic changefmwlogdir wlst script  
+# generic changefmwlogdir wlst script, runs the WLST command from the oracle common home  
+# Moves the fmw log files like  AdminServer-diagnostic.log or AdminServer-owsm.log
+# to a different location outside your domain
 #
-#
+# pass on the weblogic username or password
+# or provide userConfigFile and userKeyFile file locations
+#  
 # === Examples
 #  
 #  # set the defaults
@@ -27,16 +31,18 @@
 #
 # 
 
-define wls::changefmwlogdir ($mdwHome       = undef, 
-                             $address       = "localhost",
-                             $port          = '7001',
-                             $wlsUser       = "weblogic",
-                             $password      = "weblogic1",
-                             $user          = 'oracle', 
-                             $group         = 'dba',
-                             $wlsServer     = undef,
-                             $logDir        = undef,
-                             $downloadDir   = '/install/',
+define wls::changefmwlogdir ($mdwHome        = undef, 
+                             $address        = "localhost",
+                             $port           = '7001',
+                             $wlsUser        = undef,
+                             $password       = undef,
+                             $userConfigFile = undef,
+                             $userKeyFile    = undef,
+                             $user           = 'oracle', 
+                             $group          = 'dba',
+                             $wlsServer      = undef,
+                             $logDir         = undef,
+                             $downloadDir    = '/install/',
                             ) {
 
 
@@ -75,8 +81,13 @@ define wls::changefmwlogdir ($mdwHome       = undef,
      }
    }
 
-
-    
+   # use userConfigStore for the connect
+	 if $password == undef {
+     $useStoreConfig = true  
+   } else {	
+     $useStoreConfig = false  
+   }
+   
    # the py script used by the wlst
    file { "${path}${title}changeFMWLogFolder.py":
       path    => "${path}${title}changeFMWLogFolder.py",

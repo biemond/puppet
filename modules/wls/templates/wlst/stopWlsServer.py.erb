@@ -9,8 +9,14 @@ portNumber = '<%= @port %>'
 <%= param %>
 <% end -%>
 
-# connect to nodemanager
-nmConnect(wlsUser,password,machine,portNumber,domain,domainPath,'ssl')
+useStoreConfig = '<%= @useStoreConfig %>'
+
+if useStoreConfig != "true":
+    nmConnect(wlsUser,password,machine,portNumber,domain,domainPath,'ssl')
+else:
+    nmConnect(userConfigFile='<%= @userConfigFile %>', userKeyFile='<%= @userKeyFile %>',host=machine,port=portNumber,domainName=domain,domainDir=domainPath,nmType='ssl')    
+
+
 
 #start the WlsServer
 nmKill(wlsServer)

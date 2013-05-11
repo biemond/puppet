@@ -9,7 +9,12 @@ portNumber = '<%= @port %>'
 <%= param %>                    
 <% end -%>                      
 
-connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+useStoreConfig = '<%= @useStoreConfig %>'
+
+if useStoreConfig != "true":
+    connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+else:
+    connect(userConfigFile='<%= @userConfigFile %>', userKeyFile='<%= @userKeyFile %>', url='t3://'+machine+':'+portNumber)    
 
 print "datasource " +dsName
 

@@ -4,7 +4,13 @@ password   = '<%= @password %>'
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
 
-connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+useStoreConfig = '<%= @useStoreConfig %>'
+
+if useStoreConfig != "true":
+    connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+else:
+    connect(userConfigFile='<%= @userConfigFile %>', userKeyFile='<%= @userKeyFile %>', url='t3://'+machine+':'+portNumber)    
+
 domainRuntime()
 
 configureLogHandler(target='<%= @wlsServer %>', name='odl-handler', path='<%= @logDir %>/${weblogic.Name}-diagnostic.log')

@@ -1,7 +1,8 @@
 # == Define: wls::wlsdomain
 #
 # install a new weblogic domain  
-#
+# support a normal WebLogic Domain , OSB and OSB plus SOA
+# use parameter wlsTemplate to control this
 #
 # === Examples
 #
@@ -67,8 +68,8 @@ define wls::wlsdomain ($wlHome          = undef,
                        $adminListenAdr  = "localhost",
                        $adminListenPort = '7001',
                        $nodemanagerPort = '5556',
-                       $wlsUser         = "weblogic",
-                       $password        = "weblogic1",
+                       $wlsUser         = undef,
+                       $password        = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $logDir          = undef,

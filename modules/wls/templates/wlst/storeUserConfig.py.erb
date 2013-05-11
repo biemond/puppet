@@ -1,0 +1,10 @@
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+
+
+storeUserConfig('<%= @userConfigDir %>/<%= @user %>-<%= @domain %>-WebLogicConfig.properties','<%= @userConfigDir %>/<%= @user %>-<%= @domain %>-WebLogicKey.properties')

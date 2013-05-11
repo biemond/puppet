@@ -2,6 +2,8 @@
 #
 # generic wlst script  
 #
+# pass on the weblogic username or password
+# or provide userConfigFile and userKeyFile file locations
 #
 # === Examples
 #  
@@ -57,24 +59,25 @@
 #
 # 
 
-define wls::wlstexec ($wlsDomain     = undef, 
-                      $wlstype       = undef,
-                      $wlsObjectName = undef,
-                      $wlHome        = undef, 
-                      $fullJDKName   = undef, 
-                      $script        = undef,
-                      $address       = "localhost",
-                      $port          = '7001',
-                      $wlsUser       = "weblogic",
-                      $password      = "weblogic1",
-                      $user          = 'oracle', 
-                      $group         = 'dba',
-                      $params        = undef,
-                      $downloadDir   = '/install/',
+define wls::wlstexec ($wlsDomain      = undef, 
+                      $wlstype        = undef,
+                      $wlsObjectName  = undef,
+                      $wlHome         = undef, 
+                      $fullJDKName    = undef, 
+                      $script         = undef,
+                      $address        = "localhost",
+                      $port           = '7001',
+                      $wlsUser        = undef,
+                      $password       = undef,
+                      $userConfigFile = undef,
+                      $userKeyFile    = undef,
+                      $user           = 'oracle', 
+                      $group          = 'dba',
+                      $params         = undef,
+                      $downloadDir    = '/install/',
                       ) {
 
    notify {"wls::wlstexec ${title} execute ${wlsDomain}":}
-
  
    # if these params are empty always continue    
    if $wlsDomain == undef or $wlstype == undef or wlsObjectName == undef {
@@ -95,6 +98,13 @@ define wls::wlstexec ($wlsDomain     = undef,
          $continue = true 
        }
      }
+   }
+
+   # use userConfigStore for the connect
+	 if $password == undef {
+     $useStoreConfig = true  
+   } else {	
+     $useStoreConfig = false  
    }
 
 

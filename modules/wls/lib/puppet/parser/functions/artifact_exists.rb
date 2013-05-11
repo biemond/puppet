@@ -35,11 +35,9 @@ module Puppet::Parser::Functions
             domain = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s)
             unless domain.nil?
               domain = domain.strip.downcase
-              
-              domain_path = mdw + "/admin/" + domain
 
               # do we found the right domain
-              if domain_path == mdwArg 
+              if domain == mdwArg 
                 
                 type = args[1].strip
                 
@@ -81,7 +79,7 @@ module Puppet::Parser::Functions
                     end
                   end
                 elsif type == 'safagent'
-                  if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jdbc') != :undefined
+                  if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_safagents') != :undefined
                     safagents =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_safagents')
                     unless safagents.nil?
                       if safagents.include? args[2]
@@ -116,7 +114,10 @@ module Puppet::Parser::Functions
   
                       l = 0
                       while ( l < jms_count.to_i )
-                        jmsobjects =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_objects')
+                        jmsobjects =  ""
+                        if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_objects') != :undefined
+                          jmsobjects =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_objects')
+                        end 
                         unless jmsobjects.nil?
                           if jmsobjects.include? args[2]
                             return true
@@ -131,11 +132,17 @@ module Puppet::Parser::Functions
                   if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_cnt') != :undefined
                     jms_count =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_cnt')
                     unless jms_count.nil?
-  
-                      l = 0
+
+                     l = 0
                       while ( l < jms_count.to_i )
-                        jmssubobjects =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_subdeployments')
-                        jmsmodule     =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_name')
+                        jmssubobjects =  ""
+                        jmsmodule     =  ""
+                        if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_subdeployments') != :undefined
+                          jmssubobjects = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_subdeployments')
+                        end
+                        if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_name')  != :undefined
+                          jmsmodule     = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_name')
+                        end
                         if args[2].include? jmsmodule
                           unless jmssubobjects.nil?
                             pattern = "\/(.*)"
@@ -145,6 +152,7 @@ module Puppet::Parser::Functions
                             end
                           end
                         end
+
                         l += 1
                       end
   

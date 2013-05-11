@@ -186,20 +186,22 @@ def get_domain(name,i)
         k += 1            
       end
 
-      deployements = ""
+      deployments = ""
       root.elements.each("app-deployment[module-type = 'ear']") do |apps|
-      	deployements += apps.elements['name'].text + ";"
+        deployments += apps.elements['name'].text + ";"
       end
+
       Facter.add("ora_mdw_#{i}_domain_#{n}_deployments") do
          setcode do
-            deployements
+            deployments
          end
       end
 
       libraries = ""
       root.elements.each("library") do |libs|
-      	libraries += libs.elements['name'].text + ";"
+        libraries += libs.elements['name'].text + ";"
       end
+
       Facter.add("ora_mdw_#{i}_domain_#{n}_libraries") do
          setcode do
             libraries
@@ -208,8 +210,9 @@ def get_domain(name,i)
 
       filestores = ""
       root.elements.each("file-store") do |file|
-      	filestores += file.elements['name'].text + ";"
+        filestores += file.elements['name'].text + ";"
       end
+
       Facter.add("ora_mdw_#{i}_domain_#{n}_filestores") do
          setcode do
             filestores
@@ -218,8 +221,9 @@ def get_domain(name,i)
 
       jdbcstores = ""
       root.elements.each("jdbc-store") do |jdbc|
-      	jdbcstores += jdbc.elements['name'].text + ";"
+        jdbcstores += jdbc.elements['name'].text + ";"
       end
+
       Facter.add("ora_mdw_#{i}_domain_#{n}_jdbcstores") do
          setcode do
             jdbcstores
@@ -228,8 +232,9 @@ def get_domain(name,i)
 
       safagents = ""
       root.elements.each("jdbc-store") do |agent|
-      	safagents += agent.elements['name'].text + ";"
+        safagents += agent.elements['name'].text + ";"
       end
+
       Facter.add("ora_mdw_#{i}_domain_#{n}_safagents") do
          setcode do
             safagents
@@ -240,6 +245,7 @@ def get_domain(name,i)
       root.elements.each("jms-server") do |jmsservers| 
         jmsserversstr += jmsservers.elements['name'].text + ";"
       end
+
       Facter.add("ora_mdw_#{i}_domain_#{n}_jmsservers") do
         setcode do
           jmsserversstr
@@ -256,6 +262,7 @@ def get_domain(name,i)
         jmsresource.elements.each("sub-deployment") do |sub| 
           jmssubdeployments +=  sub.elements['name'].text + ";"
         end
+
         Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_subdeployments") do
           setcode do
             jmssubdeployments
@@ -282,6 +289,7 @@ def get_domain(name,i)
             jmsresource.elements['name'].text
           end
         end
+
         Facter.add("ora_mdw_#{i}_domain_#{n}_jmsmodule_#{k}_objects") do
           setcode do
             jmsstr
@@ -304,6 +312,7 @@ def get_domain(name,i)
       root.elements.each("jdbc-system-resource") do |jdbcresource| 
         jdbcstr += jdbcresource.elements['name'].text + ";" 
       end
+
       Facter.add("ora_mdw_#{i}_domain_#{n}_jdbc") do
         setcode do
           jdbcstr
@@ -373,8 +382,8 @@ def get_orainst_products(path)
       doc = REXML::Document.new file
       software =  ""
       doc.elements.each("/INVENTORY/HOME_LIST/HOME") do |element|
-      	str = element.attributes["LOC"]
-      	unless str.nil? 
+        str = element.attributes["LOC"]
+        unless str.nil? 
           software += str + ";"
           if str.include? "plugins"
             #skip EM agent
@@ -383,8 +392,8 @@ def get_orainst_products(path)
           elsif str.include? "OraPlaceHolderDummyHome"
             #skip EM agent
           else
-         	  home = str.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
-         	  output = get_opatch_patches(str)
+            home = str.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
+            output = get_opatch_patches(str)
             Facter.add("ora_inst_patches#{home}") do
               setcode do
                 output
