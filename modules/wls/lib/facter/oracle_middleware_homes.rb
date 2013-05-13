@@ -197,6 +197,160 @@ def get_domain(name,i)
          end
       end
 
+      fileAdapterPlan = ""
+      fileAdapterPlanEntries = ""
+      root.elements.each("app-deployment[name = 'FileAdapter']") do |apps|
+        unless apps.elements['plan-dir'].nil?
+          fileAdapterPlan += apps.elements['plan-dir'].text + "/" + apps.elements['plan-path'].text
+          subfile = File.read( fileAdapterPlan )
+          subdoc = REXML::Document.new subfile
+
+          planroot = subdoc.root
+          planroot.elements["variable-definition"].elements.each("variable") do |eis| 
+            fileAdapterPlanEntries +=  eis.elements["value"].text + ";"
+          end
+
+        end   
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_fileadapter_plan") do
+         setcode do
+            fileAdapterPlan
+         end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_fileadapter_entries") do
+         setcode do
+            fileAdapterPlanEntries
+         end
+      end
+
+
+      dbAdapterPlan = ""
+      dbAdapterPlanEntries = ""
+      root.elements.each("app-deployment[name = 'DbAdapter']") do |apps|
+        unless apps.elements['plan-dir'].nil?
+          dbAdapterPlan += apps.elements['plan-dir'].text + "/" + apps.elements['plan-path'].text 
+
+          subfile = File.read( dbAdapterPlan )
+          subdoc = REXML::Document.new subfile
+
+          planroot = subdoc.root
+          planroot.elements["variable-definition"].elements.each("variable") do |eis| 
+            dbAdapterPlanEntries +=  eis.elements["value"].text + ";"
+          end
+
+
+        end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_dbadapter_plan") do
+         setcode do
+            dbAdapterPlan
+         end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_dbadapter_entries") do
+         setcode do
+            dbAdapterPlanEntries
+         end
+      end
+
+
+
+      aqAdapterPlan = ""
+      aqAdapterPlanEntries = ""
+      root.elements.each("app-deployment[name = 'AqAdapter']") do |apps|
+        unless apps.elements['plan-dir'].nil?
+          aqAdapterPlan = apps.elements['plan-dir'].text + "/" + apps.elements['plan-path'].text 
+
+          subfile = File.read( aqAdapterPlan )
+          subdoc = REXML::Document.new subfile
+
+          planroot = subdoc.root
+          planroot.elements["variable-definition"].elements.each("variable") do |eis| 
+            aqAdapterPlanEntries +=  eis.elements["value"].text + ";"
+          end
+        end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_aqadapter_plan") do
+         setcode do
+            aqAdapterPlan
+         end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_aqadapter_entries") do
+         setcode do
+            aqAdapterPlanEntries
+         end
+      end
+
+
+      jmsAdapterPlan = ""
+      jmsAdapterPlanEntries = ""
+      root.elements.each("app-deployment[name = 'JmsAdapter']") do |apps|
+        unless apps.elements['plan-dir'].nil?
+          jmsAdapterPlan += apps.elements['plan-dir'].text + "/" + apps.elements['plan-path'].text 
+
+          subfile = File.read( jmsAdapterPlan )
+          subdoc = REXML::Document.new subfile
+
+          planroot = subdoc.root
+          planroot.elements["variable-definition"].elements.each("variable") do |eis| 
+            jmsAdapterPlanEntries +=  eis.elements["value"].text + ";"
+          end
+
+
+        end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_jmsadapter_plan") do
+         setcode do
+            jmsAdapterPlan
+         end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_jmsadapter_entries") do
+         setcode do
+            jmsAdapterPlanEntries
+         end
+      end
+
+
+
+      ftpAdapterPlan = ""
+      ftpAdapterPlanEntries = ""
+      root.elements.each("app-deployment[name = 'FtpAdapter']") do |apps|
+        unless apps.elements['plan-dir'].nil?
+          ftpAdapterPlan += apps.elements['plan-dir'].text + "/" + apps.elements['plan-path'].text 
+
+          subfile = File.read( ftpAdapterPlan )
+          subdoc = REXML::Document.new subfile
+
+          planroot = subdoc.root
+          planroot.elements["variable-definition"].elements.each("variable") do |eis| 
+            ftpAdapterPlanEntries +=  eis.elements["value"].text + ";"
+          end
+
+
+        end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_ftpadapter_plan") do
+         setcode do
+            ftpAdapterPlan
+         end
+      end
+
+      Facter.add("ora_mdw_#{i}_domain_#{n}_eis_ftpadapter_entries") do
+         setcode do
+            ftpAdapterPlanEntries
+         end
+      end
+
+
+
       libraries = ""
       root.elements.each("library") do |libs|
         libraries += libs.elements['name'].text + ";"

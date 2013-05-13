@@ -51,6 +51,28 @@ module Puppet::Parser::Functions
                       end
                     end
                   end
+                elsif type == 'resource'
+                  adapter = args[2].strip.downcase
+                  plan = args[3].strip.downcase
+
+                  if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_plan') != :undefined
+                    planValue =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_plan')
+                    if planValue.strip.downcase == plan
+                      return true
+                    end
+                  end
+                elsif type == 'resource_entry'
+                  adapter = args[2].strip.downcase
+                  entry = args[3].strip
+
+                  if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_entries') != :undefined
+                    planEntries =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_entries')
+                    unless planEntries.nil?
+                      if planEntries.include? entry
+                        return true
+                      end
+                    end
+                  end
                 elsif type == 'deployments'
                   if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_deployments') != :undefined
                     deployments =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_deployments')
