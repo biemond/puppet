@@ -1,55 +1,58 @@
 # == Define: wls::resourceadapter
 #
 # generic resourceadapter wlst script  
-#
+#    adds a new plan to the jca resource adapter
+#    adds a new entry to the plan
 #
 # === Examples
 #  
 #
 #  wls::resourceadapter{
 #   'DbAdapter_hr':
-#    wlHome        => "/opt/oracle/wls/wls11g/wlserver_10.3",
-#    fullJDKName   => $jdkWls11gJDK,
-#    domain        => 'osbSoaDomain', 
-#    adapterName   => 'dbadapter' ,
-#    adapterPlan   => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_DB.xml' ,
-#    adapterEntry  => 'eis/DB/initial',
-#    address       => "localhost",
-#    port          => "7001",
-#    wlsUser       => "weblogic",
-#    password      => "weblogic1",
-#    user          => 'oracle',
-#    group         => 'dba',
-#    downloadDir   => "/install/",
+#    wlHome         => "/opt/oracle/wls/wls11g/wlserver_10.3",
+#    fullJDKName    => $jdkWls11gJDK,
+#    domain         => 'osbSoaDomain', 
+#    adapterName    => 'DbAdapter' ,  or 'AqAdapter' or 'JmsAdapter'
+#    adapterPlanDir => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors' ,
+#    adapterPlan    => 'Plan_DB.xml' ,
+#    adapterEntry   => 'eis/DB/initial',
+#    address        => "localhost",
+#    port           => "7001",
+#    wlsUser        => "weblogic",
+#    password       => "weblogic1",
+#    user           => 'oracle',
+#    group          => 'dba',
+#    downloadDir    => "/install/",
 #  }
 #
 #
 # 
 
-define wls::resourceadapter( $wlHome        = undef, 
-                             $fullJDKName   = undef, 
-                             $domain        = undef, 
-                             $adapterName   = undef,
-                             $adapterPlan   = undef,
-                             $adapterEntry  = undef,
-                             $address       = "localhost",
-                             $port          = '7001',
-                             $wlsUser       = "weblogic",
-                             $password      = "weblogic1",
+define wls::resourceadapter( $wlHome         = undef, 
+                             $fullJDKName    = undef, 
+                             $domain         = undef, 
+                             $adapterName    = undef,
+                             $adapterPlanDir = undef,
+                             $adapterPlan    = undef,
+                             $adapterEntry   = undef,
+                             $address        = "localhost",
+                             $port           = '7001',
+                             $wlsUser        = "weblogic",
+                             $password       = "weblogic1",
                              $userConfigFile = undef,
                              $userKeyFile    = undef,
-                             $user          = 'oracle', 
-                             $group         = 'dba',
-                             $downloadDir   = '/install/',
+                             $user           = 'oracle', 
+                             $group          = 'dba',
+                             $downloadDir    = '/install/',
                             ) {
 
 
    # if these params are empty always continue    
-   if $domain == undef or $adapterName == undef or $adapterPlan == undef {
-     fail("domain, adaptername or adapterplan is nill") 
+   if $domain == undef or $adapterName == undef or $adapterPlanDir == undef or $adapterPlan == undef {
+     fail("domain, adaptername,adapterPlanDir or adapterplan is nill") 
    } else {
      # check if the object already exists on the weblogic domain 
-     $found = artifact_exists($domain ,"resource",$adapterName,$adapterPlan )
+     $found = artifact_exists($domain ,"resource",$adapterName,"${adapterPlanDir}/${adapterPlan}" )
      if $found == undef {
        $continuePlan = true
          notify {"wls::resourceadapter ${title} continue cause nill":}
@@ -69,7 +72,7 @@ define wls::resourceadapter( $wlHome        = undef,
      fail("domain, adaptername or adapterEntry is nill") 
    } else {
      # check if the object already exists on the weblogic domain 
-     $foundEntry = artifact_exists($domain ,'resource_entry',$adapterName,$adapterEntry )
+     $foundEntry = artifact_exists($domain ,'resource_entry',"${adapterPlanDir}/${adapterPlan}",$adapterEntry )
      if $foundEntry == undef {
        $continueEntry = true
          notify {"wls::resourceadapter entry ${adapterEntry} ${title} continue cause nill":}
@@ -96,8 +99,6 @@ define wls::resourceadapter( $wlHome        = undef,
 
 
 
-   $javaCommand    = "java -Dweblogic.management.confirmKeyfileCreation=true -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
-
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
@@ -112,8 +113,7 @@ define wls::resourceadapter( $wlHome        = undef,
              }
         File {
                ensure  => present,
-               replace => 'yes',
-               mode    => 0555,
+               mode    => 0744,
                owner   => $user,
                group   => $group,
              }     
@@ -129,53 +129,68 @@ define wls::resourceadapter( $wlHome        = undef,
                logoutput => true,
              }
         File { ensure  => present,
-               replace => 'yes',
                mode    => 0777,
              }     
      }
    }
 
+# lets make the a new plan for this adapter
 if ( $continuePlan ) {
+
+  # download the plan and put it on the right place
+  if $adapterName == 'DbAdapter' {
+    file { "${adapterPlanDir}/${adapterPlan}":
+            path    => "${adapterPlanDir}/${adapterPlan}",
+            content => template("wls/adapter_plans/Plan_DB.xml.erb"),
+            before  => Exec["exec deployer adapter plan ${title}"],
+    }
+  } elsif $adapterName == 'JmsAdapter' {
+    file { "${adapterPlanDir}/${adapterPlan}":
+            path    => "${adapterPlanDir}/${adapterPlan}",
+            content => template("wls/adapter_plans/Plan_JMS.xml.erb"),
+            before  => Exec["exec deployer adapter plan ${title}"],
+    }
+  } elsif $adapterName == 'AqAdapter' {
+    file { "${adapterPlanDir}/${adapterPlan}":
+            path    => "${adapterPlanDir}/${adapterPlan}",
+            content => template("wls/adapter_plans/Plan_AQ.xml.erb"),
+            before  => Exec["exec deployer adapter plan ${title}"],
+    }
+  } else {
+  	fail("adaptername ${adapterName} is unknown, choose for DbAdapter,JmsAdapter or AqAdapter ") 
+  }
     
-   # the py script used by the wlst
-#   file { "${path}${title}storeUserConfig.py":
-#      path    => "${path}${title}storeUserConfig.py",
-#      content => template("wls/wlst/storeUserConfig.py.erb"),
-#   }
+   $javaCommand    = "java weblogic.Deployer"
+
+   # are we using credentials or using the WLST userConfig file 
+   if $userConfigFile != undef {
+     $credentials =   " -userconfigfile ${userConfigFile} -userkeyfile ${userKeyFile}"  	
+   } elsif $wlsUser != undef {
+     $credentials =   " -user ${wlsUser} -password ${password}"  	
+   } else {
+  	 fail("userConfigFile or wlsUser parameter is empty ") 
+   }
+
      
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
-#        exec { "execwlst ${title}storeUserConfig.py":
-#          command     => "${javaCommand} ${path}${title}storeUserConfig.py",
-#          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-#                          "JAVA_HOME=${JAVA_HOME}",
-#                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-#          unless      => "ls -l ${userConfigDir}/${user}-${$domain}-WebLogicConfig.properties",
-#          require     => File["${path}${title}storeUserConfig.py"],
-#        }    
-#
-#        exec { "rm ${path}${title}storeUserConfig.py":
-#           command => "rm -I ${path}${title}storeUserConfig.py",
-#           require => Exec["execwlst ${title}storeUserConfig.py"],
-#        }
-#
+        # deploy the plan and update the adapter  
+        exec { "exec deployer adapter plan ${title}":
+          command     => "${javaCommand} -adminurl t3://${address}:${port} ${credentials} -update -name ${adapterName} -plan ${adapterPlanDir}/${adapterPlan}",
+          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+                          "JAVA_HOME=${JAVA_HOME}",
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+        }    
+
      }
      windows: { 
-
-#        exec { "execwlst ${title}storeUserConfig.py":
-#          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}${title}storeUserConfig.py",
-#          unless      => "dir ${userConfigDir}/${user}-${$domain}-WebLogicConfig.properties",
-#          require     => File["${path}${title}storeUserConfig.py"],
-#          environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
-#                          "JAVA_HOME=${JAVA_HOME}"],
-#        }    
-#
-#
-#        exec { "rm ${path}${title}storeUserConfig.py":
-#           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}storeUserConfig.py",
-#           require => Exec["execwlst ${title}storeUserConfig.py"],
-#        }
+        # deploy the plan and update the adapter  
+        exec { "exec deployer adapter plan ${title}":
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} -adminurl t3://${address}:${port} ${credentials} -update -name ${adapterName} -plan ${adapterPlanDir}/${adapterPlan}",
+          environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
+                          "JAVA_HOME=${JAVA_HOME}"],
+        }    
      }
    }
 
@@ -183,7 +198,7 @@ if ( $continuePlan ) {
 
 }
 
-
+# after deployment of the plan we can add a new entry to the adapter  
 if ( $continueEntry ) {
 
 }
