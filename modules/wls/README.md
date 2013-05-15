@@ -8,6 +8,7 @@ created by Edwin Biemond
 Version updates
 ---------------
 
+- 0.9.4 add a JCA resource adapter plan for AQ,JMS & DB plus add AQ,JMS,DB resource adapter entries   
 - 0.9.3 added storeUserConfig(WLST), this way don't need to provide username/password for the wlst scripts plus small bug fixes in check_artifacts   
 - 0.9.2 added (FMW & WLS ) log folder location to the domain and nodemanager   
 
@@ -50,6 +51,8 @@ WLS WebLogic Features
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 
 - can start the AdminServer for configuration 
+- add JCA resource adapter plan
+- add JCA resource adapter entries
 - create File or JDBC Persistence Store
 - create JMS Server
 - create JMS Module
@@ -101,6 +104,13 @@ Contains WebLogic Facter which displays the following
         
     Domain 0
         ora_mdw_0_domain_0  osbDomain
+    Resource adapter
+        ora_mdw_0_domain_0_eis_aqadapter_entries   eis/AQ/initial;eis/AQ/hr;
+        ora_mdw_0_domain_0_eis_aqadapter_plan	     /opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_AQ.xml
+        ora_mdw_0_domain_0_eis_dbadapter_entries	 eis/DB/initial;eis/DB/hr;
+        ora_mdw_0_domain_0_eis_dbadapter_plan	     /opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_DB.xml
+        ora_mdw_0_domain_0_eis_jmsadapter_entries	 eis/JMS/initial;eis/JMS/hr;
+        ora_mdw_0_domain_0_eis_jmsadapter_plan	   /opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_JMS.xml
     Deployments
         ora_mdw_0_domain_0_deployments  FMW Welcome Page Application#11.1.0.0.0
         ora_mdw_0_domain_0_filestores FileStore;WseeFileStore;jmsModuleFilePersistence;
@@ -1553,6 +1563,55 @@ WebLogic configuration examples
                           ],
       }
     
+      wls::resourceadapter{
+       'DbAdapter_hr':
+        wlHome         => $osWlHome,
+        fullJDKName    => $jdkWls11gJDK,
+        domain         => $wlsDomainName, 
+        adapterName          => 'DbAdapter' ,
+        adapterPath          => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/DbAdapter.rar',
+        adapterPlanDir       => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors' ,
+        adapterPlan          => 'Plan_DB.xml' ,
+        adapterEntry         => 'eis/DB/hr',
+        adapterEntryProperty => 'xADataSourceName',
+        adapterEntryValue    => 'jdbc/hrDS',
+        address        => "localhost",
+        port           => "7001",
+    #    wlsUser       => "weblogic",
+    #    password      => "weblogic1",
+        userConfigFile => $userConfigFile,
+        userKeyFile    => $userKeyFile,
+        user           => $user,
+        group          => $group,
+        downloadDir    => $downloadDir,
+        require        => Wls::Wlstexec['createJdbcDatasourceHr'];
+      }
+    
+      wls::resourceadapter{
+       'AqAdapter_hr':
+        wlHome         => $osWlHome,
+        fullJDKName    => $jdkWls11gJDK,
+        domain         => $wlsDomainName, 
+        adapterName          => 'AqAdapter' ,
+        adapterPath          => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/AqAdapter.rar',
+        adapterPlanDir       => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors' ,
+        adapterPlan          => 'Plan_AQ.xml' ,
+        adapterEntry         => 'eis/AQ/hr',
+        adapterEntryProperty => 'xADataSourceName',
+        adapterEntryValue    => 'jdbc/hrDS',
+        address        => "localhost",
+        port           => "7001",
+        wlsUser        => "weblogic",
+        password       => "weblogic1",
+    #    userConfigFile => $userConfigFile,
+    #    userKeyFile    => $userKeyFile,
+        user           => $user,
+        group          => $group,
+        downloadDir    => $downloadDir,
+        require        => Wls::Resourceadapter['DbAdapter_hr'];
+      }
+    
+    
     }  
     
     
@@ -1750,6 +1809,31 @@ WebLogic configuration examples
          require     => Wls::Wlstexec['createJmsSubDeploymentWLSforJmsModule2'];
       }
     
+      wls::resourceadapter{
+       'JmsAdapter_hr':
+        wlHome         => $osWlHome,
+        fullJDKName    => $jdkWls11gJDK,
+        domain         => $wlsDomainName, 
+        adapterName          => 'JmsAdapter' ,
+        adapterPath          => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/JmsAdapter.rar',
+        adapterPlanDir       => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors' ,
+        adapterPlan          => 'Plan_JMS.xml' ,
+        adapterEntry         => 'eis/JMS/cf',
+        adapterEntryProperty => 'ConnectionFactoryLocation',
+        adapterEntryValue    => 'jms/cf',
+        address        => "localhost",
+        port           => "7001",
+    #    wlsUser       => "weblogic",
+    #    password      => "weblogic1",
+        userConfigFile => $userConfigFile,
+        userKeyFile    => $userKeyFile,
+        user           => $user,
+        group          => $group,
+        downloadDir    => $downloadDir,
+        require        => Wls::Wlstexec['createJmsConnectionFactoryforJmsModule'];
+      }
+    
+    
     
       # create jms error Queue for jms module 
       wls::wlstexec { 
@@ -1770,7 +1854,7 @@ WebLogic configuration examples
                           "policy            = 'xxxxx'",
                           "errorObject       = 'xxxxx'"
                           ],
-         require     => Wls::Wlstexec['createJmsConnectionFactoryforJmsModule'];
+         require     => Wls::Resourceadapter['JmsAdapter_hr'];
       }
     
       # create jms Queue for jms module 
@@ -1894,8 +1978,4 @@ WebLogic configuration examples
     
     }
     
-    
-    
-    
-    
-                            
+                                

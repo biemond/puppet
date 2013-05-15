@@ -13,9 +13,12 @@
 #    fullJDKName    => $jdkWls11gJDK,
 #    domain         => 'osbSoaDomain', 
 #    adapterName    => 'DbAdapter' ,  or 'AqAdapter' or 'JmsAdapter'
+#    adapterPath    => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/DbAdapter.rar'
 #    adapterPlanDir => '/opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors' ,
 #    adapterPlan    => 'Plan_DB.xml' ,
 #    adapterEntry   => 'eis/DB/initial',
+#    adapterEntryProperty => 'xADataSourceName',  or 'dataSourceName' or 'ConnectionFactoryLocation' (jms)
+#    adapterEntryValue    => 'jdbc/hrDS',
 #    address        => "localhost",
 #    port           => "7001",
 #    wlsUser        => "weblogic",
@@ -32,9 +35,12 @@ define wls::resourceadapter( $wlHome         = undef,
                              $fullJDKName    = undef, 
                              $domain         = undef, 
                              $adapterName    = undef,
+                             $adapterPath    = undef,
                              $adapterPlanDir = undef,
                              $adapterPlan    = undef,
                              $adapterEntry   = undef,
+                             $adapterEntryProperty = undef,
+                             $adapterEntryValue    = undef,
                              $address        = "localhost",
                              $port           = '7001',
                              $wlsUser        = "weblogic",
@@ -72,7 +78,7 @@ define wls::resourceadapter( $wlHome         = undef,
      fail("domain, adaptername or adapterEntry is nill") 
    } else {
      # check if the object already exists on the weblogic domain 
-     $foundEntry = artifact_exists($domain ,'resource_entry',"${adapterPlanDir}/${adapterPlan}",$adapterEntry )
+     $foundEntry = artifact_exists($domain ,"resource_entry",$adapterName,$adapterEntry )
      if $foundEntry == undef {
        $continueEntry = true
          notify {"wls::resourceadapter entry ${adapterEntry} ${title} continue cause nill":}
@@ -86,16 +92,6 @@ define wls::resourceadapter( $wlHome         = undef,
        }
      }
    }
-
-
-
-   # use userConfigStore for the connect
-	 if $password == undef {
-     $useStoreConfig = true  
-   } else {	
-     $useStoreConfig = false  
-   }
-
 
 
 
@@ -134,6 +130,20 @@ define wls::resourceadapter( $wlHome         = undef,
      }
    }
 
+   # are we using credentials or using the WLST userConfig file 
+   if $userConfigFile != undef {
+     $credentials    =   " -userconfigfile ${userConfigFile} -userkeyfile ${userKeyFile}"  	
+     $useStoreConfig = true 
+   } elsif $wlsUser != undef {
+     $credentials =   " -user ${wlsUser} -password ${password}"  	
+     $useStoreConfig = false
+   } else {
+  	 fail("userConfigFile or wlsUser parameter is empty ") 
+   }
+
+
+
+
 # lets make the a new plan for this adapter
 if ( $continuePlan ) {
 
@@ -161,16 +171,6 @@ if ( $continuePlan ) {
   }
     
    $javaCommand    = "java weblogic.Deployer"
-
-   # are we using credentials or using the WLST userConfig file 
-   if $userConfigFile != undef {
-     $credentials =   " -userconfigfile ${userConfigFile} -userkeyfile ${userKeyFile}"  	
-   } elsif $wlsUser != undef {
-     $credentials =   " -user ${wlsUser} -password ${password}"  	
-   } else {
-  	 fail("userConfigFile or wlsUser parameter is empty ") 
-   }
-
      
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -200,6 +200,88 @@ if ( $continuePlan ) {
 
 # after deployment of the plan we can add a new entry to the adapter  
 if ( $continueEntry ) {
+
+  if $adapterName == 'DbAdapter' or $adapterName == 'AqAdapter'  {
+     $connectionFactoryInterface='javax.resource.cci.ConnectionFactory'
+
+  } elsif $adapterName == 'JmsAdapter' {
+     $connectionFactoryInterface='oracle.tip.adapter.jms.IJmsConnectionFactory'
+  } 
+
+   $javaCommandPlan = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
+
+   file { "${path}${title}redeployResourceAdapter.py":
+            path    => "${path}${title}redeployResourceAdapter.py",
+            content => template("wls/wlst/redeployResourceAdapter.py.erb"),
+            before  => Exec["exec redeploy adapter plan ${title}"],
+   }    
+
+   file { "${path}${title}createResourceAdapterEntry.py":
+            path    => "${path}${title}createResourceAdapterEntry.py",
+            content => template("wls/wlst/createResourceAdapterEntry.py.erb"),
+            before  => Exec["exec create resource adapter entry ${title}"],
+   }    
+
+
+   case $operatingsystem {
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+
+        # deploy the plan and update the adapter  
+        exec { "exec create resource adapter entry ${title}":
+          command     => "${javaCommandPlan} ${path}${title}createResourceAdapterEntry.py",
+          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+                          "JAVA_HOME=${JAVA_HOME}",
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+        }    
+
+        # deploy the plan and update the adapter  
+        exec { "exec redeploy adapter plan ${title}":
+          command     => "${javaCommandPlan} ${path}${title}redeployResourceAdapter.py",
+          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
+                          "JAVA_HOME=${JAVA_HOME}",
+                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+          require  => Exec["exec create resource adapter entry ${title}"],
+        }    
+        exec { "rm ${path}${title}createResourceAdapterEntry.py":
+           command => "rm -I ${path}${title}createResourceAdapterEntry.py",
+           require  => Exec["exec create resource adapter entry ${title}"],
+        }
+
+        exec { "rm ${path}${title}redeployResourceAdapter.py":
+           command => "rm -I ${path}${title}redeployResourceAdapter.py",
+           require => Exec["exec redeploy adapter plan ${title}"],
+        }
+
+
+     }
+     windows: { 
+        # deploy the plan and update the adapter  
+        exec { "exec create resource adapter entry ${title}":
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommandPlan} ${path}${title}createResourceAdapterEntry.py",
+          environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
+                          "JAVA_HOME=${JAVA_HOME}"],
+        }    
+
+        # deploy the plan and update the adapter  
+        exec { "exec redeploy adapter plan ${title}":
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommandPlan} ${path}${title}redeployResourceAdapter.py",
+          environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
+                          "JAVA_HOME=${JAVA_HOME}"],
+          require  => Exec["exec create resource adapter entry ${title}"],
+        }    
+        exec { "rm ${path}${title}createResourceAdapterEntry.py":
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}createResourceAdapterEntry.py",
+           require  => Exec["exec create resource adapter entry ${title}"],
+        }
+
+        exec { "rm ${path}${title}redeployResourceAdapter.py":
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}redeployResourceAdapter.py",
+           require => Exec["exec redeploy adapter plan ${title}"],
+        }
+
+     }
+   }
+
 
 }
 

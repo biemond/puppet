@@ -207,7 +207,10 @@ def get_domain(name,i)
 
           planroot = subdoc.root
           planroot.elements["variable-definition"].elements.each("variable") do |eis| 
-            fileAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            entry = eis.elements["value"].text 
+            if entry.include? "eis"
+              fileAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            end  
           end
 
         end   
@@ -237,7 +240,10 @@ def get_domain(name,i)
 
           planroot = subdoc.root
           planroot.elements["variable-definition"].elements.each("variable") do |eis| 
-            dbAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            entry = eis.elements["value"].text 
+            if entry.include? "eis"
+              dbAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            end  
           end
 
 
@@ -269,7 +275,10 @@ def get_domain(name,i)
 
           planroot = subdoc.root
           planroot.elements["variable-definition"].elements.each("variable") do |eis| 
-            aqAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            entry = eis.elements["value"].text 
+            if entry.include? "eis"
+              aqAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            end  
           end
         end
       end
@@ -298,9 +307,11 @@ def get_domain(name,i)
 
           planroot = subdoc.root
           planroot.elements["variable-definition"].elements.each("variable") do |eis| 
-            jmsAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            entry = eis.elements["value"].text 
+            if entry.include? "eis"
+              jmsAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            end  
           end
-
 
         end
       end
@@ -330,7 +341,10 @@ def get_domain(name,i)
 
           planroot = subdoc.root
           planroot.elements["variable-definition"].elements.each("variable") do |eis| 
-            ftpAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            entry = eis.elements["value"].text 
+            if entry.include? "eis"
+              ftpAdapterPlanEntries +=  eis.elements["value"].text + ";"
+            end  
           end
 
 
