@@ -76,12 +76,16 @@ WLS WebLogic Features
 - installs Oracle JDeveloper 11g + soa suite plugin
 
 - configures + starts nodemanager
+- storeUserConfig for storing credentials and using in WLST
 
 - domain creation + domain pack
 - domain OSB creation + domain pack
 - domain OSB + SOA creation + domain pack
+- set the log folder of the WebLogic Domain, Managed servers and FMW   
 
 - can start the AdminServer for configuration 
+- add JCA resource adapter plan
+- add JCA resource adapter entries
 - create File or JDBC Persistence Store
 - create JMS Server
 - create JMS Module
@@ -97,6 +101,7 @@ WLS WebLogic Features
 - create Foreign Servers entries
 - run every wlst script with the flexible WLST define
 - deploy an OSB project to the OSB server
+
 
 
 Oracle WebLogic orautils puppet module
