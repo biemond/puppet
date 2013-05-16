@@ -4,5 +4,4 @@
 #
 class jrockit () {
 
-    notify {"init.pp":}
 }
