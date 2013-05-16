@@ -1,0 +1,8 @@
+name 'biemond-jrockit'
+version '0.1.1'
+author 'Ronald Hatcher'
+summary 'Oracle JRockit puppet module'
+source 'https://github.com/biemond/puppet/tree/master/modules/jrockit'
+description "Oracle JRockit puppet module"
+project_page 'http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/'
+license 'GNU General Public License version 3 of the License'
