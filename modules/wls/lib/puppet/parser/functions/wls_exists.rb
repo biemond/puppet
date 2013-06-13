@@ -9,7 +9,7 @@ module Puppet::Parser::Functions
     # check the middleware home
     mdw_count = lookupvar('ora_mdw_cnt')
     if mdw_count.nil?
-      return art_exists
+      return wls_exists
     else
       # check the all mdw home
       i = 0
