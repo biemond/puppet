@@ -110,8 +110,8 @@ if ( $continue ) {
    }
 
    # the patch used by the bsu
-   if ! defined(File["${path}${patchFile}"]) {
-    file { "${path}${patchFile}":
+   if ! defined(File["${path}/${patchFile}"]) {
+    file { "${path}/${patchFile}":
      source  => "${mountPoint}/${patchFile}",
      require => File ["${mdwHome}/utils/bsu/cache_dir"],
     }
@@ -126,8 +126,8 @@ if ( $continue ) {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "extract ${patchFile}":
-          command => "unzip -n ${path}${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
-          require => File ["${path}${patchFile}"],
+          command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
+          require => File ["${path}/${patchFile}"],
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
         }
         
@@ -147,11 +147,11 @@ if ( $continue ) {
            command    => "${checkCommand} icacls ${mdwHome}/utils/bsu/cache_dir /T /C /grant Administrator:F Administrators:F",
 #           unless     => "${checkCommand} test -e ${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
            logoutput  => false,
-           require    => File ["${path}${patchFile}"],
+           require    => File ["${path}/${patchFile}"],
         } 
 
         exec { "extract ${patchFile} ${title}":
-          command => "jar.exe xf ${path}${patchFile}",
+          command => "jar.exe xf ${path}/${patchFile}",
           cwd     => "${mdwHome}/utils/bsu/cache_dir",
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
           require => Exec["icacls win patchfile ${title}"],

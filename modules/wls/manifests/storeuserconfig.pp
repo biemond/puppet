@@ -78,8 +78,8 @@ define wls::storeuserconfig( $wlHome        = undef,
    }
     
    # the py script used by the wlst
-   file { "${path}${title}storeUserConfig.py":
-      path    => "${path}${title}storeUserConfig.py",
+   file { "${path}/${title}storeUserConfig.py":
+      path    => "${path}/${title}storeUserConfig.py",
       content => template("wls/wlst/storeUserConfig.py.erb"),
    }
      
@@ -87,16 +87,16 @@ define wls::storeuserconfig( $wlHome        = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "execwlst ${title}storeUserConfig.py":
-          command     => "${javaCommand} ${path}${title}storeUserConfig.py",
+          command     => "${javaCommand} ${path}/${title}storeUserConfig.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "ls -l ${userConfigDir}/${user}-${$domain}-WebLogicConfig.properties",
-          require     => File["${path}${title}storeUserConfig.py"],
+          require     => File["${path}/${title}storeUserConfig.py"],
         }    
 
-        exec { "rm ${path}${title}storeUserConfig.py":
-           command => "rm -I ${path}${title}storeUserConfig.py",
+        exec { "rm ${path}/${title}storeUserConfig.py":
+           command => "rm -I ${path}/${title}storeUserConfig.py",
            require => Exec["execwlst ${title}storeUserConfig.py"],
         }
 
@@ -104,16 +104,16 @@ define wls::storeuserconfig( $wlHome        = undef,
      windows: { 
 
         exec { "execwlst ${title}storeUserConfig.py":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}${title}storeUserConfig.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/${title}storeUserConfig.py",
           unless      => "dir ${userConfigDir}/${user}-${$domain}-WebLogicConfig.properties",
-          require     => File["${path}${title}storeUserConfig.py"],
+          require     => File["${path}/${title}storeUserConfig.py"],
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
         }    
 
 
-        exec { "rm ${path}${title}storeUserConfig.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}storeUserConfig.py",
+        exec { "rm ${path}/${title}storeUserConfig.py":
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}storeUserConfig.py",
            require => Exec["execwlst ${title}storeUserConfig.py"],
         }
      }

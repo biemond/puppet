@@ -150,8 +150,8 @@ if ( $continue ) {
 
     
    # the py script used by the wlst
-   file { "${path}${title}${script}":
-      path    => "${path}${title}${script}",
+   file { "${path}/${title}${script}":
+      path    => "${path}/${title}${script}",
       content => template("wls/wlst/${script}.erb"),
    }
      
@@ -159,15 +159,15 @@ if ( $continue ) {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "execwlst ${title}${script}":
-          command     => "${javaCommand} ${path}${title}${script}",
+          command     => "${javaCommand} ${path}/${title}${script}",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          require     => File["${path}${title}${script}"],
+          require     => File["${path}/${title}${script}"],
         }    
 
-        exec { "rm ${path}${title}${script}":
-           command => "rm -I ${path}${title}${script}",
+        exec { "rm ${path}/${title}${script}":
+           command => "rm -I ${path}/${title}${script}",
            require => Exec["execwlst ${title}${script}"],
         }
 
@@ -175,15 +175,15 @@ if ( $continue ) {
      windows: { 
 
         exec { "execwlst ${title}${script}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}${title}${script}",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/${title}${script}",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-          require     => File["${path}${title}${script}"],
+          require     => File["${path}/${title}${script}"],
         }    
 
 
         exec { "rm ${path}${title}${script}":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}${script}",
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}${script}",
            require => Exec["execwlst ${title}${script}"],
         }
      }

@@ -1,5 +1,5 @@
 name 'biemond-wls'
-version '0.9.4'
+version '0.9.5'
 author 'Edwin Biemond'
 summary 'Oracle WebLogic / Fusion Middleware ( OSB, SOA Suite ) puppet module'
 source 'https://github.com/biemond/puppet/tree/master/modules/wls'

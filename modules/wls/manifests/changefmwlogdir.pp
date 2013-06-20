@@ -89,8 +89,8 @@ define wls::changefmwlogdir ($mdwHome        = undef,
    }
    
    # the py script used by the wlst
-   file { "${path}${title}changeFMWLogFolder.py":
-      path    => "${path}${title}changeFMWLogFolder.py",
+   file { "${path}/${title}changeFMWLogFolder.py":
+      path    => "${path}/${title}changeFMWLogFolder.py",
       content => template("wls/wlst/changeFMWLogFolder.py.erb"),
    }
      
@@ -98,14 +98,14 @@ define wls::changefmwlogdir ($mdwHome        = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "execwlst ${title}changeFMWLogFolder.py":
-          command     => "${mdwHome}/oracle_common/common/bin/wlst.sh ${path}${title}changeFMWLogFolder.py",
+          command     => "${mdwHome}/oracle_common/common/bin/wlst.sh ${path}/${title}changeFMWLogFolder.py",
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "ls -l ${logDir}/${wlsServer}-diagnostic.log",
-          require     => File["${path}${title}changeFMWLogFolder.py"],
+          require     => File["${path}/${title}changeFMWLogFolder.py"],
         }    
 
-        exec { "rm ${path}${title}changeFMWLogFolder.py":
-           command => "rm -I ${path}${title}changeFMWLogFolder.py",
+        exec { "rm ${path}/${title}changeFMWLogFolder.py":
+           command => "rm -I ${path}/${title}changeFMWLogFolder.py",
            require => Exec["execwlst ${title}changeFMWLogFolder.py"],
         }
 
@@ -113,14 +113,14 @@ define wls::changefmwlogdir ($mdwHome        = undef,
      windows: { 
 
         exec { "execwlst ${title}changeFMWLogFolder.py":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${mdwHome}/oracle_common/common/bin/wlst.cmd ${path}${title}changeFMWLogFolder.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${mdwHome}/oracle_common/common/bin/wlst.cmd ${path}/${title}changeFMWLogFolder.py",
           unless      => "dir ${logDir}\\${wlsServer}-diagnostic.log",
-          require     => File["${path}${title}changeFMWLogFolder.py"],
+          require     => File["${path}/${title}changeFMWLogFolder.py"],
         }    
 
 
-        exec { "rm ${path}${title}changeFMWLogFolder.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}changeFMWLogFolder.py",
+        exec { "rm ${path}/${title}changeFMWLogFolder.py":
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}changeFMWLogFolder.py",
            require => Exec["execwlst ${title}changeFMWLogFolder.py"],
         }
      }

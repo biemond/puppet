@@ -1,7 +1,7 @@
 # == Define: wls::wlsdomain
 #
 # install a new weblogic domain  
-# support a normal WebLogic Domain , OSB and OSB plus SOA
+# support a normal WebLogic Domain , OSB , OSB plus SOA, OSB plus SOA & BPM , ADF 
 # use parameter wlsTemplate to control this
 #
 # === Examples
@@ -41,7 +41,7 @@
 #  Wls::Wlsdomain {
 #    wlHome       => $osWlHome,
 #    mdwHome      => $osMdwHome,
-#    fullJDKName  => $jdkWls11gJDK,	
+#    fullJDKName  => $jdkWls11gJDK, 
 #    user         => $user,
 #    group        => $group,    
 #  }
@@ -121,6 +121,7 @@ if ( $continue ) {
    $templateSOAAdapters  = "${mdwHome}/Oracle_OSB1/common/templates/applications/oracle.soa.common.adapters_template_11.1.1.jar"
 
    $templateSOA          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.soa_template_11.1.1.jar"
+   $templateBPM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bpm_template_11.1.1.jar"
 
    $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
    $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
@@ -136,6 +137,12 @@ if ( $continue ) {
 
    } elsif $wlsTemplate == 'osb_soa' {
       $templateFile  = "wls/domain_osb_soa.xml.erb"
+
+   } elsif $wlsTemplate == 'adf' {
+      $templateFile  = "wls/domain_adf.xml.erb"
+
+   } elsif $wlsTemplate == 'osb_soa_bpm' {
+      $templateFile  = "wls/domain_osb_soa_bpm.xml.erb"
 
    } else {
       $templateFile  = "wls/domain.xml.erb"
@@ -202,7 +209,7 @@ if ( $continue ) {
     
    # the domain.py used by the wlst
    file { "domain.py ${domain} ${title}":
-     path    => "${path}domain_${domain}.py",
+     path    => "${path}/domain_${domain}.py",
      content => template($templateFile),
    }
 
@@ -239,7 +246,7 @@ if ( $continue ) {
 
 
    $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
-	 $packCommand    = "-domain=${domainPath}/${domain} -template=${path}domain_${domain}.jar -template_name=domain_${domain} -log=${path}domain_${domain}.log -log_priority=INFO" 	
+   $packCommand    = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -template_name=domain_${domain} -log=${path}/domain_${domain}.log -log_priority=INFO"  
 
 
     
@@ -247,7 +254,7 @@ if ( $continue ) {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
         
         exec { "execwlst ux ${domain} ${title}":
-          command     => "${javaCommand} ${path}domain_${domain}.py",
+          command     => "${javaCommand} ${path}/domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
@@ -257,13 +264,13 @@ if ( $continue ) {
         }    
 
         exec { "setDebugFlagOnFalse ${domain} ${title}":
-        	command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
+          command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
           onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
           require => Exec["execwlst ux ${domain} ${title}"],
         }
 
         exec { "domain.py ${domain} ${title}":
-           command     => "rm -I ${path}domain_${domain}.py",
+           command     => "rm -I ${path}/domain_${domain}.py",
            require     => Exec["execwlst ux ${domain} ${title}"],
         }
 
@@ -279,7 +286,7 @@ if ( $continue ) {
         notify{"${domainPath}/${domain} ${title}":}
         
         exec { "execwlst win ${domain} ${title}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}domain_${domain}.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           creates     => "${domainPath}/${domain}",
@@ -294,7 +301,7 @@ if ( $continue ) {
         } 
 
         exec { "domain.py ${domain} ${title}":
-           command     => "C:\\Windows\\System32\\cmd.exe /c del ${path}domain_${domain}.py",
+           command     => "C:\\Windows\\System32\\cmd.exe /c del ${path}/domain_${domain}.py",
            subscribe   => Exec["icacls domain ${title}${script}"],
            refreshonly => true,
           }
