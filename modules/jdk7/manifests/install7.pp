@@ -41,9 +41,9 @@ define jdk7::install7( $version     =  "7u17" ,
     }
     
     # download jdk to client
-    if ! defined(File["${downloadDir}${jdkfile}"]) {
-     file {"${downloadDir}${jdkfile}":
-        path    => "${downloadDir}${jdkfile}",
+    if ! defined(File["${downloadDir}/${jdkfile}"]) {
+     file {"${downloadDir}/${jdkfile}":
+        path    => "${downloadDir}/${jdkfile}",
         ensure  => present,
         source  => "puppet:///modules/jdk7/${jdkfile}",
         require => File[$downloadDir],
@@ -56,6 +56,6 @@ define jdk7::install7( $version     =  "7u17" ,
           jdkfile     => $jdkfile,
           user        => $user,
           group       => $group,
-          require     => File["${downloadDir}${jdkfile}"],
+          require     => File["${downloadDir}/${jdkfile}"],
     }
 }

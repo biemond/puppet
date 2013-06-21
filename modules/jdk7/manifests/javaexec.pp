@@ -36,7 +36,7 @@ define javaexec ($path        = undef,
       # extract gz file in /usr/java
       exec { "extract java ${fullversion}":
         cwd     => "${javaInstall}",
-        command => "tar -xzf ${path}${jdkfile}",
+        command => "tar -xzf ${path}/${jdkfile}",
         creates => "${javaInstall}/${fullversion}",
         require => File[$javaInstall],
       }
