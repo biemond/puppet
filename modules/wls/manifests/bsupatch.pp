@@ -9,7 +9,7 @@
 #    $wls11gVersion = "1036"
 # 
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, Ubuntu, debian: { 
+#     centos, redhat, OracleLinux, Ubuntu, Debian: { 
 #       $osMdwHome    = "/opt/oracle/wls/wls11g"
 #       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
 #       $user         = "oracle"
@@ -50,6 +50,23 @@ define wls::bsupatch($mdwHome         = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin'
+        $path            = $downloadDir
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }        
+     }
+     Solaris: { 
+
+        $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/jdk/${fullJDKName}/bin/amd64'
         $path            = $downloadDir
         
         Exec { path      => $execPath,
@@ -110,8 +127,8 @@ if ( $continue ) {
    }
 
    # the patch used by the bsu
-   if ! defined(File["${path}${patchFile}"]) {
-    file { "${path}${patchFile}":
+   if ! defined(File["${path}/${patchFile}"]) {
+    file { "${path}/${patchFile}":
      source  => "${mountPoint}/${patchFile}",
      require => File ["${mdwHome}/utils/bsu/cache_dir"],
     }
@@ -123,11 +140,11 @@ if ( $continue ) {
    $bsuCommand  = "-install -patchlist=${patchId} -prod_dir=${wlHome} -verbose"
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         exec { "extract ${patchFile}":
-          command => "unzip -n ${path}${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
-          require => File ["${path}${patchFile}"],
+          command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
+          require => File ["${path}/${patchFile}"],
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
         }
         
@@ -147,11 +164,11 @@ if ( $continue ) {
            command    => "${checkCommand} icacls ${mdwHome}/utils/bsu/cache_dir /T /C /grant Administrator:F Administrators:F",
 #           unless     => "${checkCommand} test -e ${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
            logoutput  => false,
-           require    => File ["${path}${patchFile}"],
+           require    => File ["${path}/${patchFile}"],
         } 
 
         exec { "extract ${patchFile} ${title}":
-          command => "jar.exe xf ${path}${patchFile}",
+          command => "jar.exe xf ${path}/${patchFile}",
           cwd     => "${mdwHome}/utils/bsu/cache_dir",
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
           require => Exec["icacls win patchfile ${title}"],

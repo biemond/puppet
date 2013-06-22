@@ -210,14 +210,14 @@ if ( $continueEntry ) {
 
    $javaCommandPlan = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 
-   file { "${path}${title}redeployResourceAdapter.py":
-            path    => "${path}${title}redeployResourceAdapter.py",
+   file { "${path}/${title}redeployResourceAdapter.py":
+            path    => "${path}/${title}redeployResourceAdapter.py",
             content => template("wls/wlst/redeployResourceAdapter.py.erb"),
             before  => Exec["exec redeploy adapter plan ${title}"],
    }    
 
-   file { "${path}${title}createResourceAdapterEntry.py":
-            path    => "${path}${title}createResourceAdapterEntry.py",
+   file { "${path}/${title}createResourceAdapterEntry.py":
+            path    => "${path}/${title}createResourceAdapterEntry.py",
             content => template("wls/wlst/createResourceAdapterEntry.py.erb"),
             before  => Exec["exec create resource adapter entry ${title}"],
    }    
@@ -228,7 +228,7 @@ if ( $continueEntry ) {
 
         # deploy the plan and update the adapter  
         exec { "exec create resource adapter entry ${title}":
-          command     => "${javaCommandPlan} ${path}${title}createResourceAdapterEntry.py",
+          command     => "${javaCommandPlan} ${path}/${title}createResourceAdapterEntry.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
@@ -236,19 +236,19 @@ if ( $continueEntry ) {
 
         # deploy the plan and update the adapter  
         exec { "exec redeploy adapter plan ${title}":
-          command     => "${javaCommandPlan} ${path}${title}redeployResourceAdapter.py",
+          command     => "${javaCommandPlan} ${path}/${title}redeployResourceAdapter.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           require  => Exec["exec create resource adapter entry ${title}"],
         }    
-        exec { "rm ${path}${title}createResourceAdapterEntry.py":
-           command => "rm -I ${path}${title}createResourceAdapterEntry.py",
+        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
+           command => "rm -I ${path}/${title}createResourceAdapterEntry.py",
            require  => Exec["exec create resource adapter entry ${title}"],
         }
 
-        exec { "rm ${path}${title}redeployResourceAdapter.py":
-           command => "rm -I ${path}${title}redeployResourceAdapter.py",
+        exec { "rm ${path}/${title}redeployResourceAdapter.py":
+           command => "rm -I ${path}/${title}redeployResourceAdapter.py",
            require => Exec["exec redeploy adapter plan ${title}"],
         }
 
@@ -257,25 +257,25 @@ if ( $continueEntry ) {
      windows: { 
         # deploy the plan and update the adapter  
         exec { "exec create resource adapter entry ${title}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommandPlan} ${path}${title}createResourceAdapterEntry.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommandPlan} ${path}/${title}createResourceAdapterEntry.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
         }    
 
         # deploy the plan and update the adapter  
         exec { "exec redeploy adapter plan ${title}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommandPlan} ${path}${title}redeployResourceAdapter.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommandPlan} ${path}/${title}redeployResourceAdapter.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           require  => Exec["exec create resource adapter entry ${title}"],
         }    
-        exec { "rm ${path}${title}createResourceAdapterEntry.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}createResourceAdapterEntry.py",
+        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}createResourceAdapterEntry.py",
            require  => Exec["exec create resource adapter entry ${title}"],
         }
 
-        exec { "rm ${path}${title}redeployResourceAdapter.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}redeployResourceAdapter.py",
+        exec { "rm ${path}/${title}redeployResourceAdapter.py":
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}redeployResourceAdapter.py",
            require => Exec["exec redeploy adapter plan ${title}"],
         }
 

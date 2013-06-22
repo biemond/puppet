@@ -131,6 +131,26 @@ if ( $continue ) {
                group   => $group,
              }     
      }
+     Solaris: { 
+
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $path             = $downloadDir
+        $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
+
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               replace => 'yes',
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }   
+     
+     }
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
@@ -150,40 +170,51 @@ if ( $continue ) {
 
     
    # the py script used by the wlst
-   file { "${path}${title}${script}":
-      path    => "${path}${title}${script}",
+   file { "${path}/${title}${script}":
+      path    => "${path}/${title}${script}",
       content => template("wls/wlst/${script}.erb"),
    }
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         exec { "execwlst ${title}${script}":
-          command     => "${javaCommand} ${path}${title}${script}",
+          command     => "${javaCommand} ${path}/${title}${script}",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          require     => File["${path}${title}${script}"],
+          require     => File["${path}/${title}${script}"],
         }    
 
-        exec { "rm ${path}${title}${script}":
-           command => "rm -I ${path}${title}${script}",
-           require => Exec["execwlst ${title}${script}"],
-        }
+        case $operatingsystem {
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+              exec { "rm ${path}/${title}${script}":
+                 command => "rm -I ${path}/${title}${script}",
+                 require => Exec["execwlst ${title}${script}"],
+              }
+           }
+           Solaris: { 
+              exec { "rm ${path}/${title}${script}":
+                 command => "rm ${path}/${title}${script}",
+                 require => Exec["execwlst ${title}${script}"],
+              }
+           }
+        }     
+    
 
      }
      windows: { 
 
         exec { "execwlst ${title}${script}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}${title}${script}",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/${title}${script}",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
-          require     => File["${path}${title}${script}"],
+          require     => File["${path}/${title}${script}"],
         }    
 
 
         exec { "rm ${path}${title}${script}":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}${script}",
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}${script}",
            require => Exec["execwlst ${title}${script}"],
         }
      }

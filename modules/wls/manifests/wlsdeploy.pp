@@ -129,8 +129,8 @@ define wls::wlsdeploy ($wlHome        = undef,
 
     
    # the py script used by the wlst
-   file { "${path}${title}importOSB.py":
-      path    => "${path}${title}importOSB.py",
+   file { "${path}/${title}importOSB.py":
+      path    => "${path}/${title}importOSB.py",
       content => template("wls/importOSB.py.erb"),
    }
      
@@ -138,15 +138,15 @@ define wls::wlsdeploy ($wlHome        = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         exec { "execwlst ${title}importOSB.py":
-          command     => "${javaCommand} ${path}${title}importOSB.py",
+          command     => "${javaCommand} ${path}/${title}importOSB.py",
           environment => ["CLASSPATH=${classpath}",
                           "JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          require     => File["${path}${title}importOSB.py"],
+          require     => File["${path}/${title}importOSB.py"],
         }    
 
-        exec { "rm ${path}${title}importOSB.py":
-           command => "rm -I ${path}${title}importOSB.py",
+        exec { "rm ${path}/${title}importOSB.py":
+           command => "rm -I ${path}/${title}importOSB.py",
            require => Exec["execwlst ${title}importOSB.py"],
         }
 
@@ -154,15 +154,15 @@ define wls::wlsdeploy ($wlHome        = undef,
      windows: { 
 
         exec { "execwlst ${title}importOSB.py":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}${title}importOSB.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/${title}importOSB.py",
           environment => ["CLASSPATH=${classpath}",
                           "JAVA_HOME=${JAVA_HOME}"],
-          require     => File["${path}${title}importOSB.py"],
+          require     => File["${path}/${title}importOSB.py"],
         }    
 
 
-        exec { "rm ${path}${title}importOSB.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}${title}importOSB.py",
+        exec { "rm ${path}/${title}importOSB.py":
+           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}importOSB.py",
            require => Exec["execwlst ${title}importOSB.py"],
         }
      }

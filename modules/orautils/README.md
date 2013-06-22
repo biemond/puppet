@@ -1,6 +1,10 @@
 Oracle WebLogic orautils puppet module
 =======================================================
 
+changes  
+0.1.1 support for Solaris
+
+
 Generates WLS Scripts in /opt/scripts/wls
 -----------------------------------------
 
@@ -41,42 +45,42 @@ change the params.pp class so the defaults match with your environment or add ex
      class utils::params {
      
        $osOracleHome = $::hostname ? { 
-                                         xxxxxx     => "/data/wls",
-       																	default    => "/opt/wls", 
-       															}
+                                        xxxxxx     => "/data/wls",
+                                        default    => "/opt/wls", 
+                                    }
      
        $osDownloadFolder = $::hostname ? { 
-       																	default    => "/data/install", 
-       															}
+                                        default    => "/data/install", 
+                                    }
      
        $osMdwHome    = "${osOracleHome}/Middleware11gR1"
        $osWlHome     = "${osOracleHome}/Middleware11gR1/wlserver_10.3" 
      
-     	 $oraUser      = $::hostname ? { default => "oracle", }
+       $oraUser      = $::hostname ? { default => "oracle", }
      
      
        $osDomain     = $::hostname ? { 
-       																	default    => "osbSoaDomain", 
-       															}
-       															
+                                        default    => "osbSoaDomain", 
+                                    }
+                                    
        $osDomainPath = $::hostname ? { 
-       																	default    => "${osMdwHome}/user_projects/domains/${osDomain}", 
-       															}
+                                        default    => "${osMdwHome}/user_projects/domains/${osDomain}", 
+                                    }
      
        $nodeMgrPort = $::hostname ?  { 
-       																	default    => "5556", 
-       															}    															
+                                        default    => "5556", 
+                                    }                                 
      
        $wlsUser     = $::hostname ?  { 
-       																	default    => "weblogic", 
-       															}    															
+                                        default    => "weblogic", 
+                                    }                                 
      
        $wlsPassword = $::hostname ?  { 
-       																	default    => "weblogic1", 
-       															}    		
+                                        default    => "weblogic1", 
+                                    }       
      
        $wlsAdminServer = $::hostname ?  { 
-       																	default    => "AdminServer", 
-       															}    		
+                                        default    => "AdminServer", 
+                                    }       
      
      }         

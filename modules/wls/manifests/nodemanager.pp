@@ -49,36 +49,35 @@ define wls::nodemanager($wlHome          = undef,
                         $downloadDir     = '/install/',
                        ) {
 
-   File{
-        owner   => $user,
-        group   => $group,
-        mode    => 0770,
-   }
-
-   if $logDir == undef {
-      $nodeLogDir = "${wlHome}/common/nodemanager/nodemanager.log"
-   } else {
-      $nodeLogDir = "${logDir}/nodemanager.log"
-
-      if ! defined(File["${logDir}"]) {
-        file { "${logDir}" :
-          ensure  => directory,
-          recurse => false, 
-          replace => false,
-        }
-      }    
-   }
-
 
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
         $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${listenPort}'"
         $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
+        $nativeLib        = "linux/x86_64"  
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+               cwd       => "${wlHome}/common/nodemanager",
+             }
+  
+     
+     }
+     Solaris: { 
+
+        $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:${otherPath}"
+        $checkCommand     = "/usr/ucb/ps wwxa | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${listenPort}'"
+        $path             = $downloadDir
+        $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
+        $nativeLib        = "solaris/x64"
         
         Exec { path      => $execPath,
                user      => $user,
@@ -102,12 +101,58 @@ define wls::nodemanager($wlHome          = undef,
      }
    }
 
+
+   File{
+        owner   => $user,
+        group   => $group,
+        mode    => 0770,
+   }
+
+   if $logDir == undef {
+      $nodeLogDir = "${wlHome}/common/nodemanager/nodemanager.log"
+   } else {
+      $nodeLogDir = "${logDir}/nodemanager.log"
+
+
+      # create all folders 
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
+             exec { 'create ${logDir} directory':
+                     command => "mkdir -p ${logDir}",
+                     unless  => "test -d ${logDir}",
+                     user    => 'root',
+             }
+         }
+         windows: {
+             exec { 'create ${logDir} directory':
+                     command => "${checkCommand} mkdir -p ${logDir}",
+             }
+          }
+          default: { 
+           fail("Unrecognized operating system") 
+           }
+      }		
+   
+   
+      if ! defined(File["${logDir}"]) {
+           file { "${logDir}" :
+             ensure  => directory,
+             recurse => false, 
+             replace => false,
+             require => Exec['create ${logDir} directory'],
+           }
+      }    
+   }
+
+
+
+
    $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/./urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
 
 
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         file { "nodemanager.properties ux ${title}":
                 path    => "${wlHome}/common/nodemanager/nodemanager.properties",
@@ -120,7 +165,7 @@ define wls::nodemanager($wlHome          = undef,
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
-                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/linux/x86_64",
+                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/${nativeLib}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "${checkCommand}",
           require     => File ["nodemanager.properties ux ${title}"],

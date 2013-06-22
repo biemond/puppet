@@ -51,7 +51,7 @@ define wls::installwls( $version     = undef,
    $wlsFileDefault       = $wlsFile1036 
 
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
         $path            = $downloadDir
      }
       windows: { 
@@ -99,11 +99,31 @@ define wls::installwls( $version     = undef,
           }
         }
      }
+      Solaris: { 
+        if ! defined(Group[$group]) {
+          group { $group : 
+                  ensure => present,
+          }
+        }
+        if ! defined(User[$user]) {
+          # http://raftaman.net/?p=1311 for generating password
+          user { $user : 
+              ensure     => present, 
+              groups     => $group,
+              shell      => '/bin/bash',
+              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',  
+              home       => "/export/home/${user}",
+              comment    => 'This user ${user} was created by Puppet',
+              require    => Group[$group],
+              managehome => true, 
+          }
+        }
+     }
    }
 
    # set the environment related vars		
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
         $beaHome     = $mdwHome
 
      }
@@ -140,12 +160,82 @@ if ( $continue ) {
      $mountPoint =	$puppetDownloadMntPoint
    }
 
+   # set file defaults
    File{
         owner   => $user,
         group   => $group,
         mode    => 0770,
    }
 
+   # set exec defaults
+   case $operatingsystem {
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+
+        $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
+        $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+  
+     
+     }
+     Solaris: { 
+
+        $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:${otherPath}"
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+     }
+     windows: { 
+
+        $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
+
+        Exec { path      => $execPath,
+             }
+     }
+   }
+
+
+
+   # create all folders 
+   case $operatingsystem {
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
+          exec { 'create ${oracleHome} directory':
+                  command => "mkdir -p ${oracleHome}",
+                  unless  => "test -d ${oracleHome}",
+                  user    => 'root',
+          }
+          exec { 'create ${downloadDir} home directory':
+                  command => "mkdir -p ${downloadDir}",
+                  unless  => "test -d ${downloadDir}",
+                  user    => 'root',
+          }
+
+
+      }
+      windows: {
+          exec { 'create ${oracleHome} directory':
+                  command => "${checkCommand} mkdir -p ${oracleHome}",
+          }
+          exec { 'create ${downloadDir} home directory':
+                  command => "${checkCommand} mkdir -p ${downloadDir}",
+          }
+       }
+       default: { 
+        fail("Unrecognized operating system") 
+        }
+     }		
+
+
+   # also set permissions on downloadDir
    if ! defined(File[$path]) {
       # check oracle install folder
       file { $path :
@@ -153,13 +243,14 @@ if ( $continue ) {
         ensure  => directory,
         recurse => false, 
         replace => false,
+        require => Exec['create ${downloadDir} home directory'],
       }
    }
 
    
    # put weblogic generic jar
    file { "wls.jar ${version}":
-     path    => "${path}${wlsFile}",
+     path    => "${path}/${wlsFile}",
      ensure  => file,
      source  => "${mountPoint}/${wlsFile}",
      require => File[$path],
@@ -167,12 +258,14 @@ if ( $continue ) {
      backup  => false,
    }
 
+   # also set permissions on oracleHome
    if ! defined(File[$oracleHome]) {
      file { $oracleHome:
        path    => $oracleHome,
        ensure  => directory,
        recurse => true, 
        replace => false,
+       require => Exec['create ${oracleHome} directory'],
      }
    }
 
@@ -189,7 +282,7 @@ if ( $continue ) {
 
    # de xml used by the wls installer
    file { "silent.xml ${version}":
-     path    => "${path}silent${version}.xml",
+     path    => "${path}/silent${version}.xml",
      ensure  => present,
      replace => 'yes',
      content => template("wls/silent.xml.erb"),
@@ -200,8 +293,8 @@ if ( $continue ) {
    wls::wlsexec{ "installer ${version}":
       mdwHome     => $beaHome,
       fullJDKName => $fullJDKName,
-      wlsfile     => "${path}${wlsFile}",
-      silentfile  => "${path}silent${version}.xml",
+      wlsfile     => "${path}/${wlsFile}",
+      silentfile  => "${path}/silent${version}.xml",
       user        => $user,
       group       => $group,
       require     => [File[$oracleHome],File[$beaHome],File["silent.xml ${version}"],File["wls.jar ${version}"]],
