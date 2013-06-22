@@ -62,6 +62,32 @@ define wls::installsoa($mdwHome         = undef,
         $oraInstPath     = "/etc/"
         $oraInventory    = "${oracleHome}/oraInventory"
         
+        $soaInstallDir   = "linux64"
+        $jreLocDir       = "/usr/java/${fullJDKName}"
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }        
+     }
+     Solaris: { 
+
+        $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $path            = $downloadDir
+        $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
+        $oraInstPath     = "/var/opt/"
+        $oraInventory    = "${oracleHome}/oraInventory"
+
+        $soaInstallDir   = "intelsolaris"
+        $jreLocDir       = "/usr"
+                
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -143,7 +169,7 @@ if ( $continue ) {
    $command  = "-silent -response ${path}/${title}silent_soa.xml "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
@@ -171,7 +197,7 @@ if ( $continue ) {
         }
         
         exec { "install soa ${title}":
-          command     => "${path}/soa/Disk1/install/linux64/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
+          command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
           creates     => $soaOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],

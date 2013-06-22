@@ -60,6 +60,27 @@ define wls::storeuserconfig( $wlHome        = undef,
                group   => $group,
              }     
      }
+     Solaris: { 
+
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $path             = $downloadDir
+        $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
+
+
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               replace => 'yes',
+               mode    => 0555,
+               owner   => $user,
+               group   => $group,
+             }  
+     
+     }
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
@@ -84,7 +105,7 @@ define wls::storeuserconfig( $wlHome        = undef,
    }
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         exec { "execwlst ${title}storeUserConfig.py":
           command     => "${javaCommand} ${path}/${title}storeUserConfig.py",
@@ -95,10 +116,22 @@ define wls::storeuserconfig( $wlHome        = undef,
           require     => File["${path}/${title}storeUserConfig.py"],
         }    
 
-        exec { "rm ${path}/${title}storeUserConfig.py":
-           command => "rm -I ${path}/${title}storeUserConfig.py",
-           require => Exec["execwlst ${title}storeUserConfig.py"],
-        }
+        case $operatingsystem {
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+
+              exec { "rm ${path}/${title}storeUserConfig.py":
+                command => "rm -I ${path}/${title}storeUserConfig.py",
+                require => Exec["execwlst ${title}storeUserConfig.py"],
+              }
+           }
+           Solaris: { 
+
+             exec { "rm ${path}/${title}storeUserConfig.py":
+               command => "rm ${path}/${title}storeUserConfig.py",
+               require => Exec["execwlst ${title}storeUserConfig.py"],
+             }           
+           }
+        }     
 
      }
      windows: { 

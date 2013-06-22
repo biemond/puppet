@@ -5,9 +5,12 @@ created by Edwin Biemond  email biemond at gmail dot com
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
+Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or OracleLinux 
+
 Version updates
 ---------------
 
+- 0.9.6 support for Solaris x86 64  
 - 0.9.5 support not existing parent directory for OracleHome, DownloadDir and LogDir  
         added wlsTemplate  ( wlsdomain.pp ) for osb + soa + bpm and adf domain templates    
 - 0.9.4 add a JCA resource adapter plan for AQ,JMS & DB plus add AQ,JMS,DB resource adapter entries   
@@ -25,11 +28,11 @@ For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the s
 Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) and install this forge module on the puppet master<br>
 puppet module install puppetlabs/registry
 
-For other agents like RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
+For other agents like Solaris, RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
 
 Some manifests like installwls.pp, opatch.pp, bsupatch.pp, installjdev, installosb, installsoa supports an alternative mountpoint for the big oracle setup/install files.  
 When not provided it uses the files location of the wls puppet module  
-else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/"  
+else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/" or  "puppet:///middleware/" 
 
 
 WLS WebLogic Features
@@ -310,7 +313,7 @@ WebLogic configuration examples
     
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -423,7 +426,7 @@ WebLogic configuration examples
     
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -556,7 +559,7 @@ WebLogic configuration examples
     
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -757,7 +760,7 @@ WebLogic configuration examples
       }
     
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware12g"
            $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
@@ -843,7 +846,7 @@ WebLogic configuration examples
      
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osOracleHome  = "/opt/wls"
            $osMdwHome     = "/opt/wls/Middleware11gR1"
            $osWlHome      = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -988,7 +991,7 @@ WebLogic configuration examples
     
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -1120,7 +1123,7 @@ WebLogic configuration examples
       $address         = "localhost"
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware12g"
            $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
@@ -1210,7 +1213,7 @@ WebLogic configuration examples
     
     
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
@@ -1340,7 +1343,7 @@ WebLogic configuration examples
     
     
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
@@ -1598,11 +1601,7 @@ WebLogic configuration examples
     
     }  
     
-                                script        => 'createJdbcPersistenceStore.py',
-         params        => ["jdbcStoreName = 'jmsModuleJdbcPersistence'",
-                          "serverTarget  = 'osb_server1'",
-                          "prefix        = 'jms1'",
-                          "datasource    = 'jmsDS'"
+                                                 "datasource    = 'jmsDS'"
                           ],
          require     => Wls::Wlstexec['createJdbcDatasourceJms'];
       }

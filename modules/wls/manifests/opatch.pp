@@ -61,6 +61,26 @@ define wls::opatch(  $oracleProductHome = undef,
                group   => $group,
              }        
      }
+     Solaris: { 
+
+        $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
+        $path             = $downloadDir
+        $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
+
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }        
+     }
+
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
@@ -114,7 +134,7 @@ if ( $continue ) {
    $oPatchCommand  = "opatch apply -silent -jre"
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         exec { "extract opatch ${patchFile} ${title}":
           command => "unzip -n ${path}/${patchFile} -d ${path}",

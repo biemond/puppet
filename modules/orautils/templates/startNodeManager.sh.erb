@@ -1,7 +1,17 @@
+#!/usr/bin/ksh
+# *************************************************************************
+
 echo "Starting the Weblogic NodeManager...."
 echo "Checking if the Weblogic NodeManager is already started...."
 
-pid=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+unamestr=`uname`
+if [[ "$unamestr" == 'SunOS' ]]; then
+   checkStmt='/usr/ucb/ps wwxa'
+else 
+   checkStmt='/bin/ps -eo pid,cmd'
+fi
+
+pid=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
 
 if [[ ${pid} ]]
 then
@@ -11,7 +21,7 @@ else
   sleep 3
   <%= @osWlHome %>/server/bin/startNodeManager.sh & 
   sleep 5
-  pid=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+  pid=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
   if [[ ${pid} ]]
   then
     echo "NodeManager is started with pid : $pid...."

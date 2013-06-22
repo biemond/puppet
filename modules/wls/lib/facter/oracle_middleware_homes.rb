@@ -9,6 +9,8 @@ def get_homes()
 
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
     beafile = "/home/oracle/bea/beahomelist"
+  elsif ["Solaris"].include?os
+    beafile = "/export/home/oracle/bea/beahomelist"      
   elsif ["windows"].include?os 
     beafile = "c:/bea/beahomelist"
   else
@@ -34,6 +36,15 @@ def get_bsu_patches(name)
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
    if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
     output2 = Facter::Util::Resolution.exec("su -l oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
+    if output2.nil?
+      return "empty"
+    end
+   else
+    return nil
+   end 
+  elsif ["Solaris"].include?os
+   if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
+    output2 = Facter::Util::Resolution.exec("su oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
     if output2.nil?
       return "empty"
     end
@@ -69,7 +80,9 @@ def get_opatch_patches(name)
     os = Facter.value(:operatingsystem)
 
     if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
-      output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+"\"")
+      output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
+    elsif ["Solaris"].include?os
+      output3 = Facter::Util::Resolution.exec("su oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc -jre /user \"")
     elsif ["windows"].include?os
       output3 = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat lsinventory -patch_id -oh " + name)
     end
@@ -92,7 +105,7 @@ def get_domain(name,i)
 
   os = Facter.value(:operatingsystem)
 
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris"].include?os
 
     if FileTest.exists?(name+'/user_projects/domains')
       output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/user_projects/domains')
@@ -141,7 +154,7 @@ def get_domain(name,i)
 
   output2.split(/\r?\n/).each_with_index do |domain, n|
 
-    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris"].include?os
       domainfile = name+'/user_projects/domains/'+domain+'/config/config.xml'
 
     elsif ["windows"].include?os 
@@ -509,6 +522,13 @@ def get_nodemanagers()
     else 
       return output.split(/\r?\n/)
     end
+  elsif ["Solaris"].include?Facter.value(:operatingsystem)
+    output = Facter::Util::Resolution.exec("/usr/ucb/ps wwxa | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"port:\" , substr(\$0,index(\$0,\"-DListenPort\")+13,4) } '")
+    if output.nil?
+      return nil
+    else 
+      return output.split(/\r?\n/)
+    end
   end
 end
 
@@ -520,7 +540,15 @@ def get_wlsservers()
     else 
       return output.split(/\r?\n/)
     end
+  elsif ["Solaris"].include?Facter.value(:operatingsystem)
+    output = Facter::Util::Resolution.exec("/usr/ucb/ps wwxa | /bin/grep -i weblogic.server | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"name:\" ,substr(\$0,index(\$0,\"weblogic.Name\")+14,12) }'")
+    if output.nil?
+      return nil
+    else 
+      return output.split(/\r?\n/)
+    end
   end
+
 end
 
 def get_orainst_loc()
@@ -536,7 +564,20 @@ def get_orainst_loc()
       end
       return str
     else
-      return "NotFound"
+      return "NotFound4"
+    end
+  elsif ["Solaris"].include?os
+    if FileTest.exists?("/var/opt/oraInst.loc")
+      str = ""
+      output = File.read("/var/opt/oraInst.loc")
+      output.split(/\r?\n/).each do |item|
+        if item.match(/^inventory_loc/)
+          str = item[14,50]
+        end
+      end
+      return str
+    else
+      return "NotFound3"
     end
   elsif ["windows"].include?os
     return "C:/Program Files/Oracle/Inventory"
@@ -572,12 +613,13 @@ def get_orainst_products(path)
       end
       return software
     else
-      return "NotFound"
+      return "NotFound2"
     end
   else
-    return "NotFound" 
+    return "NotFound1" 
   end
 end
+
 
 # report all oracle homes / domains
 unless get_homes.nil?

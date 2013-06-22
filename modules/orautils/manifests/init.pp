@@ -3,7 +3,7 @@ class orautils {
   include orautils::params
 
   case $operatingsystem {
-    CentOS, RedHat, OracleLinux, Ubuntu, Debian: {
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {
 
     $user         = "oracle"
     $group        = "dba"
@@ -57,6 +57,8 @@ class orautils {
     $osMdwHome        = $orautils::params::osMdwHome
     $osWlHome         = $orautils::params::osWlHome 
 	  $oraUser          = $orautils::params::oraUser
+	  $userHome         = $orautils::params::userHome
+	  $oraInstHome      = $orautils::params::oraInstHome 
 
     file { "cleanOracleEnvironment.sh":
       path    => "/opt/scripts/wls/cleanOracleEnvironment.sh",

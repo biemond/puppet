@@ -6,7 +6,9 @@ def get_opatch_patches(name)
     os = Facter.value(:operatingsystem)
 
     if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
-      output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+"\"")
+      output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+"  -invPtrLoc /etc/oraInst.loc\"")
+    elsif ["Solaris"].include?os
+      output3 = Facter::Util::Resolution.exec("su oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+"  -invPtrLoc /var/opt/oraInst.loc -jre /usr \"")
     end
 
     opatches = "Patches;"
@@ -29,6 +31,19 @@ def get_orainst_loc()
     if FileTest.exists?("/etc/oraInst.loc")
       str = ""
       output = File.read("/etc/oraInst.loc")
+      output.split(/\r?\n/).each do |item|
+        if item.match(/^inventory_loc/)
+          str = item[14,50]
+        end
+      end
+      return str
+    else
+      return "NotFound"
+    end
+  elsif ["Solaris"].include?os
+    if FileTest.exists?("/var/opt/oraInst.loc")
+      str = ""
+      output = File.read("/var/opt/oraInst.loc")
       output.split(/\r?\n/).each do |item|
         if item.match(/^inventory_loc/)
           str = item[14,50]

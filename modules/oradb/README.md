@@ -7,6 +7,12 @@ created by Edwin Biemond
 
 Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux 
 
+Version updates
+---------------
+
+- 0.7.2 bugfixes for rcu and database facts 
+
+
 Oracle Database Features
 ---------------------------
 

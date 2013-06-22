@@ -51,7 +51,7 @@ define wls::installwls( $version     = undef,
    $wlsFileDefault       = $wlsFile1036 
 
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
         $path            = $downloadDir
      }
       windows: { 
@@ -99,11 +99,31 @@ define wls::installwls( $version     = undef,
           }
         }
      }
+      Solaris: { 
+        if ! defined(Group[$group]) {
+          group { $group : 
+                  ensure => present,
+          }
+        }
+        if ! defined(User[$user]) {
+          # http://raftaman.net/?p=1311 for generating password
+          user { $user : 
+              ensure     => present, 
+              groups     => $group,
+              shell      => '/bin/bash',
+              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',  
+              home       => "/export/home/${user}",
+              comment    => 'This user ${user} was created by Puppet',
+              require    => Group[$group],
+              managehome => true, 
+          }
+        }
+     }
    }
 
    # set the environment related vars		
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
         $beaHome     = $mdwHome
 
      }
@@ -149,7 +169,7 @@ if ( $continue ) {
 
    # set exec defaults
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, ubuntu, debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
@@ -161,6 +181,17 @@ if ( $continue ) {
              }
   
      
+     }
+     Solaris: { 
+
+        $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:${otherPath}"
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
      }
      windows: { 
 
@@ -176,7 +207,7 @@ if ( $continue ) {
 
    # create all folders 
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: {    
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
           exec { 'create ${oracleHome} directory':
                   command => "mkdir -p ${oracleHome}",
                   unless  => "test -d ${oracleHome}",

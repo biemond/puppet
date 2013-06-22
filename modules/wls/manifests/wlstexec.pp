@@ -131,6 +131,26 @@ if ( $continue ) {
                group   => $group,
              }     
      }
+     Solaris: { 
+
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $path             = $downloadDir
+        $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
+
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               replace => 'yes',
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }   
+     
+     }
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
@@ -156,7 +176,7 @@ if ( $continue ) {
    }
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         exec { "execwlst ${title}${script}":
           command     => "${javaCommand} ${path}/${title}${script}",
@@ -166,10 +186,21 @@ if ( $continue ) {
           require     => File["${path}/${title}${script}"],
         }    
 
-        exec { "rm ${path}/${title}${script}":
-           command => "rm -I ${path}/${title}${script}",
-           require => Exec["execwlst ${title}${script}"],
-        }
+        case $operatingsystem {
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+              exec { "rm ${path}/${title}${script}":
+                 command => "rm -I ${path}/${title}${script}",
+                 require => Exec["execwlst ${title}${script}"],
+              }
+           }
+           Solaris: { 
+              exec { "rm ${path}/${title}${script}":
+                 command => "rm ${path}/${title}${script}",
+                 require => Exec["execwlst ${title}${script}"],
+              }
+           }
+        }     
+    
 
      }
      windows: { 

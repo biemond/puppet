@@ -170,6 +170,28 @@ if ( $continue ) {
                group   => $group,
              }     
      }
+     Solaris: { 
+
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:${wlHome}/common/bin"
+        $path             = $downloadDir
+        $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
+        $nodeMgrMachine   = "UnixMachine"
+
+
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               replace => 'yes',
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }   
+     
+     }
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows;${wlHome}\\common\\bin"
@@ -251,7 +273,7 @@ if ( $continue ) {
 
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
         
         exec { "execwlst ux ${domain} ${title}":
           command     => "${javaCommand} ${path}/domain_${domain}.py",
@@ -263,16 +285,32 @@ if ( $continue ) {
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
         }    
 
-        exec { "setDebugFlagOnFalse ${domain} ${title}":
-          command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
-          onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
-          require => Exec["execwlst ux ${domain} ${title}"],
-        }
+        case $operatingsystem {
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+              exec { "setDebugFlagOnFalse ${domain} ${title}":
+                command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
+                onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
+                require => Exec["execwlst ux ${domain} ${title}"],
+              }
+              exec { "domain.py ${domain} ${title}":
+                command     => "rm -I ${path}/domain_${domain}.py",
+                require     => Exec["execwlst ux ${domain} ${title}"],
+              }
+           }
+           Solaris: { 
+             exec { "setDebugFlagOnFalse ${domain} ${title}":
+               command => "sed -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh > /tmp/test.tmp && mv /tmp/test.tmp ${domainPath}/${domain}/bin/setDomainEnv.sh",
+               onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
+               require => Exec["execwlst ux ${domain} ${title}"],
+             }
+             exec { "domain.py ${domain} ${title}":
+                command     => "rm ${path}/domain_${domain}.py",
+                require     => Exec["execwlst ux ${domain} ${title}"],
+             }
+           }
+        }     
+    
 
-        exec { "domain.py ${domain} ${title}":
-           command     => "rm -I ${path}/domain_${domain}.py",
-           require     => Exec["execwlst ux ${domain} ${title}"],
-        }
 
         exec { "pack domain ${domain} ${title}":
            command     => "pack.sh ${packCommand}",

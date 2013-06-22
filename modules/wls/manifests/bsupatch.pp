@@ -9,7 +9,7 @@
 #    $wls11gVersion = "1036"
 # 
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, Ubuntu, debian: { 
+#     centos, redhat, OracleLinux, Ubuntu, Debian: { 
 #       $osMdwHome    = "/opt/oracle/wls/wls11g"
 #       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
 #       $user         = "oracle"
@@ -50,6 +50,23 @@ define wls::bsupatch($mdwHome         = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin'
+        $path            = $downloadDir
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }        
+     }
+     Solaris: { 
+
+        $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/jdk/${fullJDKName}/bin/amd64'
         $path            = $downloadDir
         
         Exec { path      => $execPath,
@@ -123,7 +140,7 @@ if ( $continue ) {
    $bsuCommand  = "-install -patchlist=${patchId} -prod_dir=${wlHome} -verbose"
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         exec { "extract ${patchFile}":
           command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",

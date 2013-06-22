@@ -44,6 +44,21 @@ define wls::wlsexec ( $mdwHome     = undef,
         }    
      
      }
+     Solaris: { 
+
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+
+        exec { "installwls ${wlsfile}":
+          command     => "${javaCommand} ${wlsfile} -mode=silent -silent_xml=${silentfile}",
+          environment => ["JAVA_VENDOR=Sun",
+                          "JAVA_HOME=/usr/jdk/${fullJDKName}"],
+          path        => $execPath,
+          logoutput   => true,
+          user        => $user,
+          group       => $group,
+        }    
+     
+     }
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\UnxUtils\\bin;C:\\UnxUtils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"

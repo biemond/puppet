@@ -8,7 +8,7 @@
 #    $wls11gVersion = "1036"
 #
 #  case $operatingsystem {
-#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+#     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 #       $osMdwHome    = "/opt/wls/Middleware11gR1"
 #       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
 #       $oracleHome   = "/opt/wls/"
@@ -61,6 +61,32 @@ define wls::installosb($mdwHome         = undef,
         $oraInstPath     = "/etc/"
         $oraInventory    = "${oracleHome}/oraInventory"
         
+        $osbInstallDir   = "linux64"
+        $jreLocDir       = "/usr/java/${fullJDKName}"
+        
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               mode    => 0775,
+               owner   => $user,
+               group   => $group,
+             }        
+     }
+     Solaris: { 
+
+        $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $path            = $downloadDir
+        $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
+        $oraInstPath     = "/var/opt/"
+        $oraInventory    = "${oracleHome}/oraInventory"
+
+        $osbInstallDir   = "intelsolaris"
+        $jreLocDir       = "/usr"
+                
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -138,7 +164,7 @@ if ( $continue ) {
    $command  = "-silent -response ${path}/${title}silent_osb.xml "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
@@ -157,7 +183,7 @@ if ( $continue ) {
         }
         
         exec { "install osb ${title}":
-          command     => "${path}/osb/Disk1/install/linux64/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc /usr/java/${fullJDKName}",
+          command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
