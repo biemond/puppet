@@ -266,7 +266,7 @@ if ( $continue ) {
 
    if $version == '11.2.0.3' {     
      exec { "install oracle database ${title}":
-            command     => "${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp",
+            command     => "/bin/sh -c 'unset DISPLAY;${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}db_install_${version}.rsp"],Exec["extract ${path}${file}_7of7.zip"]],
             creates     => $oracleHome,
             notify      => Exec["sleep 4 min for oracle db install ${title}"]
@@ -275,7 +275,7 @@ if ( $continue ) {
 
    if $version == '11.2.0.1' {     
      exec { "install oracle database ${title}":
-            command     => "${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp",
+            command     => "/bin/sh -c 'unset DISPLAY;${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}db_install_${version}.rsp"],Exec["extract ${path}${file}_2of2.zip"]],
             creates     => $oracleHome,
             notify      => Exec["sleep 4 min for oracle db install ${title}"]
