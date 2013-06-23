@@ -26,7 +26,6 @@ define oradb::dbactions( $oracleHome              = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         $execPath        = "${oracleHome}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-        $path            = $downloadDir
         
         Exec { path      => $execPath,
                user      => $user,

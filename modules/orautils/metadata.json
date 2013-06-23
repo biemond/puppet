@@ -1,0 +1,23 @@
+{
+  "name": "biemond-orautils",
+  "author": "Edwin Biemond",
+  "description": "Oracle WebLogic and Database linux utilities scripts",
+  "license": "GNU General Public License version 3 of the License",
+  "project_page": "https://github.com/biemond/puppet/tree/master/modules/orautils",
+  "source": "https://github.com/biemond/puppet/tree/master/modules/oradb",
+  "summary": "Oracle WebLogic and Database linux utilities scripts",
+  "version": "0.1.1",
+  "checksums": {
+    "Modulefile": "ceb99596fdfe0c97ed28287982b945d2",
+    "README.md": "eb666c85da2d25317375a2b860662c19",
+    "files/wls/showStatus.sh": "665d67a8c54577e6d47682a79d32c4e3",
+    "files/wls/stopNodeManager.sh": "d94072527db8ca139ab3ddf9a8912a9e",
+    "manifests/init.pp": "4e78ebb30fc6c1b6d1fd40299f019af4",
+    "manifests/params.pp": "9aa6dac62a6624a146837f073b0dce98",
+    "templates/cleanOracleEnvironment.sh.erb": "bc66d4f7483c830fe2831e60cdb5b2f4",
+    "templates/startNodeManager.sh.erb": "3c2bfb5858939bce1246c56bf2eb9d5d",
+    "templates/startWeblogicAdmin.sh.erb": "3e4e6320b70c251cfb44bad77302d478",
+    "templates/stopWeblogicAdmin.sh.erb": "15b9404c299744836b53867e96aabb6c"
+  },
+  "dependencies": []
+}

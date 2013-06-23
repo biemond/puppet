@@ -331,7 +331,7 @@ if ( $continue ) {
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
         }    
 
-        exec {"icacls domain ${title}${script}": 
+        exec {"icacls domain ${title}": 
            command    => "C:\\Windows\\System32\\cmd.exe /c  icacls ${domainPath}/${domain} /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
            subscribe   => Exec["execwlst win ${domain} ${title}"],
@@ -340,13 +340,13 @@ if ( $continue ) {
 
         exec { "domain.py ${domain} ${title}":
            command     => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/domain_${domain}.py",
-           subscribe   => Exec["icacls domain ${title}${script}"],
+           subscribe   => Exec["icacls domain ${title}"],
            refreshonly => true,
           }
 
         exec { "pack domain ${domain} ${title}":
            command     => "C:\\Windows\\System32\\cmd.exe /c pack.cmd ${packCommand}",
-           subscribe   => Exec["icacls domain ${title}${script}"],
+           subscribe   => Exec["icacls domain ${title}"],
            refreshonly => true,
         }
 

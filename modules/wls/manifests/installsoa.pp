@@ -256,7 +256,7 @@ if ( $continue ) {
           command     => "${path}\\soa\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
           require     => [Exec["icacls soa disk ${title}"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile2}"],Exec["extract ${soaFile1}"]],
-          creates     => $osbOracleHome, 
+          creates     => $soaOracleHome, 
         }    
 
         exec { "sleep 3 min for soa install ${title}":

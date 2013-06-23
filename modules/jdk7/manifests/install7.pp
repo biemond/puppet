@@ -1,12 +1,12 @@
 # jdk7::instal7
 define jdk7::install7( $version     =  "7u17" , 
                        $fullVersion =  "jdk1.7.0_17",
-											 $x64         =  "true",
+											 $x64         =  true,
 											 $downloadDir =  '/install/', ) {
 
     notify {"install7.pp ${title} ${version}":}
 
-    if $x64 == "true" {
+    if $x64 == true {
       $type = 'x64'
     } else {
       $type = 'i586'
@@ -25,7 +25,7 @@ define jdk7::install7( $version     =  "7u17" ,
       }
     }
      
-    $jdkfile =  "jdk-$version-${installVersion}-${type}${installExtension}"
+    $jdkfile =  "jdk-${version}-${installVersion}-${type}${installExtension}"
 
     File { 
       replace => false,

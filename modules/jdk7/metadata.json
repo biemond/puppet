@@ -1,0 +1,20 @@
+{
+  "name": "biemond-jdk7",
+  "author": "Edwin Biemond",
+  "description": "Oracle JDK7 puppet module",
+  "license": "GNU General Public License version 3 of the License",
+  "project_page": "http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/",
+  "source": "https://github.com/biemond/puppet/tree/master/modules/jdk7",
+  "summary": "Oracle JDK7 puppet module optimized for weblogic",
+  "version": "0.1.4",
+  "checksums": {
+    "COPYING": "d32239bcb673463ab874e80d47fae504",
+    "License": "cb9ee2123496a2f19485dde319d3a5cb",
+    "Modulefile": "6eb5ef9f27b386a694d13a06a9847d6e",
+    "README.md": "305e83c154e2b498a9ae5ba179d26b66",
+    "manifests/init.pp": "8789542a0e58126c699decad3e01d68c",
+    "manifests/install7.pp": "67520f7c1b8aa5eb6480c790eb98b842",
+    "manifests/javaexec.pp": "eee5d4a70009fc5832756cf86ef5c25a"
+  },
+  "dependencies": []
+}

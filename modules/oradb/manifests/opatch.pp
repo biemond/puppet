@@ -26,7 +26,7 @@ define oradb::opatch(  $oracleProductHome = undef,
                        $user              = 'oracle',
                        $group             = 'dba',
                        $downloadDir       = '/install/',
-                       $ocmrf             = 'true',
+                       $ocmrf             = true,
                        $puppetDownloadMntPoint  = undef, 
                     ) {
 
@@ -95,7 +95,7 @@ if ( $continue ) {
           creates => "${path}/${patchId}",
         }
         
-        if $ocmrf == 'true' {
+        if $ocmrf == true {
         
           exec { "exec opatch ux ocmrf ${title}":
             command     => "${oracleProductHome}/OPatch/${oPatchCommand} -ocmrf ${oracleProductHome}/OPatch/ocm.rsp -oh ${oracleProductHome} ${path}${patchId}",
