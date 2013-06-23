@@ -213,8 +213,8 @@ if ( $continue ) {
         }    
 
 
-        exec { "rm ${path}${title}${script}":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}${script}",
+        exec { "rm ${path}/${title}${script}":
+           command => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/${title}${script}",
            require => Exec["execwlst ${title}${script}"],
         }
      }

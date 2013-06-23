@@ -10,6 +10,7 @@ Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux
 Version updates
 ---------------
 
+- 0.7.3 bugfixes plus facts in sync with wls modules   
 - 0.7.2 bugfixes for rcu and database facts 
 
 

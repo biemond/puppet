@@ -564,7 +564,7 @@ def get_orainst_loc()
       end
       return str
     else
-      return "NotFound4"
+      return "NotFound"
     end
   elsif ["Solaris"].include?os
     if FileTest.exists?("/var/opt/oraInst.loc")
@@ -577,7 +577,7 @@ def get_orainst_loc()
       end
       return str
     else
-      return "NotFound3"
+      return "NotFound"
     end
   elsif ["windows"].include?os
     return "C:/Program Files/Oracle/Inventory"
@@ -613,10 +613,10 @@ def get_orainst_products(path)
       end
       return software
     else
-      return "NotFound2"
+      return "NotFound"
     end
   else
-    return "NotFound1" 
+    return "NotFound" 
   end
 end
 

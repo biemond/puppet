@@ -138,7 +138,7 @@ define wls::storeuserconfig( $wlHome        = undef,
 
         exec { "execwlst ${title}storeUserConfig.py":
           command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/${title}storeUserConfig.py",
-          unless      => "dir ${userConfigDir}/${user}-${$domain}-WebLogicConfig.properties",
+          unless      => "C:\\Windows\\System32\\cmd.exe /c dir ${userConfigDir}/${user}-${domain}-WebLogicConfig.properties",
           require     => File["${path}/${title}storeUserConfig.py"],
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
@@ -146,7 +146,7 @@ define wls::storeuserconfig( $wlHome        = undef,
 
 
         exec { "rm ${path}/${title}storeUserConfig.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}storeUserConfig.py",
+           command => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/${title}storeUserConfig.py",
            require => Exec["execwlst ${title}storeUserConfig.py"],
         }
      }

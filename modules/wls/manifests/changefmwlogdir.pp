@@ -129,13 +129,13 @@ define wls::changefmwlogdir ($mdwHome        = undef,
 
         exec { "execwlst ${title}changeFMWLogFolder.py":
           command     => "C:\\Windows\\System32\\cmd.exe /c ${mdwHome}/oracle_common/common/bin/wlst.cmd ${path}/${title}changeFMWLogFolder.py",
-          unless      => "dir ${logDir}\\${wlsServer}-diagnostic.log",
+          unless      => "C:\\Windows\\System32\\cmd.exe /c dir ${logDir}/${wlsServer}-diagnostic.log",
           require     => File["${path}/${title}changeFMWLogFolder.py"],
         }    
 
 
         exec { "rm ${path}/${title}changeFMWLogFolder.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}changeFMWLogFolder.py",
+           command => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/${title}changeFMWLogFolder.py",
            require => Exec["execwlst ${title}changeFMWLogFolder.py"],
         }
      }

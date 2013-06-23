@@ -215,21 +215,21 @@ if ( $continue ) {
 
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
-          command => "jar xf ${path}/${osbFile}",
+          command => "${checkCommand} unzip ${path}/${osbFile} -d ${path}/osb",
           require => File ["${path}/${osbFile}"],
-          creates => "${path}/Disk1", 
+          creates => "${path}/osb/Disk1", 
           cwd     => $path,
          }
         }
 
         exec {"icacls osb disk ${title}": 
-           command    => "${checkCommand} icacls ${path}* /T /C /grant Administrator:F Administrators:F",
+           command    => "${checkCommand} icacls ${path}\\osb\\* /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
            require    => Exec["extract ${osbFile}"],
         } 
 
         exec { "install osb ${title}":
-          command     => "${path}\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
+          command     => "${path}\\osb\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
           require     => [Exec["icacls osb disk ${title}"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome, 

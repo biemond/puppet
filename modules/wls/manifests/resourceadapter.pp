@@ -270,12 +270,12 @@ if ( $continueEntry ) {
           require  => Exec["exec create resource adapter entry ${title}"],
         }    
         exec { "rm ${path}/${title}createResourceAdapterEntry.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}createResourceAdapterEntry.py",
+           command => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/${title}createResourceAdapterEntry.py",
            require  => Exec["exec create resource adapter entry ${title}"],
         }
 
         exec { "rm ${path}/${title}redeployResourceAdapter.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c del ${path}/${title}redeployResourceAdapter.py",
+           command => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/${title}redeployResourceAdapter.py",
            require => Exec["exec redeploy adapter plan ${title}"],
         }
 

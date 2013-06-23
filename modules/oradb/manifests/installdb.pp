@@ -31,8 +31,8 @@
 #
 
 define oradb::installdb( $version      = undef,
-										 	 	 $file         = undef,
-												 $databaseType = 'SE',
+                         $file         = undef,
+                         $databaseType = 'SE',
                          $oracleBase   = undef,
                          $oracleHome   = undef,
                          $user         = 'oracle',
@@ -87,9 +87,9 @@ if ( $continue ) {
    }
 
    if $puppetDownloadMntPoint == undef {
-     $mountPoint =  "puppet:///modules/oradb/"    	
+     $mountPoint =  "puppet:///modules/oradb/"      
    } else {
-     $mountPoint =	$puppetDownloadMntPoint
+     $mountPoint =  $puppetDownloadMntPoint
    }
 
    if ! defined(Group[$group]) {
@@ -305,5 +305,4 @@ if ( $continue ) {
 }
 
 }
-
 

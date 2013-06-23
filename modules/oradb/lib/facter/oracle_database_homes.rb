@@ -6,9 +6,11 @@ def get_opatch_patches(name)
     os = Facter.value(:operatingsystem)
 
     if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
-      output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+"  -invPtrLoc /etc/oraInst.loc\"")
+      output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
     elsif ["Solaris"].include?os
-      output3 = Facter::Util::Resolution.exec("su oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+"  -invPtrLoc /var/opt/oraInst.loc -jre /usr \"")
+      output3 = Facter::Util::Resolution.exec("su oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc -jre /user \"")
+    elsif ["windows"].include?os
+      output3 = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat lsinventory -patch_id -oh " + name)
     end
 
     opatches = "Patches;"
@@ -22,8 +24,6 @@ def get_opatch_patches(name)
    
     return opatches
 end  
-
-
 
 def get_orainst_loc()
   os = Facter.value(:operatingsystem)
@@ -53,8 +53,11 @@ def get_orainst_loc()
     else
       return "NotFound"
     end
+  elsif ["windows"].include?os
+    return "C:/Program Files/Oracle/Inventory"
   end
 end
+
 
 def get_orainst_products(path)
   unless path.nil?

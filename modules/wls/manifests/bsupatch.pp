@@ -168,8 +168,7 @@ if ( $continue ) {
         } 
 
         exec { "extract ${patchFile} ${title}":
-          command => "jar.exe xf ${path}/${patchFile}",
-          cwd     => "${mdwHome}/utils/bsu/cache_dir",
+          command => "${checkCommand} unzip ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
           require => Exec["icacls win patchfile ${title}"],
         }

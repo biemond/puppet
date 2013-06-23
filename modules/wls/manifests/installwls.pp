@@ -222,11 +222,16 @@ if ( $continue ) {
 
       }
       windows: {
+      	  # make dir folder suitable for unxtools
+      	  $oracleHomeWin  = slash_replace( $oracleHome )
+      	  $downloadDirWin = slash_replace( $downloadDir )      	  
           exec { 'create ${oracleHome} directory':
-                  command => "${checkCommand} mkdir -p ${oracleHome}",
+                  command => "${checkCommand} mkdir ${oracleHomeWin}",
+                  unless  => "${checkCommand} dir ${oracleHomeWin}",
           }
           exec { 'create ${downloadDir} home directory':
-                  command => "${checkCommand} mkdir -p ${downloadDir}",
+                  command => "${checkCommand} mkdir ${downloadDirWin}",
+                  unless  => "${checkCommand} dir ${downloadDirWin}",
           }
        }
        default: { 

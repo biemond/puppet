@@ -124,13 +124,15 @@ define wls::nodemanager($wlHome          = undef,
              }
          }
          windows: {
-             exec { 'create ${logDir} directory':
-                     command => "${checkCommand} mkdir -p ${logDir}",
-             }
-          }
-          default: { 
-           fail("Unrecognized operating system") 
+      	   $logDirWin = slash_replace( $logDir )      	  
+           exec { 'create ${logDir} directory':
+                  command => "${checkCommand} mkdir ${logDirWin}",
+                  unless  => "${checkCommand} dir ${logDirWin}",
            }
+         }
+         default: { 
+           fail("Unrecognized operating system") 
+         }
       }		
    
    

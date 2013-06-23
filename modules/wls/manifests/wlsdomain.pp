@@ -339,7 +339,7 @@ if ( $continue ) {
         } 
 
         exec { "domain.py ${domain} ${title}":
-           command     => "C:\\Windows\\System32\\cmd.exe /c del ${path}/domain_${domain}.py",
+           command     => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/domain_${domain}.py",
            subscribe   => Exec["icacls domain ${title}${script}"],
            refreshonly => true,
           }
