@@ -22,7 +22,7 @@ example usage
     jdk7::install7{ 'jdk1.7.0_17':
       version     =>  "7u17" , 
       fullVersion =>  "jdk1.7.0_17", 
-      x64         =>  "true",
+      x64         =>  true,
       downloadDir =>  "/data/install/",
     }
  

@@ -11,7 +11,7 @@
     "COPYING": "d32239bcb673463ab874e80d47fae504",
     "License": "cb9ee2123496a2f19485dde319d3a5cb",
     "Modulefile": "6eb5ef9f27b386a694d13a06a9847d6e",
-    "README.md": "305e83c154e2b498a9ae5ba179d26b66",
+    "README.md": "a876daeeddcebffab84e62ce15ca9ff5",
     "manifests/init.pp": "8789542a0e58126c699decad3e01d68c",
     "manifests/install7.pp": "67520f7c1b8aa5eb6480c790eb98b842",
     "manifests/javaexec.pp": "eee5d4a70009fc5832756cf86ef5c25a"
