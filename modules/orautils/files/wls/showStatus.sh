@@ -1,7 +1,20 @@
-AdminStatus=`/bin/ps -eo pid,cmd | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
-SoaServer1Status=`/bin/ps -eo pid,cmd | /bin/grep -i soa_server1 | /bin/grep -v grep | awk '{print $1}'`
-OsbServer1Status=`/bin/ps -eo pid,cmd | /bin/grep -i osb_server1 | /bin/grep -v grep | awk '{print $1}'`
-NodeManagerStatus=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+#!/usr/bin/ksh
+# *************************************************************************
+# This script can be used to show the statusses of the weblogic processes
+#
+
+
+unamestr=`uname`
+if [[ "$unamestr" == 'SunOS' ]]; then
+   checkStmt='/usr/ucb/ps wwxa'
+else 
+   checkStmt='/bin/ps -eo pid,cmd'
+fi
+
+AdminStatus=`${checkStmt} | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
+SoaServer1Status=`${checkStmt} | /bin/grep -i soa_server1 | /bin/grep -v grep | awk '{print $1}'`
+OsbServer1Status=`${checkStmt} | /bin/grep -i osb_server1 | /bin/grep -v grep | awk '{print $1}'`
+NodeManagerStatus=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
 
 if [ ${AdminStatus} ]
 then

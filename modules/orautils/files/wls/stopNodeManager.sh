@@ -1,11 +1,18 @@
-#!/bin/sh
+#!/usr/bin/ksh
 # *************************************************************************
 # This script can be used to stop the WebLogic NodeManager
 #
 
 echo "Stopping Nodemanager..."
 
-PID=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+unamestr=`uname`
+if [[ "$unamestr" == 'SunOS' ]]; then
+   checkStmt='/usr/ucb/ps wwxa'
+else 
+   checkStmt='/bin/ps -eo pid,cmd'
+fi
+
+PID=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
 
 if [ ${PID} ]
 then
