@@ -11,6 +11,11 @@ class orautils::params {
                                       default    => "/data/install", 
                                      }
 
+	$shell        = $::operatingsystem ? { Solaris => "!/usr/bin/ksh",
+  															         default => "!/bin/sh",
+  															       }   
+
+
   $osMdwHome    = "${osOracleHome}/Middleware11gR1"
   $osWlHome     = "${osOracleHome}/Middleware11gR1/wlserver_10.3" 
 

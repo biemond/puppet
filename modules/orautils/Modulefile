@@ -1,5 +1,5 @@
 name    'biemond-orautils'
-version '0.1.1'
+version '0.1.2'
 author 'Edwin Biemond'
 source 'https://github.com/biemond/puppet/tree/master/modules/oradb'
 summary 'Oracle WebLogic and Database linux utilities scripts'

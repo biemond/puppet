@@ -164,7 +164,7 @@ if ( $continue ) {
    File{
         owner   => $user,
         group   => $group,
-        mode    => 0770,
+        mode    => 0775,
    }
 
    # set exec defaults
