@@ -96,7 +96,7 @@ define javaexec ($path        = undef,
 
           if $setDefault == 'true' {
             exec { "default alternatives":
-              command => "alternatives --set java /usr/java/${fullversion}/bin/java",
+              command => "update-alternatives --set java /usr/java/${fullversion}/bin/java",
               require => Exec['install alternatives'],
             }
           }
