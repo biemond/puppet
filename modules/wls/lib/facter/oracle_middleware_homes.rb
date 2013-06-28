@@ -44,7 +44,7 @@ def get_bsu_patches(name)
    end 
   elsif ["Solaris"].include?os
    if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
-    output2 = Facter::Util::Resolution.exec("su oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
+    output2 = Facter::Util::Resolution.exec("su - oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
     if output2.nil?
       return "empty"
     end
@@ -82,7 +82,7 @@ def get_opatch_patches(name)
     if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
       output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
     elsif ["Solaris"].include?os
-      output3 = Facter::Util::Resolution.exec("su oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc -jre /usr \"")
+      output3 = Facter::Util::Resolution.exec("su - oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc -jre /usr \"")
     elsif ["windows"].include?os
       output3 = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat lsinventory -patch_id -oh " + name)
     end
