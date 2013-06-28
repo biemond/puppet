@@ -7,9 +7,12 @@ created by Edwin Biemond
 
 Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux 
 
+Works with Puppet 2.7 & 3.0 
+
 Version updates
 ---------------
 
+- 0.7.4 puppet 3.0 compatible
 - 0.7.3 bugfixes plus facts in sync with wls modules   
 - 0.7.2 bugfixes for rcu and database facts 
 
@@ -32,6 +35,7 @@ else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/"
 
 Coming in next release
 
+- Oracle Database 12.1 12c support  
 - Oracle Database 11.2.0.1 Linux Client installation
 - Auto startup scripts
 
@@ -93,15 +97,19 @@ The databaseType value should contain only one of these choices.
 - SE     : Standard Edition                                  
 - SEONE  : Standard Edition One
 
+     #$puppetDownloadMntPoint = "puppet:///database/"
+     $puppetDownloadMntPoint = "puppet:///modules/oradb/
+
      oradb::installdb{ '112030_Linux-x86-64':
-            version      => '11.2.0.3',
-            file         => 'p10404530_112030_Linux-x86-64',
-            databaseType => 'SE',
-            oracleBase   => '/oracle',
-            oracleHome   => '/oracle/product/11.2/db',
-            user         => 'oracle',
-            group        => 'dba',
-            downloadDir  => '/install/',  
+            version                => '11.2.0.3',
+            file                   => 'p10404530_112030_Linux-x86-64',
+            databaseType           => 'SE',
+            oracleBase             => '/oracle',
+            oracleHome             => '/oracle/product/11.2/db',
+            user                   => 'oracle',
+            group                  => 'dba',
+            downloadDir            => '/install',
+            puppetDownloadMntPoint => $puppetDownloadMntPoint,   
      }
 
 or 
@@ -114,7 +122,7 @@ or
             oracleHome   => '/oracle/product/11.2/db',
             user         => 'oracle',
             group        => 'dba',
-            downloadDir  => '/install/',  
+            downloadDir  => '/install',  
      }
 
 
@@ -129,7 +137,7 @@ other
        patchFile         => 'p14727310_112030_Linux-x86-64.zip',  
        user              => 'oracle',
        group             => 'dba',
-       downloadDir       => '/install/',
+       downloadDir       => '/install',
        ocmrf             => 'true',   
        require           => Oradb::Installdb['112030_Linux-x86-64'],
      }
@@ -138,7 +146,7 @@ other
             oracleHome   => '/oracle/product/11.2/db',
             user         => 'oracle',
             group        => 'dba',
-            downloadDir  => '/install/',
+            downloadDir  => '/install',
             require      => Oradb::Opatch['14727310_db_patch'],
      }
 
@@ -169,7 +177,7 @@ other
                       oracleHome              => '/oracle/product/11.2/db',
                       user                    => 'oracle',
                       group                   => 'dba',
-                      downloadDir             => '/install/',
+                      downloadDir             => '/install',
                       action                  => 'create',
                       dbName                  => 'test',
                       dbDomain                => 'oracle.com',
@@ -212,7 +220,7 @@ other
                       oracleHome              => '/oracle/product/11.2/db',
                       user                    => 'oracle',
                       group                   => 'dba',
-                      downloadDir             => '/install/',
+                      downloadDir             => '/install',
                       action                  => 'delete',
                       dbName                  => 'test',
                       sysPassword             => 'Welcome01',
@@ -228,7 +236,7 @@ Oracle SOA Suite Repository Creation Utility (RCU)
                      oracleHome       => '/oracle/product/11.2/db',
                      user             => 'oracle',
                      group            => 'dba',
-                     downloadDir      => '/install/',
+                     downloadDir      => '/install',
                      action           => 'create',
                      dbServer         => 'dbagent1.alfa.local:1521',  
                      dbService        => 'test.oracle.com',
@@ -243,7 +251,7 @@ Oracle SOA Suite Repository Creation Utility (RCU)
                      oracleHome       => '/oracle/product/11.2/db',
                      user             => 'oracle',
                      group            => 'dba',
-                     downloadDir      => '/install/',
+                     downloadDir      => '/install',
                      action           => 'delete',
                      dbServer         => 'dbagent1.alfa.local:1521',  
                      dbService        => 'test.oracle.com',

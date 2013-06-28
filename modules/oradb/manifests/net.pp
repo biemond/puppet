@@ -8,7 +8,7 @@
 define oradb::net(       $oracleHome   = undef,
                          $user         = 'oracle',
                          $group        = 'dba',
-                         $downloadDir  = '/install/',){
+                         $downloadDir  = '/install',){
 
 
    case $operatingsystem {
@@ -34,16 +34,16 @@ define oradb::net(       $oracleHome   = undef,
      }
    }
 
-   if ! defined(File["${path}netca_11.2.rsp"]) {
-     file { "${path}netca_11.2.rsp":
+   if ! defined(File["${path}/netca_11.2.rsp"]) {
+     file { "${path}/netca_11.2.rsp":
             ensure  => present,
             content => template("oradb/netca_11.2.rsp.erb"),
           }
    }
 
    exec { "install oracle net ${title}":
-            command     => "netca /silent /responsefile ${path}netca_11.2.rsp",
-            require     => File["${path}netca_11.2.rsp"],
+            command     => "netca /silent /responsefile ${path}/netca_11.2.rsp",
+            require     => File["${path}/netca_11.2.rsp"],
             creates     => "${oracleHome}/network/admin/listener.ora",
    } 
 

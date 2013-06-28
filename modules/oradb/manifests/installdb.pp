@@ -13,7 +13,7 @@
 #            oracleHome   => '/oracle/product/11.2/db',
 #            user         => 'oracle',
 #            group        => 'dba',
-#            downloadDir  => '/install/',  
+#            downloadDir  => '/install',  
 #         }
 #
 #    oradb::installdb{ '112010_Linux-x86-64':
@@ -24,7 +24,7 @@
 #            oracleHome   => '/oracle/product/11.2/db',
 #            user         => 'oracle',
 #            group        => 'dba',
-#            downloadDir  => '/install/',  
+#            downloadDir  => '/install',  
 #         }
 #
 #
@@ -37,7 +37,7 @@ define oradb::installdb( $version      = undef,
                          $oracleHome   = undef,
                          $user         = 'oracle',
                          $group        = 'dba',
-                         $downloadDir  = '/install/',
+                         $downloadDir  = '/install',
                          $puppetDownloadMntPoint  = undef,      
     )
   
@@ -50,10 +50,10 @@ define oradb::installdb( $version      = undef,
        $continue = true
   } else {
        if ( $found ) {
-         notify {"wls::installdb ${oracleHome} already exists":}
+         notify {"oradb::installdb ${oracleHome} already exists":}
          $continue = false
        } else {
-         notify {"wls::installdb ${oracleHome} does not exists":}
+         notify {"oradb::installdb ${oracleHome} does not exists":}
          $continue = true 
        }
   }
@@ -126,116 +126,116 @@ if ( $continue ) {
  if $version == '11.2.0.1' {  
 
    # db file 1 installer zip
-   file { "${path}${file}_1of2.zip":
+   file { "${path}/${file}_1of2.zip":
      source  => "${mountPoint}/${file}_1of2.zip",
      require => File[$path],
    }
 
 
-   exec { "extract ${path}${file}_1of2.zip":
-      command => "unzip ${path}${file}_1of2.zip -d ${path}${file}",
-      require => File["${path}${file}_1of2.zip"],
+   exec { "extract ${path}/${file}_1of2.zip":
+      command => "unzip ${path}/${file}_1of2.zip -d ${path}${file}",
+      require => File["${path}/${file}_1of2.zip"],
    }
        
 
    # db file 2 installer zip
-   file { "${path}${file}_2of2.zip":
+   file { "${path}/${file}_2of2.zip":
      source  => "${mountPoint}/${file}_2of2.zip",
-     require => File["${path}${file}_1of2.zip"],
+     require => File["${path}/${file}_1of2.zip"],
    }
 
-   exec { "extract ${path}${file}_2of2.zip":
-      command => "unzip ${path}${file}_2of2.zip -d ${path}${file}",
-      require => File["${path}${file}_2of2.zip"],
+   exec { "extract ${path}/${file}_2of2.zip":
+      command => "unzip ${path}/${file}_2of2.zip -d ${path}/${file}",
+      require => File["${path}/${file}_2of2.zip"],
    }
  }
 
  if $version == '11.2.0.3' {  
 
    # db file 1 installer zip
-   file { "${path}${file}_1of7.zip":
+   file { "${path}/${file}_1of7.zip":
      source  => "${mountPoint}/${file}_1of7.zip",
      require => File[$path],
    }
 
 
-   exec { "extract ${path}${file}_1of7.zip":
-      command => "unzip ${path}${file}_1of7.zip -d ${path}${file}",
-      require => File["${path}${file}_1of7.zip"],
+   exec { "extract ${path}/${file}_1of7.zip":
+      command => "unzip ${path}/${file}_1of7.zip -d ${path}/${file}",
+      require => File["${path}/${file}_1of7.zip"],
    }
        
 
    # db file 2 installer zip
-   file { "${path}${file}_2of7.zip":
+   file { "${path}/${file}_2of7.zip":
      source  => "${mountPoint}/${file}_2of7.zip",
-     require => File["${path}${file}_1of7.zip"],
+     require => File["${path}/${file}_1of7.zip"],
    }
 
-   exec { "extract ${path}${file}_2of7.zip":
-      command => "unzip ${path}${file}_2of7.zip -d ${path}${file}",
-      require => File["${path}${file}_2of7.zip"],
+   exec { "extract ${path}/${file}_2of7.zip":
+      command => "unzip ${path}/${file}_2of7.zip -d ${path}/${file}",
+      require => File["${path}/${file}_2of7.zip"],
    }
        
 
    # db file 3 installer zip
-   file { "${path}${file}_3of7.zip":
+   file { "${path}/${file}_3of7.zip":
      source  => "${mountPoint}/${file}_3of7.zip",
-     require => File["${path}${file}_2of7.zip"],
+     require => File["${path}/${file}_2of7.zip"],
    }
 
-   exec { "extract ${path}${file}_3of7.zip":
-      command => "unzip ${path}${file}_3of7.zip -d ${path}${file}",
-      require => File["${path}${file}_3of7.zip"],
+   exec { "extract ${path}/${file}_3of7.zip":
+      command => "unzip ${path}/${file}_3of7.zip -d ${path}/${file}",
+      require => File["${path}/${file}_3of7.zip"],
    }
        
 
 
    # db file 4 installer zip
-   file { "${path}${file}_4of7.zip":
+   file { "${path}/${file}_4of7.zip":
      source  => "${mountPoint}/${file}_4of7.zip",
-     require => File["${path}${file}_3of7.zip"],
+     require => File["${path}/${file}_3of7.zip"],
    }
 
-   exec { "extract ${path}${file}_4of7.zip":
-      command => "unzip ${path}${file}_4of7.zip -d ${path}${file}",
-      require => File["${path}${file}_4of7.zip"],
+   exec { "extract ${path}/${file}_4of7.zip":
+      command => "unzip ${path}/${file}_4of7.zip -d ${path}/${file}",
+      require => File["${path}/${file}_4of7.zip"],
    }
        
 
    # db file 5 installer zip
-   file { "${path}${file}_5of7.zip":
+   file { "${path}/${file}_5of7.zip":
      source  => "${mountPoint}/${file}_5of7.zip",
-     require => File["${path}${file}_4of7.zip"],
+     require => File["${path}/${file}_4of7.zip"],
    }
 
-   exec { "extract ${path}${file}_5of7.zip":
-      command => "unzip ${path}${file}_5of7.zip -d ${path}${file}",
-      require => File["${path}${file}_5of7.zip"],
+   exec { "extract ${path}/${file}_5of7.zip":
+      command => "unzip ${path}/${file}_5of7.zip -d ${path}/${file}",
+      require => File["${path}/${file}_5of7.zip"],
    }
        
 
 
    # db file 6 installer zip
-   file { "${path}${file}_6of7.zip":
+   file { "${path}/${file}_6of7.zip":
      source  => "${mountPoint}/${file}_6of7.zip",
-     require => File["${path}${file}_5of7.zip"],
+     require => File["${path}/${file}_5of7.zip"],
    }
 
-   exec { "extract ${path}${file}_6of7.zip":
-      command => "unzip ${path}${file}_6of7.zip -d ${path}${file}",
-      require => File["${path}${file}_6of7.zip"],
+   exec { "extract ${path}/${file}_6of7.zip":
+      command => "unzip ${path}/${file}_6of7.zip -d ${path}/${file}",
+      require => File["${path}/${file}_6of7.zip"],
    }
        
 
    # db file 7 installer zip
-   file { "${path}${file}_7of7.zip":
+   file { "${path}/${file}_7of7.zip":
      source  => "${mountPoint}/${file}_7of7.zip",
-     require => File["${path}${file}_6of7.zip"],
+     require => File["${path}/${file}_6of7.zip"],
    }
                                    
-   exec { "extract ${path}${file}_7of7.zip":
-      command => "unzip ${path}${file}_7of7.zip -d ${path}${file}",
-      require => File["${path}${file}_7of7.zip"],
+   exec { "extract ${path}/${file}_7of7.zip":
+      command => "unzip ${path}/${file}_7of7.zip -d ${path}/${file}",
+      require => File["${path}/${file}_7of7.zip"],
    }
  }
 
@@ -256,8 +256,8 @@ if ( $continue ) {
       }
    }
 
-   if ! defined(File["${path}db_install_${version}.rsp"]) {
-     file { "${path}db_install_${version}.rsp":
+   if ! defined(File["${path}/db_install_${version}.rsp"]) {
+     file { "${path}/db_install_${version}.rsp":
             ensure  => present,
             content => template("oradb/db_install_${version}.rsp.erb"),
             require => File["${oraInstPath}/oraInst.loc"],
@@ -266,8 +266,8 @@ if ( $continue ) {
 
    if $version == '11.2.0.3' {     
      exec { "install oracle database ${title}":
-            command     => "/bin/sh -c 'unset DISPLAY;${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp'",
-            require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}db_install_${version}.rsp"],Exec["extract ${path}${file}_7of7.zip"]],
+            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
+            require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_7of7.zip"]],
             creates     => $oracleHome,
             notify      => Exec["sleep 4 min for oracle db install ${title}"]
      } 
@@ -275,8 +275,8 @@ if ( $continue ) {
 
    if $version == '11.2.0.1' {     
      exec { "install oracle database ${title}":
-            command     => "/bin/sh -c 'unset DISPLAY;${path}${file}/database/runInstaller -silent -responseFile ${path}db_install_${version}.rsp'",
-            require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}db_install_${version}.rsp"],Exec["extract ${path}${file}_2of2.zip"]],
+            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
+            require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_2of2.zip"]],
             creates     => $oracleHome,
             notify      => Exec["sleep 4 min for oracle db install ${title}"]
      } 
