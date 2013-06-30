@@ -6,15 +6,15 @@
   "project_page": "http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/",
   "source": "https://github.com/biemond/puppet/tree/master/modules/jdk7",
   "summary": "Oracle JDK7 puppet module optimized for weblogic",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "checksums": {
     "COPYING": "d32239bcb673463ab874e80d47fae504",
     "License": "cb9ee2123496a2f19485dde319d3a5cb",
-    "Modulefile": "6eb5ef9f27b386a694d13a06a9847d6e",
-    "README.md": "a876daeeddcebffab84e62ce15ca9ff5",
+    "Modulefile": "6219e560ed0dd175317fd9238489d275",
+    "README.md": "da4ee4bdf276049ca6f8d94d757b2d09",
     "manifests/init.pp": "8789542a0e58126c699decad3e01d68c",
-    "manifests/install7.pp": "67520f7c1b8aa5eb6480c790eb98b842",
-    "manifests/javaexec.pp": "eee5d4a70009fc5832756cf86ef5c25a"
+    "manifests/install7.pp": "7cdeab24b20354894b99f31736b046d2",
+    "manifests/javaexec.pp": "5a58de61cc478a5bbbf32f31a124def2"
   },
   "dependencies": []
 }

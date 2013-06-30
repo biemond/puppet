@@ -15,7 +15,7 @@ define javaexec ($path        = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
       $execPath         = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-			$javaInstall      = "/usr/java/"
+			$javaInstall      = "/usr/java"
 
       Exec {
        path        => $execPath, 
