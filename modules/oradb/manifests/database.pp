@@ -33,6 +33,7 @@
 
 define oradb::database(  $oracleBase              = undef,
                          $oracleHome              = undef,
+                         $version                 = "11.2",
                          $user                    = 'oracle',
                          $group                   = 'dba',
                          $downloadDir             = '/install',
@@ -51,6 +52,13 @@ define oradb::database(  $oracleBase              = undef,
                          $memoryTotal             = "800",
                          $databaseType            = "MULTIPURPOSE",
     ){
+
+   if $version == "11.2" or $version == "12.1" {
+     
+   } else { 
+     fail("Unrecognized version") 
+   }
+
 
   $continue = true
    
@@ -92,7 +100,7 @@ define oradb::database(  $oracleBase              = undef,
    if ! defined(File["${path}/database_${title}.rsp"]) {
      file { "${path}/database_${title}.rsp":
             ensure  => present,
-            content => template("oradb/dbca_11.2.rsp.erb"),
+            content => template("oradb/dbca_${version}.rsp.erb"),
           }
    }
 
@@ -101,12 +109,14 @@ define oradb::database(  $oracleBase              = undef,
             command     => "dbca -silent -responseFile ${path}/database_${title}.rsp",
             require     => File["${path}/database_${title}.rsp"],
             creates     => "${oracleBase}/admin/${dbName}",
+            timeout     => 0,
      }
    } elsif $action == 'delete' {
      exec { "delete oracle database ${title}":
             command     => "dbca -silent -responseFile ${path}/database_${title}.rsp",
             require     => File["${path}/database_${title}.rsp"],
             onlyif      => "ls ${oracleBase}/admin/${dbName}",
+            timeout     => 0,
      }
    } 
   }

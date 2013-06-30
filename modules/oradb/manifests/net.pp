@@ -5,11 +5,17 @@
 #
 #
 
-define oradb::net(       $oracleHome   = undef,
-                         $user         = 'oracle',
-                         $group        = 'dba',
-                         $downloadDir  = '/install',){
+define oradb::net( $oracleHome   = undef,
+                   $version      = "11.2",
+                   $user         = 'oracle',
+                   $group        = 'dba',
+                   $downloadDir  = '/install',){
 
+   if $version == "11.2" or $version == "12.1" {
+     
+   } else { 
+     fail("Unrecognized version") 
+   }
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -34,16 +40,16 @@ define oradb::net(       $oracleHome   = undef,
      }
    }
 
-   if ! defined(File["${path}/netca_11.2.rsp"]) {
-     file { "${path}/netca_11.2.rsp":
+   if ! defined(File["${path}/netca_${version}.rsp"]) {
+     file { "${path}/netca_${version}.rsp":
             ensure  => present,
-            content => template("oradb/netca_11.2.rsp.erb"),
+            content => template("oradb/netca_${version}.rsp.erb"),
           }
    }
 
    exec { "install oracle net ${title}":
-            command     => "netca /silent /responsefile ${path}/netca_11.2.rsp",
-            require     => File["${path}/netca_11.2.rsp"],
+            command     => "netca /silent /responsefile ${path}/netca_${version}.rsp",
+            require     => File["${path}/netca_${version}.rsp"],
             creates     => "${oracleHome}/network/admin/listener.ora",
    } 
 

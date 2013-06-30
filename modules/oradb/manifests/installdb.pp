@@ -123,6 +123,35 @@ if ( $continue ) {
       }
    }
 
+if $version == '12.1.0.1' {  
+
+   # db file 1 installer zip
+   file { "${path}/${file}_1of2.zip":
+     source  => "${mountPoint}/${file}_1of2.zip",
+     require => File[$path],
+   }
+
+
+   exec { "extract ${path}/${file}_1of2.zip":
+      command => "unzip ${path}/${file}_1of2.zip -d ${path}/${file}",
+      require => File["${path}/${file}_1of2.zip"],
+   }
+       
+
+   # db file 2 installer zip
+   file { "${path}/${file}_2of2.zip":
+     source  => "${mountPoint}/${file}_2of2.zip",
+     require => File["${path}/${file}_1of2.zip"],
+   }
+
+   exec { "extract ${path}/${file}_2of2.zip":
+      command => "unzip ${path}/${file}_2of2.zip -d ${path}/${file}",
+      require => File["${path}/${file}_2of2.zip"],
+   }
+ }
+
+
+
  if $version == '11.2.0.1' {  
 
    # db file 1 installer zip
@@ -133,7 +162,7 @@ if ( $continue ) {
 
 
    exec { "extract ${path}/${file}_1of2.zip":
-      command => "unzip ${path}/${file}_1of2.zip -d ${path}${file}",
+      command => "unzip ${path}/${file}_1of2.zip -d ${path}/${file}",
       require => File["${path}/${file}_1of2.zip"],
    }
        
@@ -264,12 +293,19 @@ if ( $continue ) {
           }
    }
 
+   if $version == '12.1.0.1' {     
+     exec { "install oracle database ${title}":
+            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
+            require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_2of2.zip"]],
+            creates     => $oracleHome,
+     } 
+   }
+
    if $version == '11.2.0.3' {     
      exec { "install oracle database ${title}":
             command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_7of7.zip"]],
             creates     => $oracleHome,
-            notify      => Exec["sleep 4 min for oracle db install ${title}"]
      } 
    }
 
@@ -278,7 +314,6 @@ if ( $continue ) {
             command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_2of2.zip"]],
             creates     => $oracleHome,
-            notify      => Exec["sleep 4 min for oracle db install ${title}"]
      } 
    }
    
@@ -293,6 +328,7 @@ if ( $continue ) {
 
    exec { "sleep 4 min for oracle db install ${title}":
           command     => "/bin/sleep 240",
+          require     => Exec["install oracle database ${title}"]
    }    
 
    exec { "run root.sh script ${title}":

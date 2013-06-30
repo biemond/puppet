@@ -5,14 +5,15 @@ created by Edwin Biemond
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
-Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux 
+Should work for RedHat, CentOS, Ubuntu, Debian or OracleLinux 
 
 Works with Puppet 2.7 & 3.0 
 
 Version updates
 ---------------
 
-- 0.7.4 puppet 3.0 compatible
+- 0.7.5 support for Oracle database 12c or 12.1.0.1 plus bug fixes  
+- 0.7.4 puppet 3.0 compatible  
 - 0.7.3 bugfixes plus facts in sync with wls modules   
 - 0.7.2 bugfixes for rcu and database facts 
 
@@ -20,6 +21,7 @@ Version updates
 Oracle Database Features
 ---------------------------
 
+- Oracle Database 12.1.0.1 Linux installation
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
 - Oracle Database Net configuration   
@@ -35,10 +37,8 @@ else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/"
 
 Coming in next release
 
-- Oracle Database 12.1 12c support  
 - Oracle Database 11.2.0.1 Linux Client installation
 - Auto startup scripts
-
                                          
 Files
 -----
@@ -47,6 +47,12 @@ Patch 10404530: 11.2.0.3.0 PATCH SET FOR ORACLE DATABASE SERVER
 and upload this to the files folder of the oradb puppet module  
 
 For 11.2.0.1 Download oracle database linux software from http://otn.oracle.com
+
+For 12.1.0.1 Download oracle database linux software from http://otn.oracle.com
+
+# database files of linux 12.1.0.1 ( otn.oracle.com )  
+1361028723 Jun 27 23:38 linuxamd64_12c_database_1of2.zip  
+1116527103 Jun 27 23:38 linuxamd64_12c_database_2of2.zip  
 
 # database files of linux 11.2.0.3 ( support.oracle.com )
 1358454646 Mar  9 17:31 p10404530_112030_Linux-x86-64_1of7.zip  
@@ -100,6 +106,20 @@ The databaseType value should contain only one of these choices.
      #$puppetDownloadMntPoint = "puppet:///database/"
      $puppetDownloadMntPoint = "puppet:///modules/oradb/
 
+     oradb::installdb{ '12.1.0.1_Linux-x86-64':
+            version                => '12.1.0.1',
+            file                   => 'linuxamd64_12c_database',
+            databaseType           => 'SE',
+            oracleBase             => '/oracle',
+            oracleHome             => '/oracle/product/12.1/db',
+            user                   => 'oracle',
+            group                  => 'dba',
+            downloadDir            => '/data/install',
+            puppetDownloadMntPoint => $puppetDownloadMntPoint,  
+     }
+
+or
+
      oradb::installdb{ '112030_Linux-x86-64':
             version                => '11.2.0.3',
             file                   => 'p10404530_112030_Linux-x86-64',
@@ -144,6 +164,7 @@ other
 
      oradb::net{ 'config net8':
             oracleHome   => '/oracle/product/11.2/db',
+            version      => '11.2' or "12.1",   
             user         => 'oracle',
             group        => 'dba',
             downloadDir  => '/install',
@@ -175,6 +196,7 @@ other
      oradb::database{ 'testDb_Create': 
                       oracleBase              => '/oracle',
                       oracleHome              => '/oracle/product/11.2/db',
+                      version                 => '11.2' or "12.1", 
                       user                    => 'oracle',
                       group                   => 'dba',
                       downloadDir             => '/install',
@@ -187,7 +209,7 @@ other
                       recoveryAreaDestination => "/oracle/flash_recovery_area",
                       characterSet            => "AL32UTF8",
                       nationalCharacterSet    => "UTF8",
-                      initParams              => "open_cursors=1000,processes=600,job_queue_processes=4,compatible=11.2.0.0.0",
+                      initParams              => "open_cursors=1000,processes=600,job_queue_processes=4",
                       sampleSchema            => 'TRUE',
                       memoryPercentage        => "40",
                       memoryTotal             => "800",
