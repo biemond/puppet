@@ -49,9 +49,8 @@ define wls::resourceadapter( $wlHome         = undef,
                              $userKeyFile    = undef,
                              $user           = 'oracle', 
                              $group          = 'dba',
-                             $downloadDir    = '/install/',
+                             $downloadDir    = '/install',
                             ) {
-
 
    # if these params are empty always continue    
    if $domain == undef or $adapterName == undef or $adapterPlanDir == undef or $adapterPlan == undef {
@@ -92,8 +91,6 @@ define wls::resourceadapter( $wlHome         = undef,
        }
      }
    }
-
-
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -198,7 +195,7 @@ if ( $continuePlan ) {
 
 }
 
-# after deployment of the plan we can add a new entry to the adapter  
+# after deployment of the plan we can add a new entry to the adapter
 if ( $continueEntry ) {
 
   if $adapterName == 'DbAdapter' or $adapterName == 'AqAdapter'  {

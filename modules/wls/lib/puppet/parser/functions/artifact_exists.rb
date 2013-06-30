@@ -3,21 +3,23 @@ module Puppet::Parser::Functions
   newfunction(:artifact_exists, :type => :rvalue) do |args|
     
     art_exists = false
-    mdwArg = args[0].strip.downcase
+    if args[0].nil?
+      return art_exists
+    else
+      mdwArg = args[0].strip.downcase
+    end    
 
     # check the middleware home
     mdw_count = lookupvar('ora_mdw_cnt')
     if mdw_count.nil?
       return art_exists
-
     else
       # check the all mdw home
       i = 0
       while ( i < mdw_count.to_i) 
 
-        mdw = lookupvar('ora_mdw_'+i.to_s)
-
-        unless mdw.nil?
+        if lookupvar('ora_mdw_'+i.to_s) != :undefined  
+          mdw = lookupvar('ora_mdw_'+i.to_s)
           mdw = mdw.strip.downcase
           os = lookupvar('operatingsystem')
           if os == "windows"
@@ -32,15 +34,18 @@ module Puppet::Parser::Functions
           while ( n < domain_count.to_i )
 
             # lookup up domain
-            domain = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s)
-            unless domain.nil?
+            if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s) != :undefined
+              domain = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s)  
               domain = domain.strip.downcase
 
               # do we found the right domain
               if domain == mdwArg 
                 
-                type = args[1].strip
-                
+                if args[1].nil?
+                  return art_exists
+                else
+                  type = args[1].strip
+                end    
                 # check jdbc datasources
                 if type == 'jdbc'
                   if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_jdbc') != :undefined
@@ -52,19 +57,38 @@ module Puppet::Parser::Functions
                     end
                   end
                 elsif type == 'resource'
-                  adapter = args[2].strip.downcase
-                  plan = args[3].strip.downcase
+                  
+                  if args[2].nil?
+                    return art_exists
+                  else
+                    adapter = args[2].strip.downcase
+                  end    
+                  if args[3].nil?
+                    return art_exists
+                  else
+                    plan = args[3].strip.downcase
+                  end    
 
                   if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_plan') != :undefined
-                    planValue =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_plan')
-                    if planValue.strip.downcase == plan
-                      return true
-                    end
+                     planValue =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_plan')
+                     if planValue.strip.downcase == plan
+                       return true
+                     end
                   end
                 elsif type == 'resource_entry'
-                  adapter = args[2].strip.downcase
-                  entry = args[3].strip
 
+                  if args[2].nil?
+                    return art_exists
+                  else
+                    adapter = args[2].strip.downcase
+                  end    
+                  if args[3].nil?
+                    return art_exists
+                  else
+                    entry = args[3].strip
+                  end    
+
+                  
                   if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_entries') != :undefined
                     planEntries =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_entries')
                     unless planEntries.nil?
