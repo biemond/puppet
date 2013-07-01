@@ -1,14 +1,15 @@
 # jrockit::instalrockit
 
 define jrockit::installrockit( 
-	$version       =  undef , 
-	$x64           =  undef,
-	$downloadDir   =  '/install/',
-	$installDemos  =  'false',
-	$installSource =  'false',
-	$installJre    =  'true',
-	$setDefault    =  'true',
-	$jreInstallDir =  '/usr/java',) {
+	$version        =  undef , 
+	$x64            =  undef,
+	$downloadDir    =  '/install/',
+	$puppetMountDir =  undef,
+	$installDemos   =  'false',
+	$installSource  =  'false',
+	$installJre     =  'true',
+	$setDefault     =  'true',
+	$jreInstallDir  =  '/usr/java',) {
 
 	$fullVersion   =  "jrockit-jdk${version}"
 	$installDir    =  "/usr/java/${fullVersion}"
@@ -52,12 +53,20 @@ define jrockit::installrockit(
 		}
 	}
 
+	# if a mount was not specified then get the install media from the puppet master
+    if $puppetMountDir == undef {
+	    $mountDir = "puppet:///modules/jrockit/"    	
+    } else {
+    	$mountDir = $puppetMountDir
+    }
+
+
 	# download jdk to client
 	if ! defined(File["${downloadDir}${jdkfile}"]) {
 		file {"${downloadDir}${jdkfile}":
 			path    => "${downloadDir}${jdkfile}",
 			ensure  => present,
-			source  => "puppet:///modules/jrockit/${jdkfile}",
+			source  => "${mountDir}${jdkfile}",
 			require => File[$downloadDir],
 			mode    => 0777,
 		} 
