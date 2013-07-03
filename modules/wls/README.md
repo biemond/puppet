@@ -263,7 +263,7 @@ puppet module install erwbgy-limits
        config => {
                   '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
                                 },
-                  '@oracle'  => { 'nofile'  => { soft => '16384'  , hard => '16384',  },
+                  'oracle'  => { 'nofile'  => { soft => '16384'  , hard => '16384',  },
                                   'nproc'   => { soft => '2048'   , hard => '2048',   },
                                   'memlock' => { soft => '1048576', hard => '1048576',},
                                 },
@@ -342,6 +342,82 @@ WebLogic configuration examples
            $logsDir      = "c:/oracle/logs" 
          }
       }
+
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+            $mtimeParam = "1"
+         }
+         Solaris: { 
+            $mtimeParam = "+1"
+         }
+      }
+
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+		  cron { 'cleanwlstmp' :
+		    command => "find /tmp -name '*.tmp' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/tmp_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 25,
+		  }
+		 
+		  cron { 'mdwlogs' :
+		    command => "find ${osMdwHome}/logs -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 30,
+		  }
+		 
+		  cron { 'oracle_common_lsinv' :
+		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_common_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 31,
+		  }
+		 
+		  cron { 'oracle_osb1_lsinv' :
+		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_osb1_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 32,
+		  }
+		 
+		  cron { 'oracle_soa1_lsinv' :
+		    command => "find ${osMdwHome}/Oracle_SOA1/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt'  -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_soa1_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 33,
+		  }
+		 
+		  cron { 'oracle_common_opatch' :
+		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_common_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 34,
+		  }
+		 
+		  cron { 'oracle_osb1_opatch' :
+		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_osb_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 35,
+		  }
+		 
+		  cron { 'oracle_soa1_opatch' :
+		    command => "find ${osMdwHome}/Oracle_SOA1/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_soa_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 35,
+		  }
+
+
+         }
+      }
+     
+	  
+	 
+
+
     
       # set the defaults
       Wls::Installwls {
@@ -428,140 +504,6 @@ WebLogic configuration examples
     }
     
     
-    
-    class wls1036osb_soa{
-    
-      if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
-      }
-    
-      if $wls11gVersion == undef {
-        $wls11gVersion = "1036"
-      }
-    
-     
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
-           $osOracleHome = "/opt/wls"
-           $osMdwHome    = "/opt/wls/Middleware11gR1"
-           $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
-           $user         = "oracle"
-           $group        = "dba"
-           $downloadDir  = "/data/install/"
-         }
-         windows: { 
-           $osOracleHome = "c:/oracle"
-           $osMdwHome    = "c:/oracle/wls11g"
-           $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
-           $user         = "Administrator"
-           $group        = "Administrators"
-           $serviceName  = "C_oracle_wls11g_wlserver_10.3"
-           $downloadDir  = "c:/temp"
-         }
-      }
-    
-      # set the defaults
-      Wls::Installwls {
-        version      => $wls11gVersion,
-        fullJDKName  => $jdkWls11gJDK,
-        oracleHome   => $osOracleHome,
-        mdwHome      => $osMdwHome,
-        user         => $user,
-        group        => $group,    
-        downloadDir  => $downloadDir, 
-      }
-    
-      Wls::Installosb {
-        mdwHome      => $osMdwHome,
-        wlHome       => $osWlHome,
-        oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,    
-        downloadDir  => $downloadDir, 
-      }
-    
-      Wls::Installsoa {
-        mdwHome      => $osMdwHome,
-        wlHome       => $osWlHome,
-        oracleHome   => $osOracleHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,    
-        downloadDir  => $downloadDir, 
-      }
-      
-      Wls::Nodemanager {
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,	
-        user         => $user,
-        group        => $group,
-        serviceName  => $serviceName,  
-        downloadDir  => $downloadDir, 
-      }
-    
-      Wls::Bsupatch {
-        mdwHome      => $osMdwHome ,
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,
-        user         => $user,
-        group        => $group,
-        downloadDir  => $downloadDir, 
-      }
-      
-      Wls::Opatch {
-        fullJDKName  => $jdkWls11gJDK,
-        user         => $user,
-        group        => $group,
-        downloadDir  => $downloadDir, 
-      }  
-    
-      # install
-      wls::installwls{'11gPS5':}
-    
-    	# weblogic patch
-      wls::bsupatch{'p14736139':
-         patchId      => 'HYKC',    
-         patchFile    => 'p14736139_1036_Generic.zip',  
-         require      => Wls::Installwls['11gPS5'],
-       }
-    
-    
-       wls::installosb{'osbPS5':
-         osbFile      => 'ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip',
-         require      => Wls::Bsupatch['p14736139'],
-       }
-    
-       wls::opatch{'14389126_osb_patch':
-         oracleProductHome => "${osMdwHome}/Oracle_OSB1" ,
-         patchId           => '14389126',	
-         patchFile         => 'p14389126_111160_Generic.zip',	
-         require           => Wls::Installosb['osbPS5'],
-       }
-    
-       wls::installsoa{'soaPS5':
-         soaFile1      => 'ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip',
-         soaFile2      => 'ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip',
-         require       =>  Wls::Opatch['14389126_osb_patch'],
-       }
-    
-       wls::opatch{'14406487_soa_patch':
-         oracleProductHome => "${osMdwHome}/Oracle_SOA1" ,
-         patchId           => '14406487',	
-         patchFile         => 'p14406487_111160_Generic.zip',	
-         require           => Wls::Installsoa['soaPS5'],
-       }
-    
-       #nodemanager configuration and starting
-       wls::nodemanager{'nodemanager11g':
-         listenPort  => '5556',
-         logDir      => '/data/logs',
-         require     => Wls::Opatch['14406487_soa_patch'],
-       }
-    
-    }
-    
-    
     class wls1036osb_PS6{
     
       if $jdkWls11gJDK == undef {
@@ -592,6 +534,64 @@ WebLogic configuration examples
            $downloadDir  = "c:\\temp\\"
          }
       }
+
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+            $mtimeParam = "1"
+         }
+         Solaris: { 
+            $mtimeParam = "+1"
+         }
+      }
+
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+		  cron { 'cleanwlstmp' :
+		    command => "find /tmp -maxdepth 1 -name '*.tmp' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/tmp_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 06,
+		    minute  => 10,
+		  }
+		 
+		  cron { 'mdwlogs' :
+		    command => "find ${osMdwHome}/logs -maxdepth 1 -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 13,
+		    minute  => 30,
+		  }
+		 
+		  cron { 'oracle_common_lsinv' :
+		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch/lsinv -maxdepth ${mtimeParam} -name 'lsinventory*.txt' -mtime 1 -exec rm {} \\; >> /tmp/opatch_lsinv_common_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 13,
+		    minute  => 31,
+		  }
+		 
+		  cron { 'oracle_osb1_lsinv' :
+		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch/lsinv -maxdepth ${mtimeParam} -name 'lsinventory*.txt' -mtime 1 -exec rm {} \\; >> /tmp/opatch_lsinv_osb1_purge.log 2>&1",
+		    user    => oracle,
+		    hour    => 13,
+		    minute  => 32,
+		  }
+		 
+		  cron { 'oracle_common_opatch' :
+		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch -maxdepth ${mtimeParam} -name 'opatch*.log' -mtime 1 -exec rm {} \\; >> /tmp/opatch_common_purge.log 2>&1",
+		    user    => oracle,
+		   hour    => 13,
+		    minute  => 34,
+		  }
+		 
+		  cron { 'oracle_osb1_opatch' :
+		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch -maxdepth ${mtimeParam} -name 'opatch*.log' -mtime 1 -exec rm {} \\; >> /tmp/opatch_osb_purge.log 2>&1",
+		    user    => oracle,
+		   hour    => 13,
+		    minute  => 35,
+		  }
+
+         }
+      }
+
+
     
       # set the defaults
       Wls::Installwls {

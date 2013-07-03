@@ -248,6 +248,38 @@ other
                       sysPassword             => 'Welcome01',
                       require                 => Oradb::Dbactions['start testDb'],
     }
+
+	  case $operatingsystem {
+	    CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+	      $mtimeParam = "1"
+	    }
+	    Solaris: { 
+	      $mtimeParam = "+1"
+	    }
+	  }
+	
+	
+	  case $operatingsystem {
+	    CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	
+			  cron { 'oracle_db_opatch' :
+			    command => "find /oracle/product/12.1/db/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_db_purge.log 2>&1",
+			    user    => oracle,
+			    hour    => 06,
+			    minute  => 34,
+			  }
+			 
+			  cron { 'oracle_db_lsinv' :
+			    command => "find /oracle/product/12.1/db/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_db_purge.log 2>&1",
+			    user    => oracle,
+			    hour    => 06,
+			    minute  => 32,
+			  }
+	
+	
+	    }
+	  }
+
   
 
 Oracle SOA Suite Repository Creation Utility (RCU)
@@ -414,7 +446,7 @@ install the following module to set the database user limits parameters
          config => {
                     '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
                                   },
-                    '@oracle'  => { 'nofile'  => { soft => '1024'   , hard => '65536',  },
+                    'oracle'  => { 'nofile'  => { soft => '1024'   , hard => '65536',  },
                                     'nproc'   => { soft => '2048'   , hard => '16384',   },
                                     'stack'   => { soft => '10240'  ,},
                                   },

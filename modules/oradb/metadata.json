@@ -9,7 +9,7 @@
   "version": "0.7.5",
   "checksums": {
     "Modulefile": "0bfc56ed0e61e900022bbe5f1a57f88b",
-    "README.md": "20b2a27383a0eb2ec3c9ca4d66962522",
+    "README.md": "c18cc8ea2e544e5396161763819f2072",
     "lib/facter/oracle_database_homes.rb": "23bddecf3d82d3554bad5f03abb86b13",
     "lib/puppet/parser/functions/opatch_exists.rb": "4f8da5204d5e9618ae20fca443a4b59c",
     "lib/puppet/parser/functions/oracle_exists.rb": "1e9bf6da767a05da8305d005f45afb40",
