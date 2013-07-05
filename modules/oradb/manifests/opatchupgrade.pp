@@ -9,9 +9,12 @@
 #   oradb::opatchupgrade{'112000_opatch_upgrade':
 #     oracleHome => '/oracle/product/11.2/db' ,
 #     patchFile         => '112030', 
+#     csiNumber         => '9999999',
+#     supportId         => 'me@mycompany.com',
+#     version           => '11.2.0.3.4',
 #     user              => 'oracle',
 #     group             => 'dba',
-#     downloadDir       => '/install/',   
+#     downloadDir       => '/install',   
 #     require           => Class['oradb::installdb'],
 #   }
 #
@@ -23,9 +26,10 @@ define oradb::opatchupgrade(
     $patchFile      = undef,  
     $csiNumber      = undef,
     $supportId      = undef,
+    $opversion      = undef,
     $user           = 'oracle',
     $group          = 'dba',
-    $downloadDir    = '/install/',
+    $downloadDir    = '/install',
     $puppetMountDir = undef,
   ) {
 
@@ -61,56 +65,57 @@ define oradb::opatchupgrade(
 
   # if a mount was not specified then get the install media from the puppet master
   if $puppetMountDir == undef {
-    $mountDir = "puppet:///modules/oradb/"      
+    $mountDir = "puppet:///modules/oradb"      
   } else {
     $mountDir = $puppetMountDir
   }
 
-     # check if the opatch already is installed 
-     # $found = opatch_exists($oracleHome,$patchId)
-     # if $found == undef {
-     #   $continue = true
-     # } else {
-     #   if ( $found ) {
-     #     notify {"oradb::opatch ${title} ${oracleHome} already exists":}
-     #     $continue = false
-     #   } else {
-     #     notify {"oradb::opatch ${title} ${oracleHome} does not exists":}
-     #     $continue = true 
-     #   }
-     # }
-  if ! defined(File["${downloadDir}${patchFile}"]) {
-    file {"${downloadDir}${patchFile}":
-      path    => "${downloadDir}${patchFile}",
-      ensure  => present,
-      source  => "${mountDir}${patchFile}",
-      require => File[$downloadDir],
-      mode    => 0777,
-    } 
+  # check the opatch version
+  $oversion = opatch_version($oracleHome)
+
+  if $oversion == $version {
+    notify {"oradb::opatchupgrade ${oversion} already installed":}
+    $continue = false
+  } else {
+    notify {"oradb::opatchupgrade ${oversion} installed - performing upgrade":}
+    $continue = true
   }
 
-  case $operatingsystem {
-    CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+  if ( $continue ) {
 
-      file { "remove_old":
-        ensure  => absent,
-        recurse => true,
-        path    => $patchDir,
-        force   => true,
-      }
-      ->
-      exec { "extract opatch ${patchFile}":
-        command => "unzip -n ${downloadDir}${patchFile} -d ${oracleHome}",
-        require => File ["${downloadDir}${patchFile}"],
-      }
+    if ! defined(File["${downloadDir}/${patchFile}"]) {
+      file {"${downloadDir}/${patchFile}":
+        path    => "${downloadDir}/${patchFile}",
+        ensure  => present,
+        source  => "${mountDir}/${patchFile}",
+        require => File[$downloadDir],
+        mode    => 0777,
+      } 
+    }
 
-      if $csiNumber != undef and supportId != undef {
-        exec { "exec emocmrsp":
-          cwd      => "${patchDir}",
-          command  => "${patchDir}/ocm/bin/emocmrsp ${csiNumber} ${supportId}",
-          require  => Exec["extract opatch ${patchFile}"],
-        } 
-      }
-    }  
+    case $operatingsystem {
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+
+        file { "remove_old":
+          ensure  => absent,
+          recurse => true,
+          path    => $patchDir,
+          force   => true,
+        }
+        ->
+        exec { "extract opatch ${patchFile}":
+          command => "unzip -n ${downloadDir}/${patchFile} -d ${oracleHome}",
+          require => File ["${downloadDir}/${patchFile}"],
+        }
+
+        if $csiNumber != undef and supportId != undef {
+          exec { "exec emocmrsp ${oversion}":
+            cwd      => "${patchDir}",
+            command  => "${patchDir}/ocm/bin/emocmrsp ${csiNumber} ${supportId}",
+            require  => Exec["extract opatch ${patchFile}"],
+          } 
+        }
+      }  
+    }
   }
 }

@@ -25,6 +25,28 @@ def get_opatch_patches(name)
     return opatches
 end  
 
+def get_opatch_version(name)
+
+    os = Facter.value(:operatingsystem)
+
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+      opatchOut = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch version\"")
+    elsif ["Solaris"].include?os
+      opatchOut = Facter::Util::Resolution.exec("su - oracle -c \""+name+"/OPatch/opatch version\"")
+    elsif ["windows"].include?os
+      opatchOut = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat version")
+
+    end
+
+    if opatchOut.nil?
+      opatchver = "Error;"
+    else 
+      opatchver = opatchOut.split(" ")[2]
+    end
+
+    return opatchver
+end
+
 def get_orainst_loc()
   os = Facter.value(:operatingsystem)
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
@@ -81,6 +103,12 @@ def get_orainst_products(path)
             Facter.add("ora_inst_patches#{home}") do
               setcode do
                 output
+              end
+            end
+            opatchver = get_opatch_version(str)
+            Facter.add("ora_inst_opatch#{home}") do
+              setcode do
+                opatchver
               end
             end
           end
