@@ -169,7 +169,7 @@ if ( $continue ) {
    $command  = "-silent -response ${path}/${title}silent_soa.xml "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
@@ -210,6 +210,52 @@ if ( $continue ) {
 
              
      }
+     Solaris: { 
+
+        if ! defined(Exec["extract ${soaFile1}"]) {
+         exec { "extract ${soaFile1}":
+          command => "unzip ${path}/${soaFile1} -d ${path}/soa",
+          creates => "${path}/soa/Disk1",
+          require => [File ["${path}/${soaFile2}"],File ["${path}/${soaFile1}"]],
+         }
+        }
+
+        if ! defined(Exec["extract ${soaFile2}"]) {
+         exec { "extract ${soaFile2}":
+          command => "unzip ${path}/${soaFile2} -d ${path}/soa",
+          creates => "${path}/soa/Disk5",
+          require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
+         }
+        }
+
+        exec { "add -d64 oraparam.ini soa":
+          command => "sed -e's/\[Oracle\]/\[Oracle\]\\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini > /tmp/soa.tmp && mv /tmp/soa.tmp ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini",
+          require => [Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
+        }
+
+
+        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
+         file { "${oraInstPath}/oraInst.loc":
+           ensure  => present,
+           content => template("wls/oraInst.loc.erb"),
+         }
+        }
+        
+        exec { "install soa ${title}":
+          command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"],Exec["add -d64 oraparam.ini soa"]],
+          creates     => $soaOracleHome,
+          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+        }    
+
+        exec { "sleep 3 min for soa install ${title}":
+          command     => "/bin/sleep 180",
+          require     => Exec ["install soa ${title}"],
+        }    
+
+             
+     }
+
      windows: { 
 
         if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 

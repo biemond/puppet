@@ -164,7 +164,7 @@ if ( $continue ) {
    $command  = "-silent -response ${path}/${title}silent_osb.xml "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":
@@ -174,11 +174,11 @@ if ( $continue ) {
          }
         }
 
+
         if ! defined(File["${oraInstPath}/oraInst.loc"]) {
          file { "${oraInstPath}/oraInst.loc":
            ensure  => present,
            content => template("wls/oraInst.loc.erb"),
-#           require => [Exec["extract ${osbFile}"],File ["${path}/${osbFile}"]],
          }
         }
         
@@ -196,6 +196,43 @@ if ( $continue ) {
 
              
      }
+     Solaris: { 
+
+        if ! defined(Exec["extract ${osbFile}"]) {
+         exec { "extract ${osbFile}":
+          command => "unzip ${path}/${osbFile} -d ${path}/osb",
+          require => [File ["${path}/${osbFile}"],File ["${path}/${title}silent_osb.xml"]],
+          creates => "${path}/osb",
+         }
+        }
+
+        exec { "add -d64 oraparam.ini osb":
+          command => "sed -e's/\[Oracle\]/\[Oracle\]\\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini > /tmp/osb.tmp && mv /tmp/osb.tmp ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini",
+          require => Exec["extract ${osbFile}"],
+        }
+
+        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
+         file { "${oraInstPath}/oraInst.loc":
+           ensure  => present,
+           content => template("wls/oraInst.loc.erb"),
+         }
+        }
+        
+        exec { "install osb ${title}":
+          command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"],Exec["add -d64 oraparam.ini osb"]],
+          creates     => $osbOracleHome,
+          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+        }    
+
+        exec { "sleep 3 min for osb install ${title}":
+          command     => "/bin/sleep 180",
+          require     => Exec ["install osb ${title}"],
+        }    
+
+             
+     }
+
      windows: { 
 
         if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 
