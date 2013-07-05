@@ -24,7 +24,7 @@ nodePid=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | 
 
 if [ ${pid} ]
 then
-  if [[ ${nodePid} ]]
+  if [ ${nodePid} ]
   then
     echo "The Weblogic ${wlsAdminServer} for domain ${osDomain} is running.. Stopping ${wlsAdminServer} NOW...."
     $osWlHome/common/bin/wlst.sh <<-EOF

@@ -13,7 +13,7 @@ fi
 
 pid=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
 
-if [[ ${pid} ]]
+if [ ${pid} ]
 then
   echo "The NodeManager is already running.. NodeManager NOT started again...."
 else
@@ -22,7 +22,7 @@ else
   <%= @osWlHome %>/server/bin/startNodeManager.sh & 
   sleep 5
   pid=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
-  if [[ ${pid} ]]
+  if [ ${pid} ]
   then
     echo "NodeManager is started with pid : $pid...."
   else

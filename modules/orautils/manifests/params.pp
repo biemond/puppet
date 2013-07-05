@@ -3,6 +3,7 @@ class orautils::params {
   $osOracleHome = $::hostname ? { 
                                     xxxxxx     => "/data/wls",
                                     devagent1  => "/opt/oracle/wls",
+                                    devagent30 => "/opt/oracle/wls",
                                     default    => "/opt/wls", 
                                 }
 

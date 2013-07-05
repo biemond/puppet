@@ -2,6 +2,7 @@ Oracle WebLogic orautils puppet module
 =======================================================
 
 changes  
+0.1.3 bug fixes
 0.1.1 support for Solaris
 
 

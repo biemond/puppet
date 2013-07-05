@@ -23,12 +23,12 @@ fi
 pid=`${checkStmt} | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
 nodePid=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
 
-if [[ ${pid} ]]
+if [ ${pid} ]
 then
   echo "The Weblogic ${wlsAdminServer} for domain ${osDomain} is already running...."
   echo "Server NOT started again...."
 else
-  if [[ ${nodePid} ]]
+  if [ ${nodePid} ]
   then
     echo "The Weblogic ${wlsAdminServer} for domain ${osDomain} is not running...."
     echo "Starting Weblogic ${wlsAdminServer} for domain ${osDomain}...."

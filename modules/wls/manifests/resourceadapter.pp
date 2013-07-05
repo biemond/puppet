@@ -111,6 +111,27 @@ define wls::resourceadapter( $wlHome         = undef,
                group   => $group,
              }     
      }
+     Solaris: { 
+
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $path             = $downloadDir
+        $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
+
+
+        Exec { path      => $execPath,
+               user      => $user,
+               group     => $group,
+               logoutput => true,
+             }
+        File {
+               ensure  => present,
+               replace => 'yes',
+               mode    => 0555,
+               owner   => $user,
+               group   => $group,
+             }  
+     
+     }
      windows: { 
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
@@ -170,7 +191,7 @@ if ( $continuePlan ) {
    $javaCommand    = "java weblogic.Deployer"
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         # deploy the plan and update the adapter  
         exec { "exec deployer adapter plan ${title}":
@@ -221,7 +242,7 @@ if ( $continueEntry ) {
 
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         # deploy the plan and update the adapter  
         exec { "exec create resource adapter entry ${title}":
