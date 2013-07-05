@@ -56,7 +56,7 @@ define wls::nodemanager($wlHome          = undef,
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
-        $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${listenPort}'"
+        $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager'"
         $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         $nativeLib        = "linux/x86_64"  
@@ -74,7 +74,7 @@ define wls::nodemanager($wlHome          = undef,
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:${otherPath}"
-        $checkCommand     = "/usr/ucb/ps wwxa | grep -v grep | /bin/grep 'weblogic.NodeManager' | /bin/grep '${listenPort}'"
+        $checkCommand     = "/usr/ucb/ps wwxa | grep -v grep | /bin/grep 'weblogic.NodeManager'"
         $path             = $downloadDir
         $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
         $nativeLib        = "solaris/x64"
