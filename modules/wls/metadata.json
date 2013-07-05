@@ -33,7 +33,7 @@
     "manifests/nodemanager.pp": "504d53f3f55b222a352cd495dd78e6ca",
     "manifests/opatch.pp": "193877a872d43f6e78aa6b94e9bef72a",
     "manifests/params.pp": "7ee9ef63053d46c1e2048930ce632c8a",
-    "manifests/resourceadapter.pp": "1aebd01a2c6260821805e7b3a5f499b6",
+    "manifests/resourceadapter.pp": "ceb6d6ccd6e7a3af28f51c3e3ae06378",
     "manifests/storeuserconfig.pp": "85a3a9d2295f6e63f9632d501a4ca53b",
     "manifests/wlsdeploy.pp": "8f497035b5664ed19f8f4b2d4c7673fa",
     "manifests/wlsdomain.pp": "315520815873ce2d11d1184900583e31",
