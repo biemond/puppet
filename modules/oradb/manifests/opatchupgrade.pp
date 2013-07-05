@@ -11,7 +11,7 @@
 #     patchFile         => '112030', 
 #     csiNumber         => '9999999',
 #     supportId         => 'me@mycompany.com',
-#     version           => '11.2.0.3.4',
+#     opversion         => '11.2.0.3.4',
 #     user              => 'oracle',
 #     group             => 'dba',
 #     downloadDir       => '/install',   
@@ -71,13 +71,13 @@ define oradb::opatchupgrade(
   }
 
   # check the opatch version
-  $oversion = opatch_version($oracleHome)
+  $installedVersion = opatch_version($oracleHome)
 
-  if $oversion == $version {
-    notify {"oradb::opatchupgrade ${oversion} already installed":}
+  if $installedVersion == $opversion {
+    notify {"oradb::opatchupgrade ${installedVersion} already installed":}
     $continue = false
   } else {
-    notify {"oradb::opatchupgrade ${oversion} installed - performing upgrade":}
+    notify {"oradb::opatchupgrade ${installedVersion} installed - performing upgrade":}
     $continue = true
   }
 
