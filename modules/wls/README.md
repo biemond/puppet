@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 0.9.9 solaris plus resource adapter fixes 
 - 0.9.8 compatible with puppet 3.0  
 - 0.9.7 Windows bugfixes  
 - 0.9.6 support for Solaris x86 64  
