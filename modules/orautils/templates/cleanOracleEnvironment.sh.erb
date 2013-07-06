@@ -38,7 +38,7 @@ else
     rm -rf $osOracleHome
     echo "Step 3 Remove beahome list of user $oraUser"
     rm -rf "${userHome}/${oraUser}/bea"
-    echo "Step 4 Remove /etc/oraInst.loc"
+    echo "Step 4 Remove ${oraInstHome}/oraInst.loc"
     rm -rf "${oraInstHome}/oraInst.loc"  
     echo "Step 5 Remove ${osDownloadFolder}/osb"
     rm -rf "${osDownloadFolder}/osb"  

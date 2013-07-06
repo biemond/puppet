@@ -523,7 +523,7 @@ def get_nodemanagers()
       return output.split(/\r?\n/)
     end
   elsif ["Solaris"].include?Facter.value(:operatingsystem)
-    output = Facter::Util::Resolution.exec("/usr/ucb/ps wwxa | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"port:\" , substr(\$0,index(\$0,\"-DListenPort\")+13,4) } '")
+    output = Facter::Util::Resolution.exec("/usr/ucb/ps wwxa | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | /usr/xpg4/bin/awk ' {print \"pid:\", substr(\$0,0,5), \"port:\" , substr(\$0,index(\$0,\"-DListenPort\")+13,4) } '")
     if output.nil?
       return nil
     else 
@@ -541,7 +541,7 @@ def get_wlsservers()
       return output.split(/\r?\n/)
     end
   elsif ["Solaris"].include?Facter.value(:operatingsystem)
-    output = Facter::Util::Resolution.exec("/usr/ucb/ps wwxa | /bin/grep -i weblogic.server | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"name:\" ,substr(\$0,index(\$0,\"weblogic.Name\")+14,12) }'")
+    output = Facter::Util::Resolution.exec("/usr/ucb/ps wwxa | /bin/grep -i weblogic.server | /bin/grep -v grep | /usr/xpg4/bin/awk ' {print \"pid:\", substr(\$0,0,5), \"name:\" ,substr(\$0,index(\$0,\"weblogic.Name\")+14,12) }'")
     if output.nil?
       return nil
     else 

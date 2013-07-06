@@ -72,17 +72,28 @@ module Puppet::Parser::Functions
 
                   if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_plan') != :undefined
                      planValue =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_plan')
-                     if planValue.strip.downcase == plan
-                       return true
-                     end
+                     unless planValue.nil?
+                       if planValue.strip.downcase == plan
+                         return true
+                       end
+                     end  
                   end
                 elsif type == 'resource_entry'
-
+                  # ora_mdw_0_domain_0_eis_dbadapter_entries  eis/DB/initial;eis/DB/hr;
+                  # ora_mdw_0_domain_0_eis_dbadapter_plan     /opt/oracle/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_DB.xml
+                  # artifact_exists($domain ,"resource_entry",'DbAdapter','eis/DB/hr' )
+                  # adapterName          => 'DbAdapter' ,
+                  # adapterPath          => "${osMdwHome}/Oracle_SOA1/soa/connectors/DbAdapter.rar",
+                  # adapterPlanDir       => "${osMdwHome}/Oracle_SOA1/soa/connectors" ,
+                  # adapterPlan          => 'Plan_DB.xml' ,
+                  # adapterEntry         => 'eis/DB/hr',
+                  
                   if args[2].nil?
                     return art_exists
                   else
                     adapter = args[2].strip.downcase
-                  end    
+                  end
+                      
                   if args[3].nil?
                     return art_exists
                   else

@@ -222,13 +222,28 @@ if ( $continue ) {
           command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"],Exec["add -d64 oraparam.ini osb"]],
           creates     => $osbOracleHome,
-          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
         exec { "sleep 3 min for osb install ${title}":
           command     => "/bin/sleep 180",
           require     => Exec ["install osb ${title}"],
         }    
+
+        # fix opatch bug with d64 param on jdk x64
+        exec { "chmod ${osbOracleHome}/OPatch/opatch first":
+          command     => "chmod 775 ${osbOracleHome}/OPatch/opatch",
+          require     => Exec ["sleep 3 min for osb install ${title}"],        } 
+   
+        exec { "add quotes for d64 param in ${osbOracleHome}/OPatch/opatch":
+          command     => "sed -e's/JRE_MEMORY_OPTIONS=\${MEM_ARGS} \${JVM_D64}/JRE_MEMORY_OPTIONS=\"\${MEM_ARGS} \${JVM_D64}\"/g' ${osbOracleHome}/OPatch/opatch > /tmp/osbpatch.tmp && mv /tmp/osbpatch.tmp ${osbOracleHome}/OPatch/opatch",
+          require     => Exec ["chmod ${osbOracleHome}/OPatch/opatch first"],
+        }    
+
+        exec { "chmod ${osbOracleHome}/OPatch/opatch after":
+          command     => "chmod 775 ${osbOracleHome}/OPatch/opatch",
+          require     => Exec ["add quotes for d64 param in ${osbOracleHome}/OPatch/opatch"],
+        }    
+
 
              
      }
