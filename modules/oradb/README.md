@@ -12,6 +12,7 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
+- 0.7.7 RCU support for WebCenter and SOA Suite  
 - 0.7.6 OPatch upgrade made by Ronald Hatcher  
 - 0.7.5 support for Oracle database 12c or 12.1.0.1 plus bug fixes  
 - 0.7.4 puppet 3.0 compatible  
@@ -31,7 +32,7 @@ Oracle Database Features
 - Apply OPatch  
 - Create database instances  
 - Stop/Start database instances  
-- Installs RCU repositoy for Oracle SOA Suite ( 11.1.1.6.0 and 11.1.1.7.0 )   
+- Installs RCU repositoy for Oracle SOA Suite / Webcenter ( 11.1.1.6.0 and 11.1.1.7.0 )   
 
 Some manifests like installdb.pp, opatch.pp or rcusoa.pp supports an alternative mountpoint for the big oracle files.  
 When not provided it uses the files location of the oradb puppet module  
@@ -301,8 +302,9 @@ other
 
 Oracle SOA Suite Repository Creation Utility (RCU)
 
-    oradb::rcusoa{    'DEV_PS6':
+    oradb::rcu{     'DEV_PS6':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.7.0_32_disk1_1of1.zip',
+                     product          => 'soasuite',
                      version          => '11.1.1.7',  
                      oracleHome       => '/oracle/product/11.2/db',
                      user             => 'oracle',
@@ -316,8 +318,26 @@ Oracle SOA Suite Repository Creation Utility (RCU)
                      reposPassword    => 'Welcome02',
     }
 
-    oradb::rcusoa{    'Delete_DEV3_PS5':
+    oradb::rcu{     'DEV2_PS6':
+                     rcuFile          => 'ofm_rcu_linux_11.1.1.7.0_32_disk1_1of1.zip',
+                     product          => 'webcenter',
+                     version          => '11.1.1.7',  
+                     oracleHome       => '/oracle/product/11.2/db',
+                     user             => 'oracle',
+                     group            => 'dba',
+                     downloadDir      => '/install',
+                     action           => 'create',
+                     dbServer         => 'dbagent1.alfa.local:1521',  
+                     dbService        => 'test.oracle.com',
+                     sysPassword      => 'Welcome01',
+                     schemaPrefix     => 'DEV',
+                     reposPassword    => 'Welcome02',
+    }
+
+
+    oradb::rcu{     'Delete_DEV3_PS5':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip',
+                     product          => 'soasuite',
                      version          => '11.1.1.6',  
                      oracleHome       => '/oracle/product/11.2/db',
                      user             => 'oracle',
