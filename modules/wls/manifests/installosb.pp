@@ -58,7 +58,7 @@ define wls::installosb($mdwHome         = undef,
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
-        $oraInstPath     = "/etc/"
+        $oraInstPath     = "/etc"
         $oraInventory    = "${oracleHome}/oraInventory"
         
         $osbInstallDir   = "linux64"
@@ -81,11 +81,11 @@ define wls::installosb($mdwHome         = undef,
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
-        $oraInstPath     = "/var/opt/"
+        $oraInstPath     = "/var/opt"
         $oraInventory    = "${oracleHome}/oraInventory"
 
         $osbInstallDir   = "intelsolaris"
-        $jreLocDir       = "/usr"
+        $jreLocDir       = "/usr/jdk/${fullJDKName}"
                 
         Exec { path      => $execPath,
                user      => $user,

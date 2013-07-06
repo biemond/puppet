@@ -62,7 +62,8 @@ module Puppet::Parser::Functions
                     return art_exists
                   else
                     adapter = args[2].strip.downcase
-                  end    
+                  end
+                      
                   if args[3].nil?
                     return art_exists
                   else
@@ -87,10 +88,9 @@ module Puppet::Parser::Functions
                   else
                     entry = args[3].strip
                   end    
-
                   
                   if lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_entries') != :undefined
-                    planEntries =  lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_entries')
+                    planEntries = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s+'_eis_'+adapter+'_entries')
                     unless planEntries.nil?
                       if planEntries.include? entry
                         return true

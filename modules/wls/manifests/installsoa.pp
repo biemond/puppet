@@ -59,7 +59,7 @@ define wls::installsoa($mdwHome         = undef,
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
-        $oraInstPath     = "/etc/"
+        $oraInstPath     = "/etc"
         $oraInventory    = "${oracleHome}/oraInventory"
         
         $soaInstallDir   = "linux64"
@@ -82,11 +82,11 @@ define wls::installsoa($mdwHome         = undef,
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
-        $oraInstPath     = "/var/opt/"
+        $oraInstPath     = "/var/opt"
         $oraInventory    = "${oracleHome}/oraInventory"
 
         $soaInstallDir   = "intelsolaris"
-        $jreLocDir       = "/usr"
+        $jreLocDir       = "/usr/jdk/${fullJDKName}"
                 
         Exec { path      => $execPath,
                user      => $user,
@@ -229,7 +229,7 @@ if ( $continue ) {
         }
 
         exec { "add -d64 oraparam.ini soa":
-          command => "sed -e's/\[Oracle\]/\[Oracle\]\\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini > /tmp/soa.tmp && mv /tmp/soa.tmp ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini",
+          command => "sed -e's/JRE_MEMORY_OPTIONS=\" -Xverify:none\"/JRE_MEMORY_OPTIONS=\"-d64 -Xverify:none\"/g' ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini > /tmp/soa.tmp && mv /tmp/soa.tmp ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini",
           require => [Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
         }
 

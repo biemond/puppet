@@ -260,15 +260,38 @@ if ( $continueEntry ) {
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           require  => Exec["exec create resource adapter entry ${title}"],
         }    
-        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
-           command => "rm -I ${path}/${title}createResourceAdapterEntry.py",
-           require  => Exec["exec create resource adapter entry ${title}"],
-        }
 
-        exec { "rm ${path}/${title}redeployResourceAdapter.py":
-           command => "rm -I ${path}/${title}redeployResourceAdapter.py",
-           require => Exec["exec redeploy adapter plan ${title}"],
+        case $operatingsystem {
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+
+		        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
+		           command => "rm -I ${path}/${title}createResourceAdapterEntry.py",
+		           require  => Exec["exec create resource adapter entry ${title}"],
+		        }
+		
+		        exec { "rm ${path}/${title}redeployResourceAdapter.py":
+		           command => "rm -I ${path}/${title}redeployResourceAdapter.py",
+		           require => Exec["exec redeploy adapter plan ${title}"],
+		        }
         }
+          Solaris: { 
+
+		        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
+		           command => "rm ${path}/${title}createResourceAdapterEntry.py",
+		           require  => Exec["exec create resource adapter entry ${title}"],
+		        }
+		
+		        exec { "rm ${path}/${title}redeployResourceAdapter.py":
+		           command => "rm ${path}/${title}redeployResourceAdapter.py",
+		           require => Exec["exec redeploy adapter plan ${title}"],
+		        }
+        
+          }
+        }     
+
+
+
+
 
 
      }
