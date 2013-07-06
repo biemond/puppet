@@ -20,13 +20,13 @@
 ## 
 
 
-define oradb::opatch(  $oracleProductHome = undef,
-                       $patchId           = undef,
-                       $patchFile         = undef,  
-                       $user              = 'oracle',
-                       $group             = 'dba',
-                       $downloadDir       = '/install',
-                       $ocmrf             = true,
+define oradb::opatch(  $oracleProductHome       = undef,
+                       $patchId                 = undef,
+                       $patchFile               = undef,  
+                       $user                    = 'oracle',
+                       $group                   = 'dba',
+                       $downloadDir             = '/install',
+                       $ocmrf                   = true,
                        $puppetDownloadMntPoint  = undef, 
                     ) {
 

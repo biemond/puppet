@@ -22,15 +22,15 @@
 
 
 define oradb::opatchupgrade(  
-    $oracleHome     = undef,
-    $patchFile      = undef,  
-    $csiNumber      = undef,
-    $supportId      = undef,
-    $opversion      = undef,
-    $user           = 'oracle',
-    $group          = 'dba',
-    $downloadDir    = '/install',
-    $puppetMountDir = undef,
+    $oracleHome             = undef,
+    $patchFile              = undef,  
+    $csiNumber              = undef,
+    $supportId              = undef,
+    $opversion              = undef,
+    $user                   = 'oracle',
+    $group                  = 'dba',
+    $downloadDir            = '/install',
+    $puppetDownloadMntPoint = undef,
   ) {
 
   case $operatingsystem {
@@ -64,10 +64,10 @@ define oradb::opatchupgrade(
   }
 
   # if a mount was not specified then get the install media from the puppet master
-  if $puppetMountDir == undef {
+  if $puppetDownloadMntPoint == undef {
     $mountDir = "puppet:///modules/oradb"      
   } else {
-    $mountDir = $puppetMountDir
+    $mountDir = $puppetDownloadMntPoint
   }
 
   # check the opatch version
@@ -109,7 +109,7 @@ define oradb::opatchupgrade(
         }
 
         if $csiNumber != undef and supportId != undef {
-          exec { "exec emocmrsp ${oversion}":
+          exec { "exec emocmrsp ${opversion}":
             cwd      => "${patchDir}",
             command  => "${patchDir}/ocm/bin/emocmrsp ${csiNumber} ${supportId}",
             require  => Exec["extract opatch ${patchFile}"],

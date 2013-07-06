@@ -12,6 +12,7 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
+- 0.7.6 OPatch upgrade made by Ronald Hatcher  
 - 0.7.5 support for Oracle database 12c or 12.1.0.1 plus bug fixes  
 - 0.7.4 puppet 3.0 compatible  
 - 0.7.3 bugfixes plus facts in sync with wls modules   
@@ -25,7 +26,8 @@ Oracle Database Features
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
 - Oracle Database Net configuration   
-- Oracle Database Listener   
+- Oracle Database Listener
+- OPatch upgrade      
 - Apply OPatch  
 - Create database instances  
 - Stop/Start database instances  
@@ -67,10 +69,11 @@ For 12.1.0.1 Download oracle database linux software from http://otn.oracle.com
  1239269270 Mar 10 17:05 linux.x64_11gR2_database_1of2.zip  
  1111416131 Mar 10 17:17 linux.x64_11gR2_database_2of2.zip  
 
-# opatch database patch  
+# opatch database patch for 11.2.0.3    
   25556377 Mar 10 12:48 p14727310_112030_Linux-x86-64.zip  
-# patches opatch for 11.2.0.3   
-  32551315 Mar 10 13:10 p6880880_112000_Linux-x86-64.zip  
+
+# opatch upgrade
+  32551984 Jul  6 18:58 p6880880_112000_Linux-x86-64.zip
 
 # database client linux 11.2.0.1 ( otn.oracle.com )  
  706187979 Mar 10 16:48 linux.x64_11gR2_client.zip  
@@ -148,19 +151,33 @@ or
 
 other
   
-     # for this example OPatch 14727310
-     # the OPatch utility must be upgraded ( patch 6880880)
-     # after that 'cd $ORACLE_HOME/OPatch' and run 'ocm/bin/emocmrsp'
-     oradb::opatch{'14727310_db_patch':
-       oracleProductHome => '/oracle/product/11.2/db' ,
-       patchId           => '14727310', 
-       patchFile         => 'p14727310_112030_Linux-x86-64.zip',  
-       user              => 'oracle',
-       group             => 'dba',
-       downloadDir       => '/install',
-       ocmrf             => 'true',   
-       require           => Oradb::Installdb['112030_Linux-x86-64'],
-     }
+	    oradb::opatchupgrade{'112000_opatch_upgrade':
+	      oracleHome             => '/oracle/product/11.2/db' ,
+	      patchFile              => 'p6880880_112000_Linux-x86-64.zip', 
+	      csiNumber              => '11111',
+	      supportId              => 'biemond@gmail.com',
+	      opversion              => '11.2.0.3.4',
+	      user                   => 'oracle',
+	      group                  => 'dba',
+	      downloadDir            => '/install',
+	      puppetDownloadMntPoint => $puppetDownloadMntPoint,    
+	      require                =>  Oradb::Installdb['112030_Linux-x86-64'],
+	    }
+	
+	
+	   # for this example OPatch 14727310
+	   # the OPatch utility must be upgraded ( patch 6880880, see above)
+	   oradb::opatch{'14727310_db_patch':
+	     oracleProductHome      => '/oracle/product/11.2/db' ,
+	     patchId                => '14727310', 
+	     patchFile              => 'p14727310_112030_Linux-x86-64.zip',  
+	     user                   => 'oracle',
+	     group                  => 'dba',
+	     downloadDir            => '/install',
+	     ocmrf                  => true,   
+	     require                => Oradb::Opatchupgrade['112000_opatch_upgrade'],
+	     puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+	   }
 
      oradb::net{ 'config net8':
             oracleHome   => '/oracle/product/11.2/db',
