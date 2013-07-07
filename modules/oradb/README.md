@@ -349,7 +349,6 @@ Oracle SOA Suite Repository Creation Utility (RCU)
                      sysPassword      => 'Welcome01',
                      schemaPrefix     => 'DEV3',
                      reposPassword    => 'Welcome02',
-                     require          => Oradb::Rcusoa['DEV3_PS6'],
     }
 
 

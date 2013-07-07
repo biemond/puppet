@@ -58,12 +58,13 @@ define oradb::rcu(       $rcuFile                 = undef,
    }
 
    if $product == 'soasuite' {
-      $components = '-component SOAINFRA -component ORASDPM -component MDS -component OPSS -component BAM'
+      $components = '-component SOAINFRA -component ORASDPM -component MDS -component OPSS -component BAM '
       $componentsPasswords = [$reposPassword, $reposPassword, $reposPassword,$reposPassword,$reposPassword]
    } elsif $product == 'webcenter' {
-      $components = '-component MDS -component OPSS -component CONTENTSERVER11 -component CONTENTSERVER11SEARCH -component URM -component PORTLET -component WEBCENTER -component DISCUSSIONS -component ACTIVITIES'     
-      $componentsPasswords = [$reposPassword, $reposPassword, $reposPassword,$reposPassword,$reposPassword,
-                              $reposPassword, $reposPassword, $reposPassword,$reposPassword ]
+      $components = '-component MDS -component OPSS -component CONTENTSERVER11 -component CONTENTSERVER11SEARCH -component URM -component PORTLET -component WEBCENTER -component ACTIVITIES -component DISCUSSIONS '     
+      # extra password for DISCUSSIONS and ACTIVITIES
+      $componentsPasswords = [$reposPassword, $reposPassword, $reposPassword, $reposPassword, $reposPassword,
+                              $reposPassword, $reposPassword, $reposPassword, $reposPassword, $reposPassword, $reposPassword ]
    } else {
       fail("Unrecognized FMW product") 
    }
@@ -116,6 +117,17 @@ define oradb::rcu(       $rcuFile                 = undef,
      }
    }
 
+   if ! defined(File["${path}/rcu_${version}/rcuHome/rcu/log"]) {
+      # check rcu log folder
+      file { "${path}/rcu_${version}/rcuHome/rcu/log" :
+        path    => "${path}/rcu_${version}/rcuHome/rcu/log",
+        ensure  => directory,
+        recurse => false, 
+        replace => false,
+        require => Exec ["extract ${rcuFile}"],
+      }
+   }
+
 
    file { "${path}/rcu_${version}/rcu_passwords_${title}.txt":
            ensure  => present,
@@ -142,12 +154,6 @@ define oradb::rcu(       $rcuFile                 = undef,
             require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}/${rcuFile}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
             onlyif      => "/bin/grep -c found /tmp/check_rcu_${schemaPrefix}.txt",
      }
-     exec { "delete rcu repos ${title} 2":
-            command     => "${path}/rcu_${version}/rcuHome/bin/rcu -silent -dropRepository -databaseType ORACLE -connectString ${dbServer}:${dbService} -dbUser SYS -dbRole SYSDBA -schemaPrefix ${schemaPrefix} ${components} -f < ${path}/rcu_${version}/rcu_passwords_${title}.txt",
-            require     => [Exec["extract ${rcuFile}"],Exec["run sqlplus to check for repos ${title}"],File["${path}/${rcuFile}"],File["${path}/rcu_${version}/rcu_passwords_${title}.txt"]],
-            unless      => "/bin/grep -c ORA-00942 /tmp/check_rcu_${schemaPrefix}.txt",
-     }
-
    } 
   
 }    

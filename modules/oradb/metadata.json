@@ -9,7 +9,7 @@
   "version": "0.7.7",
   "checksums": {
     "Modulefile": "e662c08607da8688c5dd72d032387c5a",
-    "README.md": "be76aa42279dd63f2d30f3e6945b3d1e",
+    "README.md": "cc07dcbca1e7e94751673d1bcfd1d4e8",
     "lib/facter/oracle_database_homes.rb": "c4900b81d35732aadead57c1ad51467b",
     "lib/puppet/parser/functions/opatch_exists.rb": "4f8da5204d5e9618ae20fca443a4b59c",
     "lib/puppet/parser/functions/opatch_version.rb": "56d00c791c8ed050b4d6cd884db45d4a",
@@ -22,7 +22,7 @@
     "manifests/net.pp": "1ee7319e1b85308fa08251a036c0af8a",
     "manifests/opatch.pp": "66f70acdae2f115c0de4b564d4dca028",
     "manifests/opatchupgrade.pp": "039e8d189e9b8f9c7efdb1915a61eedd",
-    "manifests/rcu.pp": "9b311f48ece81e61359d7eaaf365f125",
+    "manifests/rcu.pp": "e6c7f72419b22e227be4f10062ede249",
     "templates/bash_profile.erb": "f7a0947d3b6d87438a96104304de2117",
     "templates/db_install_11.2.0.1.rsp.erb": "10de871187658d4cf321e8863c86de0a",
     "templates/db_install_11.2.0.3.rsp.erb": "2f0dcd0516d430391147516ca18a120e",
@@ -33,7 +33,7 @@
     "templates/netca_12.1.rsp.erb": "f03ab883287747c2a49be6fe6c07699d",
     "templates/oraInst.loc.erb": "70013a28b30ebc30277c6464895c1ffd",
     "templates/rcu_checks.sql.erb": "eb2df79e7d7464f6daae033570fdbace",
-    "templates/rcu_passwords.txt.erb": "92ffe98f88bdf993cbb24ca6fdda1458"
+    "templates/rcu_passwords.txt.erb": "f7ca7a0a3838dc9de3e591b5462db3a7"
   },
   "dependencies": []
 }
