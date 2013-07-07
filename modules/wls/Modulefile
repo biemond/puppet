@@ -1,10 +1,10 @@
 name 'biemond-wls'
-version '0.9.9'
+version '1.0.0'
 
 author 'Edwin Biemond'
 license 'GNU General Public License version 3 of the License'
 project_page 'http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/'
 source 'https://github.com/biemond/puppet/tree/master/modules/wls'
-summary 'Oracle WebLogic / Fusion Middleware ( OSB, SOA Suite ) puppet module'
+summary 'Oracle WebLogic / Fusion Middleware ( OSB, WebCenter, SOA Suite ) puppet module'
 description 'Oracle WebLogic / Fusion Middleware puppet module'
 dependency 'puppetlabs/registry', '>=0.1.1'

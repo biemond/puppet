@@ -49,7 +49,7 @@ define wls::installsoa($mdwHome         = undef,
                        $soaFile2        = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
-                       $downloadDir     = '/install/',
+                       $downloadDir     = '/install',
                        $puppetDownloadMntPoint  = undef,  
                     ) {
 
@@ -116,7 +116,7 @@ define wls::installsoa($mdwHome         = undef,
      }
    }
 
-     # check if the osb already exists
+     # check if the wcc already exists
      $found = oracle_exists( $soaOracleHome )
      if $found == undef {
        $continue = true

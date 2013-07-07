@@ -48,7 +48,7 @@ define wls::installosb($mdwHome         = undef,
                        $oepeHome        = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
-                       $downloadDir     = '/install/',
+                       $downloadDir     = '/install',
                        $puppetDownloadMntPoint  = undef,  
                     ) {
 

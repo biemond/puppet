@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 1.0.0 Webcenter and Webcenter Content installer support 
 - 0.9.9 solaris plus resource adapter fixes 
 - 0.9.8 compatible with puppet 3.0  
 - 0.9.7 Windows bugfixes  
@@ -22,6 +23,10 @@ Version updates
 
 
 for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
+
+Repository Creation Utility (RCU)
+---------------------------------
+For the RCU configuration of the Soa Suite or WebCenter you can use my oradb puppet module 
 
 Windows Puppet agents
 ---------------------
@@ -49,8 +54,10 @@ WLS WebLogic Features
 - apply bsu patch ( WebLogic Patch )
 
 - installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
-- installs Oracle Soa Suite 11g 
-- apply oracle patch ( OPatch for OSB and Soa Suite )
+- installs Oracle Soa Suite 11g
+- installs Oracle Webcenter 11g
+- installs Oracle Webcenter Content 11g
+- apply oracle patch ( OPatch for Oracle products )
 
 - installs Oracle JDeveloper 11g + soa suite plugin
 
@@ -169,6 +176,7 @@ Contains WebLogic Facter which displays the following
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/facts.png)
 
 ### My Files folder of the wls module
+     1068506707 wls1036_generic.jar
      1887405692 jdevstudio11116install.jar
      1904618055 jdevstudio11117install.jar
       375895263 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
@@ -184,7 +192,10 @@ Contains WebLogic Facter which displays the following
        42264472 p14736139_1036_Generic.zip
       208538583 soa-jdev-extension_11116.zip
       300343386 soa-jdev-extension_11117.zip
-     1068506707 wls1036_generic.jar
+     2077610918 ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip
+     2052379536 ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip
+      202204151 ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip
+     1802723467 ofm_webtier_linux_11.1.1.7.0_64_disk1_1of1.zip
     
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/modulefiles.png)
     
@@ -277,41 +288,37 @@ puppet module install erwbgy-limits
 WebLogic configuration examples
 -------------------------------
 
-    class application_osb_soa_PS6 {
-    
-       include wls1036osb_soa_PS6, wls_osb_soa_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS
-       #, wls_OSB_application_jar
+    class application_osb_soa {
+       include wls1036osb_soa, wls_osb_soa_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS
        include orautils
     
-       Class['wls1036osb_soa_PS6'] -> Class['wls_osb_soa_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
-       # -> Class['wls_OSB_application_jar']
+       Class['wls1036osb_soa'] -> Class['wls_osb_soa_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
     }
     
-    class application_osb_PS6 {
-    
-       include wls1036osb_PS6, wls_osb_domain, wls_OSB_application_JDBC
+    class application_osb {
+       include wls1036osb, wls_osb_domain, wls_OSB_application_JDBC
        include orautils
-       Class['wls1036osb_PS6'] -> Class['wls_osb_domain'] -> Class['wls_OSB_application_JDBC']
+       Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls_OSB_application_JDBC']
     }
-    
+
+	class application_wc {
+	   include wls1036_wc
+	}    
     
     class application_wls12 {
-    
        include wls12, wls12c_domain
        Class['wls12'] -> Class['wls12c_domain']
     }
-        
-
 
 ### templates.pp
 
     include wls
     
             
-    class wls1036osb_soa_PS6{
+    class wls1036osb_soa{
     
       if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
+        $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
       if $wls11gVersion == undef {
@@ -503,12 +510,135 @@ WebLogic configuration examples
        }
     
     }
+
+	class wls1036_wc{
+	
+	  if $jdkWls11gJDK == undef {
+	    $jdkWls11gJDK = 'jdk1.7.0_25'
+	  }
+	
+	  if $wls11gVersion == undef {
+	    $wls11gVersion = "1036"
+	  }
+	                       
+	  #$puppetDownloadMntPoint = "puppet:///middleware/"
+	  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
+	 
+	
+	  case $operatingsystem {
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	       $osOracleHome = "/opt/oracle/wls"
+	       $osMdwHome    = "/opt/oracle/wls/Middleware11gR1"
+	       $osWlHome     = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+	       $user         = "oracle"
+	       $group        = "dba"
+	       $downloadDir  = "/data/install"
+	       $logsDir      = "/data/logs"       
+	     }
+	     windows: { 
+	       $osOracleHome = "c:/oracle/middleware"
+	       $osMdwHome    = "c:/oracle/middleware/wls11g"
+	       $osWlHome     = "c:/oracle/middleware/wls11g/wlserver_10.3"
+	       $user         = "Administrator"
+	       $group        = "Administrators"
+	       $serviceName  = "C_oracle_middleware_wls11g_wlserver_10.3"
+	       $downloadDir  = "c:/temp"
+	       $logsDir      = "c:/oracle/logs" 
+	     }
+	  }
+	
+	
+	
+	  # set the defaults
+	  Wls::Installwls {
+	    version                => $wls11gVersion,
+	    fullJDKName            => $jdkWls11gJDK,
+	    oracleHome             => $osOracleHome,
+	    mdwHome                => $osMdwHome,
+	    user                   => $user,
+	    group                  => $group,    
+	    downloadDir            => $downloadDir,
+	    puppetDownloadMntPoint => $puppetDownloadMntPoint,
+	  }
+	  
+	  Wls::Nodemanager {
+	    wlHome       => $osWlHome,
+	    fullJDKName  => $jdkWls11gJDK,	
+	    user         => $user,
+	    group        => $group,
+	    serviceName  => $serviceName,  
+	    downloadDir  => $downloadDir, 
+	  }
+	
+	  Wls::Bsupatch {
+	    mdwHome                => $osMdwHome,
+	    wlHome                 => $osWlHome,
+	    fullJDKName            => $jdkWls11gJDK,
+	    user                   => $user,
+	    group                  => $group,
+	    downloadDir            => $downloadDir, 
+	    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+	  }
+	
+	  Wls::Installwc {
+	    mdwHome                => $osMdwHome,
+	    wlHome                 => $osWlHome,
+	    oracleHome             => $osOracleHome,
+	    fullJDKName            => $jdkWls11gJDK,	
+	    user                   => $user,
+	    group                  => $group,    
+	    downloadDir            => $downloadDir,
+	    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+	  }
+	
+	  Wls::Installwcc {
+	    mdwHome                => $osMdwHome,
+	    wlHome                 => $osWlHome,
+	    oracleHome             => $osOracleHome,
+	    fullJDKName            => $jdkWls11gJDK,	
+	    user                   => $user,
+	    group                  => $group,    
+	    downloadDir            => $downloadDir,
+	    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+	  }
+	
+	  # install
+	  wls::installwls{'11gPS5':}
+	
+		# weblogic patch
+	  wls::bsupatch{'p14736139':
+	     patchId      => 'HYKC',    
+	     patchFile    => 'p14736139_1036_Generic.zip',  
+	     require      => Wls::Installwls['11gPS5'],
+	  }
+	
+	  # webcenter  
+	  wls::installwc{'wcPS6':
+	     wcFile      => 'ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip',
+	     require     => Wls::Bsupatch['p14736139'],
+	  }
+	
+	  # webcenter content
+	  wls::installwcc{'wccPS6':
+	    wccFile1    => 'ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip',
+	    wccFile2    => 'ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip',
+	    require     => Wls::Installwc['wcPS6'],
+	  }
+	
+	  #nodemanager configuration and starting
+	  wls::nodemanager{'nodemanager11g':
+	    listenPort  => '5556',
+	    logDir      => $logsDir,
+	    require     => Wls::Installwc['wcPS6'],
+	  }
+	
+	}
     
     
-    class wls1036osb_PS6{
+    class wls1036osb{
     
       if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
+        $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
       if $wls11gVersion == undef {
@@ -661,10 +791,10 @@ WebLogic configuration examples
     
     
     
-    class jdeveloper_soa_PS6 {
+    class jdeveloper_soa {
     
       if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
+        $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
       $user         = "oracle"
@@ -684,10 +814,10 @@ WebLogic configuration examples
     
     }
     
-    class osb_oepe_PS6{
+    class osb_oepe{
     
       if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
+        $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
       if $wls11gVersion == undef {
@@ -834,7 +964,7 @@ WebLogic configuration examples
     
     
       if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
+        $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
       $wlsDomainName   = "osbSoaDomain"
@@ -996,7 +1126,7 @@ WebLogic configuration examples
     
     
       if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
+        $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
       $wlsDomainName   = "osbDomain"
@@ -1129,7 +1259,7 @@ WebLogic configuration examples
     
     
       if $jdkWls12gJDK == undef {
-        $jdkWls12gJDK = 'jdk1.7.0_09'
+        $jdkWls12gJDK = 'jdk1.7.0_25'
       }
     
       $wlsDomainName   = "stdDomain12c"
@@ -1339,7 +1469,7 @@ WebLogic configuration examples
     
     
       if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_09'
+        $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
       if $hostname == 'devagent1' {
