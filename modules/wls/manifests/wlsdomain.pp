@@ -122,6 +122,7 @@ if ( $continue ) {
 
    $templateSOA          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.soa_template_11.1.1.jar"
    $templateBPM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bpm_template_11.1.1.jar"
+   $templateBAM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bam_template_11.1.1.jar"
 
    $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
    $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
@@ -214,10 +215,13 @@ if ( $continue ) {
       $adminNodeMgrLogDir = "${domainPath}/${domain}/servers/${adminServerName}/logs"
       $osbNodeMgrLogDir   = "${domainPath}/${domain}/servers/osb_server1/logs"
       $soaNodeMgrLogDir   = "${domainPath}/${domain}/servers/soa_server1/logs"
+      $bamNodeMgrLogDir   = "${domainPath}/${domain}/servers/bam_server1/logs"
+
    } else {
       $adminNodeMgrLogDir = "${logDir}"
       $osbNodeMgrLogDir   = "${logDir}"
       $soaNodeMgrLogDir   = "${logDir}"
+      $bamNodeMgrLogDir   = "${logDir}"
 
       if ! defined(File["${logDir}"]) {
         file { "${logDir}" :

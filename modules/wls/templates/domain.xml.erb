@@ -5,11 +5,18 @@ APP_PATH='<%= @appPath %>/<%= @domain %>'
 
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
 
-
-
 print('Start normal domain... with template <%= @template %>')
 readTemplate('<%= @template %>')
 
+print('Set nodemanager password and crossdomain')
+create('base_domain','SecurityConfiguration')
+cd('/SecurityConfiguration/base_domain')
+set('CrossDomainSecurityEnabled',true)
+set('NodeManagerPasswordEncrypted','<%= @password %>' )
+set('NodeManagerUsername','<%= @wlsUser %>' )
+
+cd('/')
+print('Set domain log')
 create('base_domain','Log')
 cd('/Log/base_domain')
 set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
@@ -47,7 +54,7 @@ cd('SSL/<%= @adminServerName %>')
 set('Enabled', 'False')
 set('HostNameVerificationIgnored', 'True')
 
-
+print('Set adminserver log')
 cd('/Server/<%= @adminServerName %>')
 create('<%= @adminServerName %>','Log')
 cd('/Server/<%= @adminServerName %>/Log/<%= @adminServerName %>')
@@ -82,6 +89,16 @@ print('write domain...')
 writeDomain(DOMAIN_PATH)
 
 closeTemplate()
+
+es = encrypt('<%= @password %>',DOMAIN_PATH)
+
+readDomain(DOMAIN_PATH)
+
+print('set domain password...') 
+cd('/SecurityConfiguration/<%= @domain %>')
+set('CredentialEncrypted',es)
+updateDomain()
+closeDomain()
 
 #createBootPropertiesFile(DOMAIN_PATH+'/servers/<%= @adminServerName %>/security','<%= @wlsUser %>',<%= @password %>)
 

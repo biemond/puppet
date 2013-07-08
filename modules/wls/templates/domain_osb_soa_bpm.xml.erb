@@ -6,15 +6,25 @@ APP_PATH='<%= @appPath %>/<%= @domain %>'
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
 OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @osbNodeMgrLogDir %>/osb_server1.out -Dweblogic.Stderr=<%= @osbNodeMgrLogDir %>/osb_server1_err.out'
 SOA_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @soaNodeMgrLogDir %>/soa_server1.out -Dweblogic.Stderr=<%= @soaNodeMgrLogDir %>/soa_server1_err.out'
+BAM_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @bamNodeMgrLogDir %>/bam_server1.out -Dweblogic.Stderr=<%= @bamNodeMgrLogDir %>/bam_server1_err.out'
 
 
 SOA_REPOS_DBURL='<%= @reposDbUrl %>'
 SOA_REPOS_DBUSER_PREFIX='<%= @reposPrefix %>'
 SOA_REPOS_DBPASSWORD='<%= @reposPassword %>'
 
-print('Start...osb,soa,bpm domain with template <%= @template %>')
+print('Start...wls domain with template <%= @template %>')
 readTemplate('<%= @template %>')
 
+print('Set nodemanager password and crossdomain')
+create('base_domain','SecurityConfiguration')
+cd('/SecurityConfiguration/base_domain')
+set('CrossDomainSecurityEnabled',true)
+set('NodeManagerPasswordEncrypted','<%= @password %>' )
+set('NodeManagerUsername','<%= @wlsUser %>' )
+
+cd('/')
+print('Set domain log')
 create('base_domain','Log')
 cd('/Log/base_domain')
 set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
@@ -83,8 +93,15 @@ print('write domain...')
 writeDomain('<%= @domainPath %>/<%= @domain %>')
 closeTemplate()
 
-# check
+es = encrypt('<%= @password %>',DOMAIN_PATH)
+
 readDomain(DOMAIN_PATH)
+
+print('set domain password...') 
+cd('/SecurityConfiguration/<%= @domain %>')
+set('CredentialEncrypted',es)
+cd('/')
+
 setOption( "AppDir", APP_PATH )
 
 print 'Adding SOA Template'
@@ -92,15 +109,19 @@ addTemplate('<%= @templateApplCore %>')
 addTemplate('<%= @templateJRF %>')
 addTemplate('<%= @templateWSMPM %>')
 addTemplate('<%= @templateSOA %>')
+addTemplate('<%= @templateBAM %>')
+
 
 print 'Adding BPM Template'
 addTemplate('<%= @templateBPM %>')
+
 
 print 'Adding EM Template'
 addTemplate('<%= @templateEM %>')
 
 dumpStack();
 
+print 'Change datasources'
 cd('/JDBCSystemResource/EDNDataSource/JdbcResource/EDNDataSource/JDBCDriverParams/NO_NAME_0')
 set('URL',SOA_REPOS_DBURL)
 set('PasswordEncrypted',SOA_REPOS_DBPASSWORD)
@@ -143,14 +164,21 @@ set('PasswordEncrypted',SOA_REPOS_DBPASSWORD)
 cd('Properties/NO_NAME_0/Property/user')
 set('Value',SOA_REPOS_DBUSER_PREFIX+'_MDS')
 
+cd('/JDBCSystemResource/BAMDataSource/JdbcResource/BAMDataSource/JDBCDriverParams/NO_NAME_0')
+set('URL',SOA_REPOS_DBURL)
+set('PasswordEncrypted',SOA_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',SOA_REPOS_DBUSER_PREFIX+'_ORABAM')
+
 updateDomain()
 closeDomain();
 
 
 readDomain(DOMAIN_PATH)
 
+print 'Change soa_server1'
 setOption( "AppDir", APP_PATH )
-cd('Servers/soa_server1')
+cd('/Servers/soa_server1')
 set('Machine','LocalMachine')
 
 create('soa_server1','ServerStart')
@@ -176,6 +204,34 @@ set('RotationType','byTime')
 set('FileTimeSpan',24)
 
 
+print 'Change bam_server1'
+cd('/Servers/bam_server1')
+set('Machine','LocalMachine')
+
+create('bam_server1','ServerStart')
+cd('ServerStart/bam_server1')
+set('Arguments', BAM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/bam_server1')
+create('bam_server1','SSL')
+cd('SSL/bam_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/bam_server1')
+create('bam_server1','Log')
+cd('/Server/bam_server1/Log/bam_server1')
+set('FileName','<%= @bamNodeMgrLogDir %>/bam_server1.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+
 dumpStack();
 updateDomain()
 closeDomain()
@@ -194,15 +250,14 @@ updateDomain()
 closeDomain();
 readDomain(DOMAIN_PATH)
 
+
 setOption( "AppDir", APP_PATH )
 
-cd('/')
-cd('Servers/AdminServer')
+cd('/Servers/AdminServer')
 set('Machine','LocalMachine')
 
-cd('/')
-
-cd('Servers/osb_server1')
+print 'Change osb_server1'
+cd('/Servers/osb_server1')
 set('Machine','LocalMachine')
 
 create('osb_server1','ServerStart')

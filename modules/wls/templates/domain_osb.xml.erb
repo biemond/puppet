@@ -7,9 +7,18 @@ ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Std
 OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @osbNodeMgrLogDir %>/osb_server1.out -Dweblogic.Stderr=<%= @osbNodeMgrLogDir %>/osb_server1_err.out'
 
 
-print('Start...osb domain with template <%= @template %>')
+print('Start...wls domain with template <%= @template %>')
 readTemplate('<%= @template %>')
 
+print('Set nodemanager password and crossdomain')
+create('base_domain','SecurityConfiguration')
+cd('/SecurityConfiguration/base_domain')
+set('CrossDomainSecurityEnabled',true)
+set('NodeManagerPasswordEncrypted','<%= @password %>' )
+set('NodeManagerUsername','<%= @wlsUser %>' )
+
+cd('/')
+print('Set domain log')
 create('base_domain','Log')
 cd('/Log/base_domain')
 set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
@@ -88,7 +97,16 @@ writeDomain('<%= @domainPath %>/<%= @domain %>')
 
 closeTemplate()
 
+es = encrypt('<%= @password %>',DOMAIN_PATH)
+
 readDomain(DOMAIN_PATH)
+
+print('set domain password...') 
+cd('/SecurityConfiguration/<%= @domain %>')
+set('CredentialEncrypted',es)
+cd('/')
+
+
 setOption( "AppDir", APP_PATH )
 
 print 'Adding EM Template'
