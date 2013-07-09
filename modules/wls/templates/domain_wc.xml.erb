@@ -1,0 +1,279 @@
+
+WLHOME='<%= @wlHome %>'
+DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
+APP_PATH='<%= @appPath %>/<%= @domain %>'
+
+ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
+WC_COLLABORATION_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @wcCollaborationNodeMgrLogDir %>/wc_collaboration.out -Dweblogic.Stderr=<%= @wcCollaborationNodeMgrLogDir %>/wc_collaboration_err.out'
+WC_PORTLET_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @wcPortletNodeMgrLogDir %>/wc_portlet.out -Dweblogic.Stderr=<%= @wcPortletNodeMgrLogDir %>/wc_portlet_err.out'
+WC_SPACES_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1g -Dweblogic.Stdout=<%= @wcSpacesNodeMgrLogDir %>/wc_spaces.out -Dweblogic.Stderr=<%= @wcSpacesNodeMgrLogDir %>/wc_spaces_err.out'
+
+WC_REPOS_DBURL='<%= @reposDbUrl %>'
+WC_REPOS_DBUSER_PREFIX='<%= @reposPrefix %>'
+WC_REPOS_DBPASSWORD='<%= @reposPassword %>'
+
+print('Start...wls domain with template <%= @template %>')
+readTemplate('<%= @template %>')
+
+print('Set nodemanager password and crossdomain')
+create('base_domain','SecurityConfiguration')
+cd('/SecurityConfiguration/base_domain')
+set('CrossDomainSecurityEnabled',true)
+set('NodeManagerPasswordEncrypted','<%= @password %>' )
+set('NodeManagerUsername','<%= @wlsUser %>' )
+
+cd('/')
+print('Set domain log')
+create('base_domain','Log')
+cd('/Log/base_domain')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+cd('/')
+create('LocalMachine', '<%= @nodeMgrMachine %>')
+
+cd('/Servers/AdminServer')
+# name of adminserver
+set('Name','<%= @adminServerName %>' )
+
+cd('/Servers/<%= @adminServerName %>')
+
+# address and port
+#set('ListenAddress','<%= @adminListenAdr %>')
+set('ListenPort',<%= @adminListenPort %>)
+
+
+setOption( "AppDir", APP_PATH )
+
+create('<%= @adminServerName %>','ServerStart')
+cd('ServerStart/<%= @adminServerName %>')
+set('Arguments', ADM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','SSL')
+cd('SSL/<%= @adminServerName %>')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','Log')
+cd('/Server/<%= @adminServerName %>/Log/<%= @adminServerName %>')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+print('Set password...')
+cd('/')
+cd('Security/base_domain/User/weblogic')
+
+# weblogic user name + password
+set('Name','<%= @wlsUser %>')
+cmo.setPassword('<%= @password %>')
+
+# Set domain save options:
+# - CreateStartMenu: Enable creation of Start Menu shortcut.
+# - ServerStartMode: Set mode to development.
+# - JavaHome: Sets home directory for the JVM used when starting the server.
+# - OverwriteDomain: Overwrites domain, when saving, if one exists.
+
+setOption('CreateStartMenu', 'false')
+setOption('ServerStartMode', 'dev')
+setOption('JavaHome', '<%= @JAVA_HOME %>')
+setOption('OverwriteDomain', 'false')
+
+print('write domain...')
+# write path + domain name
+writeDomain('<%= @domainPath %>/<%= @domain %>')
+closeTemplate()
+
+es = encrypt('<%= @password %>',DOMAIN_PATH)
+
+readDomain(DOMAIN_PATH)
+
+print('set domain password...') 
+cd('/SecurityConfiguration/<%= @domain %>')
+set('CredentialEncrypted',es)
+cd('/')
+
+setOption( "AppDir", APP_PATH )
+
+print 'Adding WC Template'
+addTemplate('<%= @templateJRF %>')
+print 'Adding EM Template'
+addTemplate('<%= @templateEM %>')
+print 'Adding WSMPM'
+addTemplate('<%= @templateWSMPM %>')
+print 'Adding Spaces'
+addTemplate('<%= @templateSpaces %>')
+print 'Adding Portlets'
+addTemplate('<%= @templatePortlets %>')
+print 'Adding Pagelet'
+addTemplate('<%= @templatePagelet %>')
+print 'Adding Discussion'
+addTemplate('<%= @templateDiscussion %>')
+
+dumpStack();
+
+print 'Change datasources'
+
+print 'Change datasource mds-owsm'
+cd('/JDBCSystemResource/mds-owsm/JdbcResource/mds-owsm/JDBCDriverParams/NO_NAME_0')
+set('URL',WC_REPOS_DBURL)
+set('PasswordEncrypted',WC_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',WC_REPOS_DBUSER_PREFIX+'_MDS')
+
+print 'Change datasource WebCenterDS'
+cd('/JDBCSystemResource/WebCenterDS/JdbcResource/WebCenterDS/JDBCDriverParams/NO_NAME_0')
+set('URL',WC_REPOS_DBURL)
+set('PasswordEncrypted',WC_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',WC_REPOS_DBUSER_PREFIX+'_WEBCENTER')
+
+print 'Change datasource mds-SpacesDS'
+cd('/JDBCSystemResource/mds-SpacesDS/JdbcResource/mds-SpacesDS/JDBCDriverParams/NO_NAME_0')
+set('URL',WC_REPOS_DBURL)
+set('PasswordEncrypted',WC_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',WC_REPOS_DBUSER_PREFIX+'_MDS')
+
+print 'Change datasource PortletDS'
+cd('/JDBCSystemResource/PortletDS/JdbcResource/PortletDS/JDBCDriverParams/NO_NAME_0')
+set('URL',WC_REPOS_DBURL)
+set('PasswordEncrypted',WC_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',WC_REPOS_DBUSER_PREFIX+'_PORTLET')
+
+print 'Change datasource mds-PageletProducerDS'
+cd('/JDBCSystemResource/mds-PageletProducerDS/JdbcResource/mds-PageletProducerDS/JDBCDriverParams/NO_NAME_0')
+set('URL',WC_REPOS_DBURL)
+set('PasswordEncrypted',WC_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',WC_REPOS_DBUSER_PREFIX+'_MDS')
+
+print 'Change datasource OWC_DiscussionDS'
+cd('/JDBCSystemResource/OWC_DiscussionDS/JdbcResource/OWC_DiscussionDS/JDBCDriverParams/NO_NAME_0')
+set('URL',WC_REPOS_DBURL)
+set('PasswordEncrypted',WC_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',WC_REPOS_DBUSER_PREFIX+'_DISCUSSIONS')
+
+
+print 'Finished datasources'
+
+dumpStack();
+updateDomain()
+dumpStack();
+
+closeDomain();
+
+
+readDomain(DOMAIN_PATH)
+
+setOption( "AppDir", APP_PATH )
+
+cd('/Servers/AdminServer')
+set('Machine','LocalMachine')
+
+
+print 'Change wc_collaboration'
+setOption( "AppDir", APP_PATH )
+
+cd('/Servers/WC_Collaboration')
+set('Machine','LocalMachine')
+
+create('WC_Collaboration','ServerStart')
+cd('ServerStart/WC_Collaboration')
+set('Arguments', WC_COLLABORATION_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/WC_Collaboration')
+create('WC_Collaboration','SSL')
+cd('SSL/WC_Collaboration')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/WC_Collaboration')
+create('WC_Collaboration','Log')
+cd('/Server/WC_Collaboration/Log/WC_Collaboration')
+set('FileName','<%= @wcCollaborationNodeMgrLogDir %>/WC_Collaboration.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+print 'Change wc_portlet'
+setOption( "AppDir", APP_PATH )
+
+cd('/Servers/WC_Portlet')
+set('Machine','LocalMachine')
+
+create('WC_Portlet','ServerStart')
+cd('ServerStart/WC_Portlet')
+set('Arguments', WC_PORTLET_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/WC_Portlet')
+create('WC_Portlet','SSL')
+cd('SSL/WC_Portlet')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/WC_Portlet')
+create('WC_Portlet','Log')
+cd('/Server/WC_Portlet/Log/WC_Portlet')
+set('FileName','<%= @wcPortletNodeMgrLogDir %>/WC_Portlet.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+print 'Change WC_Spaces'
+setOption( "AppDir", APP_PATH )
+
+cd('/Servers/WC_Spaces')
+set('Machine','LocalMachine')
+
+create('WC_Spaces','ServerStart')
+cd('ServerStart/WC_Spaces')
+set('Arguments', WC_SPACES_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/WC_Spaces')
+create('WC_Spaces','SSL')
+cd('SSL/WC_Spaces')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/WC_Spaces')
+create('WC_Spaces','Log')
+cd('/Server/WC_Spaces/Log/WC_Spaces')
+set('FileName','<%= @wcSpacesNodeMgrLogDir %>/WC_Spaces.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+dumpStack();
+updateDomain()
+closeDomain()
+
+print('Exiting...')
+exit()

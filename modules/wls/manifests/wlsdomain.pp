@@ -1,7 +1,7 @@
 # == Define: wls::wlsdomain
 #
 # install a new weblogic domain  
-# support a normal WebLogic Domain , OSB , OSB plus SOA, OSB plus SOA & BPM , ADF 
+# support a normal WebLogic Domain , OSB , OSB plus SOA, OSB plus SOA & BPM , ADF , Webcenter, Webcenter + Content + BPM
 # use parameter wlsTemplate to control this
 #
 # === Examples
@@ -129,30 +129,53 @@ if ( $continue ) {
    $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
    $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
    $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
+
+   $templateSpaces       = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.wc_spaces_template_11.1.1.jar"
+   $templateBPMSpaces    = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.bpm.spaces_template_11.1.1.jar" 
+   $templatePortlets     = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.producer_apps_template_11.1.1.jar"
+   $templatePagelet      = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.pagelet-producer_template_11.1.1.jar"
+   $templateDiscussion   = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.owc_discussions_template_11.1.1.jar"
+
+   $templateUCM          = "${mdwHome}/Oracle_WCC1/common/templates/applications/oracle.ucm.cs_template_11.1.1.jar"
+
    
    if $wlsTemplate == 'standard' {
       $templateFile  = "wls/domain.xml.erb"
+      $wlstPath      = "${wlHome}/common/bin"
 
    } elsif $wlsTemplate == 'osb' {
       $templateFile  = "wls/domain_osb.xml.erb"
+      $wlstPath      = "${mdwHome}/Oracle_OSB1/common/bin"
 
    } elsif $wlsTemplate == 'osb_soa' {
       $templateFile  = "wls/domain_osb_soa.xml.erb"
+      $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
 
    } elsif $wlsTemplate == 'adf' {
       $templateFile  = "wls/domain_adf.xml.erb"
+      $wlstPath      = "${mdwHome}/oracle_common/common/bin"
 
    } elsif $wlsTemplate == 'osb_soa_bpm' {
       $templateFile  = "wls/domain_osb_soa_bpm.xml.erb"
+      $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
+
+   } elsif $wlsTemplate == 'wc' {
+      $templateFile  = "wls/domain_wc.xml.erb"
+      $wlstPath      = "${mdwHome}/Oracle_WC1/common/bin"
+
+   } elsif $wlsTemplate == 'wc_wcc_bpm' {
+      $templateFile  = "wls/domain_wc_wcc_bpm.xml.erb"
+      $wlstPath      = "${mdwHome}/Oracle_WCC1/common/bin"
 
    } else {
       $templateFile  = "wls/domain.xml.erb"
+      $wlstPath      = "${wlHome}/common/bin"
    } 
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
-        $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:${wlHome}/common/bin"
+        $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin"
         $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         $nodeMgrMachine   = "UnixMachine"
@@ -173,7 +196,7 @@ if ( $continue ) {
      }
      Solaris: { 
 
-        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:${wlHome}/common/bin"
+        $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin"
         $path             = $downloadDir
         $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
         $nodeMgrMachine   = "UnixMachine"
@@ -195,7 +218,7 @@ if ( $continue ) {
      }
      windows: { 
 
-        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows;${wlHome}\\common\\bin"
+        $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $path             = $downloadDir 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
         $nodeMgrMachine   = "Machine"
@@ -212,16 +235,26 @@ if ( $continue ) {
 
 
    if $logDir == undef {
-      $adminNodeMgrLogDir = "${domainPath}/${domain}/servers/${adminServerName}/logs"
-      $osbNodeMgrLogDir   = "${domainPath}/${domain}/servers/osb_server1/logs"
-      $soaNodeMgrLogDir   = "${domainPath}/${domain}/servers/soa_server1/logs"
-      $bamNodeMgrLogDir   = "${domainPath}/${domain}/servers/bam_server1/logs"
+
+      $adminNodeMgrLogDir             = "${domainPath}/${domain}/servers/${adminServerName}/logs"
+      $osbNodeMgrLogDir               = "${domainPath}/${domain}/servers/osb_server1/logs"
+      $soaNodeMgrLogDir               = "${domainPath}/${domain}/servers/soa_server1/logs"
+      $wcCollaborationNodeMgrLogDir   = "${domainPath}/${domain}/servers/WC_Collaboration/logs"
+      $wcPortletNodeMgrLogDir         = "${domainPath}/${domain}/servers/WC_Portlet/logs"
+      $wcSpacesNodeMgrLogDir          = "${domainPath}/${domain}/servers/WC_Spaces/logs"
+      $umcNodeMgrLogDir               = "${domainPath}/${domain}/servers/UCM_server1/logs"
 
    } else {
       $adminNodeMgrLogDir = "${logDir}"
       $osbNodeMgrLogDir   = "${logDir}"
       $soaNodeMgrLogDir   = "${logDir}"
       $bamNodeMgrLogDir   = "${logDir}"
+
+      $wcCollaborationNodeMgrLogDir   = "${logDir}"
+      $wcPortletNodeMgrLogDir         = "${logDir}"
+      $wcSpacesNodeMgrLogDir          = "${logDir}"
+      $umcNodeMgrLogDir               = "${logDir}"
+
 
       if ! defined(File["${logDir}"]) {
         file { "${logDir}" :
@@ -271,18 +304,14 @@ if ( $continue ) {
 
 
 
-   $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
    $packCommand    = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -template_name=domain_${domain} -log=${path}/domain_${domain}.log -log_priority=INFO"  
 
-
-    
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
         
         exec { "execwlst ux ${domain} ${title}":
-          command     => "${javaCommand} ${path}/domain_${domain}.py",
-          environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=${JAVA_HOME}",
+          command     => "${wlstPath}/wlst.sh ${path}/domain_${domain}.py",
+          environment => ["JAVA_HOME=${JAVA_HOME}",
                           "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "/usr/bin/test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
@@ -317,7 +346,7 @@ if ( $continue ) {
 
 
         exec { "pack domain ${domain} ${title}":
-           command     => "pack.sh ${packCommand}",
+           command     => "${wlHome}/common/bin/pack.sh ${packCommand}",
            require     => Exec["setDebugFlagOnFalse ${domain} ${title}"],
         }
 
@@ -328,7 +357,7 @@ if ( $continue ) {
         notify{"${domainPath}/${domain} ${title}":}
         
         exec { "execwlst win ${domain} ${title}":
-          command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/domain_${domain}.py",
+          command     => "C:\\Windows\\System32\\cmd.exe /c ${wlstPath}/wlst.cmd ${path}/domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           creates     => "${domainPath}/${domain}",
@@ -349,7 +378,7 @@ if ( $continue ) {
           }
 
         exec { "pack domain ${domain} ${title}":
-           command     => "C:\\Windows\\System32\\cmd.exe /c pack.cmd ${packCommand}",
+           command     => "C:\\Windows\\System32\\cmd.exe /c ${wlHome}/common/bin/pack.cmd ${packCommand}",
            subscribe   => Exec["icacls domain ${title}"],
            refreshonly => true,
         }

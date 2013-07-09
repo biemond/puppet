@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 1.0.1 Webcenter, BPM and Webcenter Content domain creation, set Domain and Nodemanager passwords in the domain templates + Crossdomain 
 - 1.0.0 Webcenter and Webcenter Content installer support 
 - 0.9.9 solaris plus resource adapter fixes 
 - 0.9.8 compatible with puppet 3.0  
@@ -69,6 +70,8 @@ WLS WebLogic Features
 - domain OSB + SOA creation + domain pack -> template name = 'osb_soa'  
 - domain OSB + SOA + BPM creation + domain pack -> template name = 'osb_soa_bpm'  
 - domain ADF creation + domain pack -> template name = 'adf'  
+- domain WC (webcenter) + WCC (Content)  + BPM creation + domain pack -> template name = 'wc_wcc_bpm'  
+- domain WC (webcenter) + domain pack -> template name = 'wc'  
 
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 
@@ -294,6 +297,14 @@ WebLogic configuration examples
     
        Class['wls1036osb_soa'] -> Class['wls_osb_soa_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
     }
+
+	class application_wc {
+	
+	   include wls1036_wc, wls_wc_wcc_bpm_domain
+	   include orautils
+	   
+	   Class['wls1036_wc'] -> Class['wls_wc_wcc_bpm_domain']
+	}
     
     class application_osb {
        include wls1036osb, wls_osb_domain, wls_OSB_application_JDBC
@@ -421,11 +432,6 @@ WebLogic configuration examples
 
          }
       }
-     
-	  
-	 
-
-
     
       # set the defaults
       Wls::Installwls {
@@ -521,8 +527,8 @@ WebLogic configuration examples
 	    $wls11gVersion = "1036"
 	  }
 	                       
-	  #$puppetDownloadMntPoint = "puppet:///middleware/"
-	  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
+	  $puppetDownloadMntPoint = "puppet:///middleware/"
+	  #  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
 	 
 	
 	  case $operatingsystem {
@@ -602,6 +608,20 @@ WebLogic configuration examples
 	    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
 	  }
 	
+	
+	  Wls::Installsoa {
+	    mdwHome                => $osMdwHome,
+	    wlHome                 => $osWlHome,
+	    oracleHome             => $osOracleHome,
+	    fullJDKName            => $jdkWls11gJDK,	
+	    user                   => $user,
+	    group                  => $group,    
+	    downloadDir            => $downloadDir,
+	    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+	  }
+	
+	
+	
 	  # install
 	  wls::installwls{'11gPS5':}
 	
@@ -625,11 +645,18 @@ WebLogic configuration examples
 	    require     => Wls::Installwc['wcPS6'],
 	  }
 	
+	  wls::installsoa{'soaPS6':
+	     soaFile1      => 'ofm_soa_generic_11.1.1.7.0_disk1_1of2.zip',
+	     soaFile2      => 'ofm_soa_generic_11.1.1.7.0_disk1_2of2.zip',
+	     require       =>  Wls::Installwcc['wccPS6'],
+	  }
+	
+	
 	  #nodemanager configuration and starting
 	  wls::nodemanager{'nodemanager11g':
 	    listenPort  => '5556',
 	    logDir      => $logsDir,
-	    require     => Wls::Installwc['wcPS6'],
+	    require     => Wls::Installsoa['soaPS6'],
 	  }
 	
 	}
@@ -1120,6 +1147,188 @@ WebLogic configuration examples
     
     }
     
+	class wls_wc_wcc_bpm_domain{
+	
+	
+	  if $jdkWls11gJDK == undef {
+	    $jdkWls11gJDK = 'jdk1.7.0_25'
+	  }
+	
+	  $wlsDomainName   = "wcWccBpmDomain"
+	  
+	  #$osTemplate      = "standard"
+	  #$osTemplate      = "osb"
+	  #$osTemplate      = "osb_soa"
+	  #$osTemplate      = "osb_soa_bpm"
+	  #$osTemplate      = "wc"
+	  $osTemplate      = "wc_wcc_bpm"
+	
+	
+	  $adminListenPort = "7001"
+	  $nodemanagerPort = "5556"
+	  $address         = "localhost"
+	
+	  case $operatingsystem {
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+	       $userConfigDir = '/home/oracle'
+	     }
+	     Solaris: { 
+	       $userConfigDir = '/export/home/oracle'
+	     }
+	     windows: { 
+	       $userConfigDir = "c:/oracle"
+	     }
+	  }
+	
+	 
+	  # rcu wc wcc bpm repository
+	  $reposUrl        = "jdbc:oracle:thin:@dbagent2.alfa.local:1521/test.oracle.com"
+	
+	  $reposPrefix     = "DEV2"
+	  # rcu wc repository schema password
+	  $reposPassword   = hiera('database_test_rcu_dev_password')
+	
+	
+	 
+	 
+	  case $operatingsystem {
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	       $osOracleHome  = "/opt/oracle/wls"
+	       $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
+	       $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+	       $user          = "oracle"
+	       $group         = "dba"
+	       $downloadDir   = "/data/install"
+	       $logDir        = "/data/logs"
+	     }
+	     windows: { 
+	       $osOracleHome  = "c:/oracle/middleware"
+	       $osMdwHome     = "c:/oracle/middleware/wls11g"
+	       $osWlHome      = "c:/oracle/middleware/wls11g/wlserver_10.3"
+	       $user          = "Administrator"
+	       $group         = "Administrators"
+	       $serviceName   = "C_oracle_middleware_wls11g_wlserver_10.3"
+	       $downloadDir   = "c:/temp"
+	       $logDir        = "c:/oracle/logs" 
+	     }
+	  }
+	
+	
+	  # install WC WCC BPM domain
+	  wls::wlsdomain{'wcWccBpmDomain':
+	    wlHome          => $osWlHome,
+	    mdwHome         => $osMdwHome,
+	    fullJDKName     => $jdkWls11gJDK, 
+	    wlsTemplate     => $osTemplate,
+	    domain          => $wlsDomainName,
+	    adminServerName => "AdminServer",
+	    adminListenAdr  => "localhost",
+	    adminListenPort => $adminListenPort,
+	    nodemanagerPort => $nodemanagerPort,
+	    wlsUser         => "weblogic",
+	    password        => hiera('weblogic_password_default'),
+	    user            => $user,
+	    group           => $group,    
+	    logDir          => $logDir,
+	    downloadDir     => $downloadDir, 
+	    reposDbUrl      => $reposUrl,
+	    reposPrefix     => $reposPrefix,
+	    reposPassword   => $reposPassword,
+	  }
+	
+	  # default parameters for the wlst scripts
+	  Wls::Wlstexec {
+	    wlsDomain    => $wlsDomainName,
+	    wlHome       => $osWlHome,
+	    fullJDKName  => $jdkWls11gJDK,  
+	    user         => $user,
+	    group        => $group,
+	    address      => $address,
+	    downloadDir  => $downloadDir, 
+	  }
+	  
+	  # start AdminServers for configuration of WLS Domain
+	  wls::wlstexec { 
+	    'startWCAdminServer':
+	     wlsUser     => "weblogic",
+	     password    => hiera('weblogic_password_default'),
+	     script      => 'startWlsServer.py',
+	     port        => $nodemanagerPort,
+	     params      =>  ["domain     = '${wlsDomainName}'",
+	                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+	                      "wlsServer  = 'AdminServer'"],
+	     require     => Wls::Wlsdomain['wcWccBpmDomain'];
+	  }
+	
+	  # create keystores for automatic WLST login
+	  wls::storeuserconfig{
+	   'wcDomain_keys':
+	    wlHome        => $osWlHome,
+	    fullJDKName   => $jdkWls11gJDK,
+	    domain        => $wlsDomainName, 
+	    address       => $address,
+	    wlsUser       => "weblogic",
+	    password      => hiera('weblogic_password_default'),
+	    port          => $adminListenPort,
+	    user          => $user,
+	    group         => $group,
+	    userConfigDir => $userConfigDir, 
+	    downloadDir   => $downloadDir, 
+	    require       => Wls::Wlstexec['startWCAdminServer'],
+	  }
+	
+	  # set the defaults
+	  Wls::Changefmwlogdir {
+	    mdwHome        => $osMdwHome,
+	    user           => $user,
+	    group          => $group,
+	    address        => $address,
+	    port           => $adminListenPort,
+	    userConfigFile => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties",
+	    userKeyFile    => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties",
+	    downloadDir    => $downloadDir, 
+	  }
+	
+	  # change the FMW logfiles
+	  wls::changefmwlogdir{
+	   'AdminServer':
+	    wlsServer    => "AdminServer",
+	    logDir       => $logDir,
+	    require      => Wls::Storeuserconfig['wcDomain_keys'],
+	  }
+	
+	
+	  wls::changefmwlogdir{
+	   'WC_Collaboration':
+	    wlsServer    => "WC_Collaboration",
+	    logDir       => $logDir,
+	    require      => Wls::Changefmwlogdir['AdminServer'],
+	  }
+	
+	
+	  wls::changefmwlogdir{
+	   'WC_Portlet':
+	    wlsServer    => "WC_Portlet",
+	    logDir       => $logDir,
+	    require      => Wls::Changefmwlogdir['WC_Collaboration'],
+	  }
+	
+	  wls::changefmwlogdir{
+	   'WC_Spaces':
+	    wlsServer    => "WC_Spaces",
+	    logDir       => $logDir,
+	    require      => Wls::Changefmwlogdir['WC_Portlet'],
+	  }
+	
+	  wls::changefmwlogdir{
+	   'UCM_server1':
+	    wlsServer    => "UCM_server1",
+	    logDir       => $logDir,
+	    require      => Wls::Changefmwlogdir['WC_Spaces'],
+	  }
+	
+	
+	}
     
     
     class wls_osb_domain{
