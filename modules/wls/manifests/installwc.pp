@@ -47,7 +47,6 @@ define wls::installwc( $mdwHome         = undef,
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $wcOracleHome    = "${mdwHome}/Oracle_WC1"
-        $oraInstPath     = "/etc"
         $oraInventory    = "${oracleHome}/oraInventory"
         
         $wcInstallDir    = "linux64"
@@ -70,7 +69,6 @@ define wls::installwc( $mdwHome         = undef,
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $wcOracleHome    = "${mdwHome}/Oracle_WC1"
-        $oraInstPath     = "/var/opt"
         $oraInventory    = "${oracleHome}/oraInventory"
 
         $wcInstallDir    = "intelsolaris"
@@ -94,7 +92,6 @@ define wls::installwc( $mdwHome         = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = $downloadDir 
         $wcOracleHome     = "${mdwHome}/Oracle_WC1"
-        $oraInventory     = "C:\\Program Files\\Oracle\\Inventory"
         
         Exec { path      => $execPath,
              }
@@ -127,12 +124,18 @@ if ( $continue ) {
      $mountPoint =  $puppetDownloadMntPoint
    }
 
+   wls::utils::orainst{'create wc oraInst':
+            oraInventory    => $oraInventory, 
+            group           => $group,
+   }
+
    $wcTemplate =  "wls/silent_wc.xml.erb"
 
 #   if ! defined(File["${path}/${title}silent_wc.xml"]) {
      file { "${path}/${title}silent_wc.xml":
        ensure  => present,
        content => template($wcTemplate),
+       require => Wls::Utils::Orainst ['create wc oraInst'],
      }
 #   }
 
@@ -157,18 +160,10 @@ if ( $continue ) {
           creates => "${path}/wc",
          }
         }
-
-
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-         }
-        }
         
         exec { "install wc ${title}":
-          command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
+          command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
           creates     => $wcOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
@@ -177,8 +172,6 @@ if ( $continue ) {
           command     => "/bin/sleep 240",
           require     => Exec ["install wc ${title}"],
         }    
-
-             
      }
      Solaris: { 
 
@@ -195,16 +188,9 @@ if ( $continue ) {
           require => Exec["extract ${wcFile}"],
         }
 
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-         }
-        }
-        
         exec { "install wc ${title}":
-          command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"],Exec["add -d64 oraparam.ini wc"]],
+          command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"],Exec["add -d64 oraparam.ini wc"]],
           creates     => $wcOracleHome,
         }    
 
@@ -234,21 +220,6 @@ if ( $continue ) {
 
      windows: { 
 
-        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 
-          registry_key { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle":
-            ensure  => present,
-#            require => File ["${path}${wcFile}"],
-          }
-        }
-
-        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]) {
-          registry_value { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc":
-            type    => string,
-            data    => $oraInventory,
-            require => Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"],
-          }
-        }
-
         if ! defined(Exec["extract ${wcFile}"]) {
          exec { "extract ${wcFile}":
           command => "${checkCommand} unzip ${path}/${wcFile} -d ${path}/wc",
@@ -275,7 +246,6 @@ if ( $continue ) {
           command     => "${checkCommand} sleep 240",
           require     => Exec ["install wc ${title}"],
         }    
-
 
      }
    }

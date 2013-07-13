@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 1.0.2 Weblogic 12.1.2 support plus ADF 11g / 12c install manifest, refactoring for weblogic 12.1.2  
 - 1.0.1 Webcenter, BPM and Webcenter Content domain creation, set Domain and Nodemanager passwords in the domain templates + Crossdomain 
 - 1.0.0 Webcenter and Webcenter Content installer support 
 - 0.9.9 solaris plus resource adapter fixes 
@@ -51,9 +52,10 @@ else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/wls/" (
 WLS WebLogic Features
 ---------------------------
 
-- installs WebLogic 10g,11g,12c
+- installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
 - apply bsu patch ( WebLogic Patch )
 
+- installs Oracle ADF 11g & 12c ( 12.1.2)
 - installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
 - installs Oracle Soa Suite 11g
 - installs Oracle Webcenter 11g
@@ -180,6 +182,7 @@ Contains WebLogic Facter which displays the following
 
 ### My Files folder of the wls module
      1068506707 wls1036_generic.jar
+      922712414 ofm_wls_generic_12.1.2.0.0_disk1_1of1.zip  
      1887405692 jdevstudio11116install.jar
      1904618055 jdevstudio11117install.jar
       375895263 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
@@ -198,7 +201,6 @@ Contains WebLogic Facter which displays the following
      2077610918 ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip
      2052379536 ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip
       202204151 ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip
-     1802723467 ofm_webtier_linux_11.1.1.7.0_64_disk1_1of1.zip
     
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/modulefiles.png)
     
@@ -273,7 +275,6 @@ puppet module install erwbgy-limits
        value     => '30',
      }
    
-   
      class { 'limits':
        config => {
                   '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
@@ -285,11 +286,14 @@ puppet module install erwbgy-limits
                   },
        use_hiera => false,
      }
-   
-
 
 WebLogic configuration examples
 -------------------------------
+
+    class application_wls12 {
+       include wls12_adf
+       # include wls12
+    }
 
     class application_osb_soa {
        include wls1036osb_soa, wls_osb_soa_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS
@@ -316,16 +320,112 @@ WebLogic configuration examples
 	   include wls1036_wc
 	}    
     
-    class application_wls12 {
-       include wls12, wls12c_domain
-       Class['wls12'] -> Class['wls12c_domain']
-    }
 
 ### templates.pp
 
     include wls
-    
-            
+
+	class wls12{
+	
+	  if $jdkWls12cJDK == undef {
+	    $jdkWls12cJDK = 'jdk1.7.0_25'
+	  }
+	
+	  if $wls12cVersion == undef {
+	    $wls12cVersion = "1212"
+	  }
+	
+	  case $operatingsystem {
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	       $osOracleHome = "/opt/oracle/wls"
+	       $osMdwHome    = "/opt/oracle/wls/Middleware12c"
+	       $osWlHome     = "/opt/oracle/wls/Middleware12c/wlserver"
+	       $user         = "oracle"
+	       $group        = "dba"
+	       $downloadDir  = "/data/install"
+	     }
+	     windows: { 
+	       $osOracleHome = "c:/oracle"
+	       $osMdwHome    = "c:/oracle/Middleware12c"
+	       $osWlHome     = "c:/oracle/Middleware12c/wlserver"
+	       $user         = "Administrator"
+	       $group        = "Administrators"
+	       $serviceName  = "C_oracle_middleware12c_wlserver"
+	       $downloadDir  = "c:/temp"
+	     }
+	  }
+	
+	  $puppetDownloadMntPoint = "puppet:///middleware/"
+	#  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
+	
+	  # set the defaults
+	  Wls::Installwls {
+	    version                => $wls12cVersion,
+	    fullJDKName            => $jdkWls12cJDK,
+	    oracleHome             => $osOracleHome,
+	    mdwHome                => $osMdwHome,
+	    user                   => $user,
+	    group                  => $group,
+	    downloadDir            => $downloadDir,
+	    puppetDownloadMntPoint => $puppetDownloadMntPoint,     
+	  }
+
+	  # install
+	  wls::installwls{'wls12c':}
+	
+	} 
+	
+	class wls12_adf{
+
+	  if $jdkWls12cJDK == undef {
+	    $jdkWls12cJDK = 'jdk1.7.0_25'
+	  }
+	
+	  if $wls12cVersion == undef {
+	    $wls12cVersion = "1212"
+	  }
+	
+	  case $operatingsystem {
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	       $osOracleHome = "/opt/oracle/wls"
+	       $osMdwHome    = "/opt/oracle/wls/Middleware12cADF"
+	       $osWlHome     = "/opt/oracle/wls/Middleware12cADF/wlserver"
+	       $user         = "oracle"
+	       $group        = "dba"
+	       $downloadDir  = "/data/install"
+	     }
+	     windows: { 
+	       $osOracleHome = "c:/oracle"
+	       $osMdwHome    = "c:/oracle/Middleware12cADF"
+	       $osWlHome     = "c:/oracle/Middleware12cADF/wlserver"
+	       $user         = "Administrator"
+	       $group        = "Administrators"
+	       $serviceName  = "C_oracle_middleware12cadf_wlserver"
+	       $downloadDir  = "c:/temp"
+	     }
+	  }
+	
+	  $puppetDownloadMntPoint = "puppet:///middleware/"
+	#  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
+	
+	  # set the adf defaults
+	  Wls::Installadf {
+	    mdwHome                => $osMdwHome,
+	    wlHome                 => $osWlHome,
+	    oracleHome             => $osOracleHome,
+	    fullJDKName            => $jdkWls11gJDK, 
+	    user                   => $user,
+	    group                  => $group,   
+	    downloadDir            => $downloadDir,
+	    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+	  }
+	
+	  wls::installadf{'adf12c':
+	     adfFile      => 'ofm_wls_jrf_generic_12.1.2.0.0_disk1_1of1.zip',
+	  } 
+	
+	} 
+	            
     class wls1036osb_soa{
     
       if $jdkWls11gJDK == undef {
@@ -428,8 +528,6 @@ WebLogic configuration examples
 		    hour    => 06,
 		    minute  => 35,
 		  }
-
-
          }
       }
     
@@ -529,7 +627,6 @@ WebLogic configuration examples
 	                       
 	  $puppetDownloadMntPoint = "puppet:///middleware/"
 	  #  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
-	 
 	
 	  case $operatingsystem {
 	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
@@ -552,8 +649,6 @@ WebLogic configuration examples
 	       $logsDir      = "c:/oracle/logs" 
 	     }
 	  }
-	
-	
 	
 	  # set the defaults
 	  Wls::Installwls {
@@ -661,7 +756,6 @@ WebLogic configuration examples
 	
 	}
     
-    
     class wls1036osb{
     
       if $jdkWls11gJDK == undef {
@@ -671,7 +765,6 @@ WebLogic configuration examples
       if $wls11gVersion == undef {
         $wls11gVersion = "1036"
       }
-    
      
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
@@ -692,64 +785,6 @@ WebLogic configuration examples
            $downloadDir  = "c:\\temp\\"
          }
       }
-
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
-            $mtimeParam = "1"
-         }
-         Solaris: { 
-            $mtimeParam = "+1"
-         }
-      }
-
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
-		  cron { 'cleanwlstmp' :
-		    command => "find /tmp -maxdepth 1 -name '*.tmp' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/tmp_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 06,
-		    minute  => 10,
-		  }
-		 
-		  cron { 'mdwlogs' :
-		    command => "find ${osMdwHome}/logs -maxdepth 1 -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 13,
-		    minute  => 30,
-		  }
-		 
-		  cron { 'oracle_common_lsinv' :
-		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch/lsinv -maxdepth ${mtimeParam} -name 'lsinventory*.txt' -mtime 1 -exec rm {} \\; >> /tmp/opatch_lsinv_common_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 13,
-		    minute  => 31,
-		  }
-		 
-		  cron { 'oracle_osb1_lsinv' :
-		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch/lsinv -maxdepth ${mtimeParam} -name 'lsinventory*.txt' -mtime 1 -exec rm {} \\; >> /tmp/opatch_lsinv_osb1_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 13,
-		    minute  => 32,
-		  }
-		 
-		  cron { 'oracle_common_opatch' :
-		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch -maxdepth ${mtimeParam} -name 'opatch*.log' -mtime 1 -exec rm {} \\; >> /tmp/opatch_common_purge.log 2>&1",
-		    user    => oracle,
-		   hour    => 13,
-		    minute  => 34,
-		  }
-		 
-		  cron { 'oracle_osb1_opatch' :
-		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch -maxdepth ${mtimeParam} -name 'opatch*.log' -mtime 1 -exec rm {} \\; >> /tmp/opatch_osb_purge.log 2>&1",
-		    user    => oracle,
-		   hour    => 13,
-		    minute  => 35,
-		  }
-
-         }
-      }
-
-
     
       # set the defaults
       Wls::Installwls {
@@ -801,7 +836,6 @@ WebLogic configuration examples
          require      => Wls::Installwls['11gPS5'],
        }
     
-    
        wls::installosb{'osbPS6':
          osbFile      => 'ofm_osb_generic_11.1.1.7.0_disk1_1of1.zip',
          require      => Wls::Bsupatch['p14736139'],
@@ -815,8 +849,6 @@ WebLogic configuration examples
        }
     
     }
-    
-    
     
     class jdeveloper_soa {
     
@@ -881,8 +913,6 @@ WebLogic configuration examples
         downloadDir  => $downloadDir, 
       }
     
-    
-    
       # install
       wls::installwls{'11gPS5_hudson':}
     
@@ -917,70 +947,7 @@ WebLogic configuration examples
       }
     
     }
-    
-    
-   
-    
-    class wls12{
-    
-    
-      if $jdkWls12cJDK == undef {
-        $jdkWls12cJDK = 'jdk1.7.0_09'
-      }
-    
-      if $wls12cVersion == undef {
-        $wls12cVersion = "1211"
-      }
-    
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
-           $osOracleHome = "/opt/wls"
-           $osMdwHome    = "/opt/wls/Middleware12g"
-           $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
-           $user         = "oracle"
-           $group        = "dba"
-           $downloadDir  = "/install/"
-         }
-         windows: { 
-           $osOracleHome = "c:/oracle"
-           $osMdwHome    = "c:/oracle/Middleware12g"
-           $osWlHome     = "c:/oracle/Middleware12g/wlserver_12.1"
-           $user         = "Administrator"
-           $group        = "Administrators"
-           $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
-           $downloadDir  = "c:\\temp\\"
-         }
-      }
-    
-      # set the defaults
-      Wls::Installwls {
-        version      => $wls12cVersion,
-        fullJDKName  => $jdkWls12cJDK,
-        oracleHome   => $osOracleHome,
-        mdwHome      => $osMdwHome,
-        user         => $user,
-        group        => $group,    
-      }
-      
-      Wls::Nodemanager {
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls12cJDK,	
-        user         => $user,
-        group        => $group,
-        serviceName  => $serviceName,  
-      }
-      
-      # install
-      wls::installwls{'wls12c':}
-    
-      #nodemanager configuration and starting
-      wls::nodemanager{'nodemanager':
-        listenPort   => '5656',
-        logDir       => '/data/logs',
-        require      => Wls::Installwls['wls12c'],
-      }
-    
-    }         
+
     
 ### templates_app.pp
 
@@ -1116,8 +1083,8 @@ WebLogic configuration examples
         group          => $group,
         address        => $address,
         port           => $adminListenPort,
-    #    wlsUser        => "weblogic",
-    #    password       => "weblogic1",
+      #    wlsUser        => "weblogic",
+      #    password       => "weblogic1",
         userConfigFile => "${userConfigDir}/${user}-osbSoaDomain-WebLogicConfig.properties
         userKeyFile    => "${userConfigDir}/${user}-osbSoaDomain-WebLogicKey.properties", 
         downloadDir    => $downloadDir, 
@@ -1179,7 +1146,6 @@ WebLogic configuration examples
 	       $userConfigDir = "c:/oracle"
 	     }
 	  }
-	
 	 
 	  # rcu wc wcc bpm repository
 	  $reposUrl        = "jdbc:oracle:thin:@dbagent2.alfa.local:1521/test.oracle.com"
@@ -1187,9 +1153,6 @@ WebLogic configuration examples
 	  $reposPrefix     = "DEV2"
 	  # rcu wc repository schema password
 	  $reposPassword   = hiera('database_test_rcu_dev_password')
-	
-	
-	 
 	 
 	  case $operatingsystem {
 	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
@@ -1277,62 +1240,10 @@ WebLogic configuration examples
 	    require       => Wls::Wlstexec['startWCAdminServer'],
 	  }
 	
-	  # set the defaults
-	  Wls::Changefmwlogdir {
-	    mdwHome        => $osMdwHome,
-	    user           => $user,
-	    group          => $group,
-	    address        => $address,
-	    port           => $adminListenPort,
-	    userConfigFile => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties",
-	    userKeyFile    => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties",
-	    downloadDir    => $downloadDir, 
-	  }
-	
-	  # change the FMW logfiles
-	  wls::changefmwlogdir{
-	   'AdminServer':
-	    wlsServer    => "AdminServer",
-	    logDir       => $logDir,
-	    require      => Wls::Storeuserconfig['wcDomain_keys'],
-	  }
-	
-	
-	  wls::changefmwlogdir{
-	   'WC_Collaboration':
-	    wlsServer    => "WC_Collaboration",
-	    logDir       => $logDir,
-	    require      => Wls::Changefmwlogdir['AdminServer'],
-	  }
-	
-	
-	  wls::changefmwlogdir{
-	   'WC_Portlet':
-	    wlsServer    => "WC_Portlet",
-	    logDir       => $logDir,
-	    require      => Wls::Changefmwlogdir['WC_Collaboration'],
-	  }
-	
-	  wls::changefmwlogdir{
-	   'WC_Spaces':
-	    wlsServer    => "WC_Spaces",
-	    logDir       => $logDir,
-	    require      => Wls::Changefmwlogdir['WC_Portlet'],
-	  }
-	
-	  wls::changefmwlogdir{
-	   'UCM_server1':
-	    wlsServer    => "UCM_server1",
-	    logDir       => $logDir,
-	    require      => Wls::Changefmwlogdir['WC_Spaces'],
-	  }
-	
 	
 	}
     
-    
     class wls_osb_domain{
-    
     
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
@@ -1462,90 +1373,10 @@ WebLogic configuration examples
     
     
     }
-    
-    
-    class wls12c_domain{
-    
-    
-      if $jdkWls12gJDK == undef {
-        $jdkWls12gJDK = 'jdk1.7.0_25'
-      }
-    
-      $wlsDomainName   = "stdDomain12c"
-      $osTemplate      = "standard"
-      $adminListenPort = "8001"
-      $nodemanagerPort = "5656"
-      $address         = "localhost"
-     
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
-           $osOracleHome = "/opt/wls"
-           $osMdwHome    = "/opt/wls/Middleware12g"
-           $osWlHome     = "/opt/wls/Middleware12g/wlserver_12.1"
-           $user         = "oracle"
-           $group        = "dba"
-           $downloadDir  = "/data/install/"
-         }
-         windows: { 
-           $osOracleHome = "c:/oracle"
-           $osMdwHome    = "c:/oracle/Middleware12g"
-           $osWlHome     = "c:/oracle/Middleware12g/wlserver_12.1"
-           $user         = "Administrator"
-           $group        = "Administrators"
-           $serviceName  = "C_oracle_middleware12g_wlserver_12.1"
-           $downloadDir  = "c:\\temp\\"
-         }
-      }
-    
-    
-      # install domain
-      wls::wlsdomain{
-       'stdDomain12c':
-        wlHome          => $osWlHome,
-        mdwHome         => $osMdwHome,
-        fullJDKName     => $jdkWls12gJDK,  
-        user            => $user,
-        group           => $group,    
-        downloadDir     => $downloadDir, 
-        wlsTemplate     => $osTemplate,
-        domain          => $wlsDomainName,
-        adminListenPort => $adminListenPort,
-        nodemanagerPort => $nodemanagerPort,
-        wlsUser         => "weblogic",
-        password        => "weblogic1",
-      }
-    
-      # default parameters for the wlst scripts
-      Wls::Wlstexec {
-        wlsDomain    => $wlsDomainName,
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls12gJDK,  
-        user         => $user,
-        group        => $group,
-        address      => $address,
-        downloadDir  => $downloadDir, 
-      }
-      
-      # start AdminServers for configuration of both domains myTestDomain
-      wls::wlstexec { 
-        'startWLSAdminServer12c':
-         wlsUser     => "weblogic",
-         password    => "weblogic1",
-         script      => 'startWlsServer.py',
-         port        =>  $nodemanagerPort,
-         params      =>  ["domain = '${wlsDomainName}'",
-                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-                          "wlsServer = 'AdminServer'"],
-         require     => Wls::Wlsdomain['stdDomain12c'];
-    
-      }
-    }
-    
-    
-    
+  
+
     
     class wls_OSB_application_JDBC{
-    
     
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_09'
@@ -1670,9 +1501,6 @@ WebLogic configuration examples
     
     
     }  
-    
-    
-    
     
     class wls_OSB_application_JMS{
     
@@ -1955,5 +1783,3 @@ WebLogic configuration examples
       }
     
     }  
-    
-                                

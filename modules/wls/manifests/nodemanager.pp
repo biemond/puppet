@@ -39,7 +39,8 @@
 # 
 
 
-define wls::nodemanager($wlHome          = undef, 
+define wls::nodemanager($version         = "1111",
+                        $wlHome          = undef, 
                         $fullJDKName     = undef,
                         $listenPort      = 5556,
                         $user            = 'oracle',
@@ -49,7 +50,20 @@ define wls::nodemanager($wlHome          = undef,
                         $downloadDir     = '/install/',
                        ) {
 
+   if $version == "1111" {
+     $nodeMgrHome = "${wlHome}/common/nodemanager"
+   } elsif $version == "1212" {
+     $nodeMgrHome = "${wlHome}/../oracle_common/common/nodemanager"     
+   } else {
+     $nodeMgrHome = "${wlHome}/common/nodemanager"     
+   }
 
+
+   if $logDir == undef {
+      $nodeLogDir = "${nodeMgrHome}/nodemanager.log"
+   } else {
+      $nodeLogDir = "${logDir}/nodemanager.log"
+   }
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -57,7 +71,6 @@ define wls::nodemanager($wlHome          = undef,
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
         $checkCommand     = "/bin/ps -ef | grep -v grep | /bin/grep 'weblogic.NodeManager'"
-        $path             = $downloadDir
         $JAVA_HOME        = "/usr/java/${fullJDKName}"
         $nativeLib        = "linux/x86_64"  
         
@@ -67,15 +80,18 @@ define wls::nodemanager($wlHome          = undef,
                logoutput => true,
                cwd       => "${wlHome}/common/nodemanager",
              }
-  
-     
+
+        File{
+            owner   => $user,
+            group   => $group,
+#            mode    => 0775,
+        }
      }
      Solaris: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:${otherPath}"
         $checkCommand     = "/usr/ucb/ps wwxa | grep -v grep | /bin/grep 'weblogic.NodeManager'"
-        $path             = $downloadDir
         $JAVA_HOME        = "/usr/jdk/${fullJDKName}"
         $nativeLib        = "solaris/x64"
         
@@ -85,33 +101,29 @@ define wls::nodemanager($wlHome          = undef,
                logoutput => true,
                cwd       => "${wlHome}/common/nodemanager",
              }
-  
-     
+        File{
+            owner   => $user,
+            group   => $group,
+#            mode    => 0775,
+        }
      }
      windows: { 
 
         $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = $downloadDir 
         $JAVA_HOME        = "C:\\oracle\\${fullJDKName}"
 
         Exec { path      => $execPath,
                cwd       => "${wlHome}/common/nodemanager",
              }
+
+        File{
+            owner   => $user,
+            group   => $group,
+#            mode    => 0775,
+        }
      }
    }
-
-
-   File{
-        owner   => $user,
-        group   => $group,
-        mode    => 0770,
-   }
-
-   if $logDir == undef {
-      $nodeLogDir = "${wlHome}/common/nodemanager/nodemanager.log"
-   } else {
-      $nodeLogDir = "${logDir}/nodemanager.log"
 
 
       # create all folders 
@@ -144,9 +156,6 @@ define wls::nodemanager($wlHome          = undef,
              require => Exec['create ${logDir} directory'],
            }
       }    
-   }
-
-
 
 
    $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/./urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
@@ -157,7 +166,7 @@ define wls::nodemanager($wlHome          = undef,
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
 
         file { "nodemanager.properties ux ${title}":
-                path    => "${wlHome}/common/nodemanager/nodemanager.properties",
+                path    => "${nodeMgrHome}/nodemanager.properties",
                 ensure  => present,
                 replace => 'yes',
                 content => template("wls/nodemgr/nodemanager.properties.erb"),
@@ -186,13 +195,13 @@ define wls::nodemanager($wlHome          = undef,
 
         exec {"icacls win nodemanager bin ${title}": 
            command    => "${checkCommand} icacls ${wlHome}\\server\\bin\\* /T /C /grant Administrator:F Administrators:F",
-           unless     => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
+           unless     => "${checkCommand} test -e ${nodeMgrHome}/nodemanager.properties",
            logoutput  => false,
         } 
 
         exec {"icacls win nodemanager native ${title}": 
            command    => "${checkCommand} icacls ${wlHome}\\server\\native\\* /T /C /grant Administrator:F Administrators:F",
-           unless     => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
+           unless     => "${checkCommand} test -e ${nodeMgrHome}/nodemanager.properties",
            logoutput  => false,
         } 
 
@@ -201,12 +210,12 @@ define wls::nodemanager($wlHome          = undef,
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           require     => [Exec ["icacls win nodemanager bin ${title}"],Exec ["icacls win nodemanager native ${title}"]],
-          unless      => "${checkCommand} test -e ${wlHome}/common/nodemanager/nodemanager.properties",
+          unless      => "${checkCommand} test -e ${nodeMgrHome}/nodemanager.properties",
           logoutput   => true,
         }    
 
         file { "nodemanager.properties win ${title}":
-                path    => "${wlHome}/common/nodemanager/nodemanager.properties",
+                path    => "${nodeMgrHome}/nodemanager.properties",
                 ensure  => present,
                 replace => 'yes',
                 content => template("wls/nodemgr/nodemanager.properties.erb"),

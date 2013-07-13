@@ -22,14 +22,12 @@
 #     centos, redhat, OracleLinux, Ubuntu, debian: { 
 #       $osMdwHome    = "/opt/oracle/wls/wls11g"
 #       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-#       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
 #       $user         = "oracle"
 #       $group        = "dba"
 #     }
 #     windows: { 
 #       $osMdwHome    = "c:/oracle/wls/wls11g"
 #       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-#       $osDomainPath = "c:/oracle/wls/wls11g/admin"
 #       $user         = "Administrator"
 #       $group        = "Administrators"
 #       $serviceName  = "C_oracle_wls_wls11g_wlserver_10.3"
@@ -59,7 +57,8 @@
 ## 
 # 
 
-define wls::wlsdomain ($wlHome          = undef,
+define wls::wlsdomain ($version         = '1111',
+                       $wlHome          = undef,
                        $mdwHome         = undef,
                        $fullJDKName     = undef,
                        $wlsTemplate     = "standard",
@@ -113,9 +112,41 @@ define wls::wlsdomain ($wlHome          = undef,
 
 if ( $continue ) {
 
+   if $version = "1111" {
+
+     $template             = "${wlHome}/common/templates/domains/wls.jar"
+     $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
+
+     $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
+     $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
+     $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
+     $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
+     $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
+
+   } elsif $version = "1212" {
+
+     $template             = "${wlHome}/wlserver/common/templates/wls/wls.jar"
+     $templateWS           = "${wlHome}/wlserver/common/templates/wls/wls_webservice.jar"
+
+     $templateEM           = "${mdwHome}/em/common/templates/wls/oracle.em_wls_template_12.1.2.jar"
+     $templateJRF          = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf_template_12.1.2.jar"
+     $templateJaxWS        = "${mdwHome}/wlserver/common/templates/wls/wls_webservice_jaxws.jar"
+     $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.12.1.3_template.jar"
+     $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/wls/oracle.wsmpm_template_12.1.2.jar"
+
+   } else {
+
+     $template             = "${wlHome}/common/templates/domains/wls.jar"
+     $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
+
+     $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
+     $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
+     $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
+     $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
+     $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
+
+   }
    
-   $template             = "${wlHome}/common/templates/domains/wls.jar"
-   $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
 
    $templateOSB          = "${mdwHome}/Oracle_OSB1/common/templates/applications/wlsb.jar"
    $templateSOAAdapters  = "${mdwHome}/Oracle_OSB1/common/templates/applications/oracle.soa.common.adapters_template_11.1.1.jar"
@@ -123,12 +154,6 @@ if ( $continue ) {
    $templateSOA          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.soa_template_11.1.1.jar"
    $templateBPM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bpm_template_11.1.1.jar"
    $templateBAM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bam_template_11.1.1.jar"
-
-   $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
-   $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
-   $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
-   $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
-   $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
 
    $templateSpaces       = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.wc_spaces_template_11.1.1.jar"
    $templateBPMSpaces    = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.bpm.spaces_template_11.1.1.jar" 

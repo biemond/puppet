@@ -58,7 +58,6 @@ define wls::installosb($mdwHome         = undef,
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
-        $oraInstPath     = "/etc"
         $oraInventory    = "${oracleHome}/oraInventory"
         
         $osbInstallDir   = "linux64"
@@ -81,7 +80,6 @@ define wls::installosb($mdwHome         = undef,
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $osbOracleHome   = "${mdwHome}/Oracle_OSB1"
-        $oraInstPath     = "/var/opt"
         $oraInventory    = "${oracleHome}/oraInventory"
 
         $osbInstallDir   = "intelsolaris"
@@ -105,7 +103,6 @@ define wls::installosb($mdwHome         = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = $downloadDir 
         $osbOracleHome    = "${mdwHome}/Oracle_OSB1"
-        $oraInventory     = "C:\\Program Files\\Oracle\\Inventory"
         
         Exec { path      => $execPath,
              }
@@ -145,10 +142,17 @@ if ( $continue ) {
       $osbTemplate =  "wls/silent_osb_oepe.xml.erb"
    }
 
+
+   wls::utils::orainst{'create osb oraInst':
+            oraInventory    => $oraInventory, 
+            group           => $group,
+   }
+
 #   if ! defined(File["${path}/${title}silent_osb.xml"]) {
      file { "${path}/${title}silent_osb.xml":
        ensure  => present,
        content => template($osbTemplate),
+       require => Wls::Utils::Orainst ['create osb oraInst'],
      }
 #   }
 
@@ -173,18 +177,10 @@ if ( $continue ) {
           creates => "${path}/osb",
          }
         }
-
-
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-         }
-        }
         
         exec { "install osb ${title}":
-          command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
+          command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
@@ -193,7 +189,6 @@ if ( $continue ) {
           command     => "/bin/sleep 180",
           require     => Exec ["install osb ${title}"],
         }    
-
              
      }
      Solaris: { 
@@ -211,16 +206,10 @@ if ( $continue ) {
           require => Exec["extract ${osbFile}"],
         }
 
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-         }
-        }
         
         exec { "install osb ${title}":
-          command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"],Exec["add -d64 oraparam.ini osb"]],
+          command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"],Exec["add -d64 oraparam.ini osb"]],
           creates     => $osbOracleHome,
         }    
 
@@ -250,20 +239,6 @@ if ( $continue ) {
 
      windows: { 
 
-        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 
-          registry_key { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle":
-            ensure  => present,
-#            require => File ["${path}${osbFile}"],
-          }
-        }
-
-        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]) {
-          registry_value { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc":
-            type    => string,
-            data    => $oraInventory,
-            require => Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"],
-          }
-        }
 
         if ! defined(Exec["extract ${osbFile}"]) {
          exec { "extract ${osbFile}":

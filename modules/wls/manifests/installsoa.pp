@@ -59,7 +59,6 @@ define wls::installsoa($mdwHome         = undef,
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
-        $oraInstPath     = "/etc"
         $oraInventory    = "${oracleHome}/oraInventory"
         
         $soaInstallDir   = "linux64"
@@ -82,7 +81,6 @@ define wls::installsoa($mdwHome         = undef,
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
-        $oraInstPath     = "/var/opt"
         $oraInventory    = "${oracleHome}/oraInventory"
 
         $soaInstallDir   = "intelsolaris"
@@ -106,7 +104,6 @@ define wls::installsoa($mdwHome         = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = $downloadDir 
         $soaOracleHome    = "${mdwHome}/Oracle_SOA1"
-        $oraInventory     = "C:\\Program Files\\Oracle\\Inventory"
         
         Exec { path      => $execPath,
              }
@@ -138,6 +135,10 @@ if ( $continue ) {
      $mountPoint =	$puppetDownloadMntPoint
    }
 
+   wls::utils::orainst{'create soa oraInst':
+            oraInventory    => $oraInventory, 
+            group           => $group,
+   }
 
    $soaTemplate =  "wls/silent_soa.xml.erb"
 
@@ -145,6 +146,7 @@ if ( $continue ) {
      file { "${path}/${title}silent_soa.xml":
        ensure  => present,
        content => template($soaTemplate),
+       require => Wls::Utils::Orainst ['create soa oraInst'],
      }
 #   }
 
@@ -163,8 +165,6 @@ if ( $continue ) {
      require => [File ["${path}/${title}silent_soa.xml"],File["${path}/${soaFile1}"]],
     }
    }
-
-
    
    $command  = "-silent -response ${path}/${title}silent_soa.xml "
     
@@ -187,18 +187,10 @@ if ( $continue ) {
          }
         }
 
-
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-#           require     => Exec["extract ${soaFile2}"],
-         }
-        }
         
         exec { "install soa ${title}":
-          command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
+          command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
           creates     => $soaOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
@@ -233,17 +225,10 @@ if ( $continue ) {
           require => [Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
         }
 
-
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-         }
-        }
         
         exec { "install soa ${title}":
-          command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"],Exec["add -d64 oraparam.ini soa"]],
+          command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"],Exec["add -d64 oraparam.ini soa"]],
           creates     => $soaOracleHome,
         }    
 
@@ -256,23 +241,6 @@ if ( $continue ) {
      }
 
      windows: { 
-
-        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 
-          registry_key { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle":
-            ensure  => present,
-            require => [File ["${path}/${soaFile1}"],File ["${path}/${soaFile2}"]],
-          }
-        }
-
-        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]) {
-          registry_value { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc":
-            type    => string,
-            data    => $oraInventory,
-            require => Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"],
-          }
-        }
-
-
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
@@ -289,7 +257,6 @@ if ( $continue ) {
           creates => "${path}/soa/Disk5",
          }
         }
-
 
         exec {"icacls soa disk ${title}": 
            command    => "${checkCommand} icacls ${path}\\soa\\* /T /C /grant Administrator:F Administrators:F",

@@ -59,7 +59,6 @@ define wls::installwcc($mdwHome         = undef,
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $wccOracleHome   = "${mdwHome}/Oracle_WCC1"
-        $oraInstPath     = "/etc"
         $oraInventory    = "${oracleHome}/oraInventory"
         
         $wccInstallDir   = "linux64"
@@ -82,7 +81,6 @@ define wls::installwcc($mdwHome         = undef,
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $wccOracleHome   = "${mdwHome}/Oracle_WCC1"
-        $oraInstPath     = "/var/opt"
         $oraInventory    = "${oracleHome}/oraInventory"
 
         $wccInstallDir   = "intelsolaris"
@@ -106,7 +104,6 @@ define wls::installwcc($mdwHome         = undef,
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
         $path             = $downloadDir 
         $wccOracleHome    = "${mdwHome}/Oracle_WCC1"
-        $oraInventory     = "C:\\Program Files\\Oracle\\Inventory"
         
         Exec { path      => $execPath,
              }
@@ -138,6 +135,10 @@ if ( $continue ) {
      $mountPoint =  $puppetDownloadMntPoint
    }
 
+   wls::utils::orainst{'create wcc oraInst':
+            oraInventory    => $oraInventory, 
+            group           => $group,
+   }
 
    $wccTemplate =  "wls/silent_wcc.xml.erb"
 
@@ -145,6 +146,7 @@ if ( $continue ) {
      file { "${path}/${title}silent_wcc.xml":
        ensure  => present,
        content => template($wccTemplate),
+       require => Wls::Utils::Orainst ['create wcc oraInst'],
      }
 #   }
 
@@ -187,18 +189,10 @@ if ( $continue ) {
          }
         }
 
-
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-#           require     => Exec["extract ${wccFile2}"],
-         }
-        }
         
         exec { "install wcc ${title}":
-          command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"]],
+          command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"]],
           creates     => $wccOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
@@ -233,17 +227,9 @@ if ( $continue ) {
           require => [Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"]],
         }
 
-
-        if ! defined(File["${oraInstPath}/oraInst.loc"]) {
-         file { "${oraInstPath}/oraInst.loc":
-           ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
-         }
-        }
-        
         exec { "install wcc ${title}":
-          command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc ${oraInstPath}/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"],Exec["add -d64 oraparam.ini wcc"]],
+          command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
+          require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"],Exec["add -d64 oraparam.ini wcc"]],
           creates     => $wccOracleHome,
         }    
 
@@ -256,22 +242,6 @@ if ( $continue ) {
      }
 
      windows: { 
-
-        if ! defined(Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"]) { 
-          registry_key { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle":
-            ensure  => present,
-            require => [File ["${path}/${wccFile1}"],File ["${path}/${wccFile2}"]],
-          }
-        }
-
-        if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]) {
-          registry_value { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc":
-            type    => string,
-            data    => $oraInventory,
-            require => Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"],
-          }
-        }
-
 
 
         if ! defined(Exec["extract ${wccFile1}"]) {
