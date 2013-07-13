@@ -35,7 +35,7 @@
 #    address      => "localhost",
 #    wlsUser      => "weblogic",
 #    password     => "weblogic1",
-#    port         => "7001",
+#    port         => "5556",
 #  }
 #
 #  # create jdbc datasource for osb_server1 
@@ -66,7 +66,7 @@ define wls::wlstexec ($wlsDomain      = undef,
                       $fullJDKName    = undef, 
                       $script         = undef,
                       $address        = "localhost",
-                      $port           = '7001',
+                      $port           = '5556',
                       $wlsUser        = undef,
                       $password       = undef,
                       $userConfigFile = undef,
@@ -74,7 +74,7 @@ define wls::wlstexec ($wlsDomain      = undef,
                       $user           = 'oracle', 
                       $group          = 'dba',
                       $params         = undef,
-                      $downloadDir    = '/install/',
+                      $downloadDir    = '/install',
                       ) {
 
    notify {"wls::wlstexec ${title} execute ${wlsDomain}":}

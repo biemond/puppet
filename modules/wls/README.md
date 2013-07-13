@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 1.0.3 Weblogic 12.1.2 standard domain creation and start nodemanager of weblogic 12.1.2 domain 
 - 1.0.2 Weblogic 12.1.2 support plus ADF 11g / 12c install manifest, refactoring for weblogic 12.1.2  
 - 1.0.1 Webcenter, BPM and Webcenter Content domain creation, set Domain and Nodemanager passwords in the domain templates + Crossdomain 
 - 1.0.0 Webcenter and Webcenter Content installer support 
@@ -291,8 +292,8 @@ WebLogic configuration examples
 -------------------------------
 
     class application_wls12 {
-       include wls12_adf
-       # include wls12
+       include wls12_adf, wls12c_adf_domain
+       Class['wls12_adf'] -> Class['wls12c_adf_domain']
     }
 
     class application_osb_soa {
@@ -953,6 +954,116 @@ WebLogic configuration examples
 
 
     include wls
+
+	class wls12c_adf_domain{
+	
+	
+	  if $jdkWls12gJDK == undef {
+	    $jdkWls12gJDK = 'jdk1.7.0_25'
+	  }
+	
+	  $wlsDomainName   = "adf"
+	  $osTemplate      = "standard"
+	  $adminListenPort = "7001"
+	  $nodemanagerPort = "5556"
+	  $address         = "localhost"
+	
+	  case $operatingsystem {
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	       $osOracleHome = "/opt/oracle/wls"
+	       $osMdwHome    = "/opt/oracle/wls/Middleware12cADF"
+	       $osWlHome     = "/opt/oracle/wls/Middleware12cADF/wlserver"
+	       $user         = "oracle"
+	       $group        = "dba"
+	       $downloadDir  = "/data/install"
+	       $logDir      = "/data/logs" 
+	     }
+	     windows: { 
+	       $osOracleHome = "c:/oracle"
+	       $osMdwHome    = "c:/oracle/Middleware12cADF"
+	       $osWlHome     = "c:/oracle/Middleware12cADF/wlserver"
+	       $user         = "Administrator"
+	       $group        = "Administrators"
+	       $serviceName  = "C_oracle_middleware12cadf_wlserver"
+	       $downloadDir  = "c:/temp"
+	       $logDir      = "c:/oracle/logs"
+	     }
+	  }
+	
+	  case $operatingsystem {
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+	       $userConfigDir = '/home/oracle'
+	     }
+	     Solaris: { 
+	       $userConfigDir = '/export/home/oracle'
+	     }
+	     windows: { 
+	       $userConfigDir = "c:/oracle"
+	     }
+	  }
+	
+	
+	  # install domain and in 12.1.2 it also creates a nodemanager
+	  wls::wlsdomain{
+	   'adfDomain12c':
+	    version         => "1212",
+	    wlHome          => $osWlHome,
+	    mdwHome         => $osMdwHome,
+	    fullJDKName     => $jdkWls12gJDK,  
+	    user            => $user,
+	    group           => $group,    
+	    downloadDir     => $downloadDir, 
+	    wlsTemplate     => $osTemplate,
+	    domain          => $wlsDomainName,
+	    adminListenPort => $adminListenPort,
+	    nodemanagerPort => $nodemanagerPort,
+	    wlsUser         => "weblogic",
+	    password        => hiera('weblogic_password_default'),
+	    logDir          => $logDir,
+	  }
+	
+	  Wls::Nodemanager {
+	    wlHome       => $osWlHome,
+	    fullJDKName  => $jdkWls11gJDK,	
+	    user         => $user,
+	    group        => $group,
+	    serviceName  => $serviceName,  
+	  }
+	
+	   #nodemanager starting
+	   wls::nodemanager{'nodemanager11g':
+	     version   => "1212",
+	     domain    => $wlsDomainName,   	 
+	     require   => Wls::Wlsdomain['adfDomain12c'],
+	   }  
+	  
+	
+	  # default parameters for the wlst scripts
+	  Wls::Wlstexec {
+	    wlsDomain    => $wlsDomainName,
+	    wlHome       => $osWlHome,
+	    fullJDKName  => $jdkWls12gJDK,  
+	    user         => $user,
+	    group        => $group,
+	    address      => $address,
+	    downloadDir  => $downloadDir, 
+	  }
+	  
+	  # start AdminServers for configuration of both domains myTestDomain
+	  wls::wlstexec { 
+	    'startWLSAdminServer12c':
+	     wlsUser     => "weblogic",
+	     password    => hiera('weblogic_password_default'),
+	     script      => 'startWlsServer.py',
+	     port        =>  $nodemanagerPort,
+	     params      =>  ["domain = '${wlsDomainName}'",
+	                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+	                      "wlsServer = 'AdminServer'"],
+	     require     => Wls::Wlsdomain['adfDomain12c'];
+	
+	  }
+	}
+
     
     class wls_osb_soa_domain{
     

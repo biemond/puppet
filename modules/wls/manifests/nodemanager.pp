@@ -47,13 +47,16 @@ define wls::nodemanager($version         = "1111",
                         $group           = 'dba',
                         $serviceName     = undef,
                         $logDir          = undef,
-                        $downloadDir     = '/install/',
+                        $downloadDir     = '/install',
+                        $domain          = undef,
                        ) {
 
    if $version == "1111" {
      $nodeMgrHome = "${wlHome}/common/nodemanager"
+
    } elsif $version == "1212" {
-     $nodeMgrHome = "${wlHome}/../oracle_common/common/nodemanager"     
+     $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"     
+
    } else {
      $nodeMgrHome = "${wlHome}/common/nodemanager"     
    }
@@ -78,7 +81,7 @@ define wls::nodemanager($version         = "1111",
                user      => $user,
                group     => $group,
                logoutput => true,
-               cwd       => "${wlHome}/common/nodemanager",
+               cwd       => $nodeMgrHome,
              }
 
         File{
@@ -99,7 +102,7 @@ define wls::nodemanager($version         = "1111",
                user      => $user,
                group     => $group,
                logoutput => true,
-               cwd       => "${wlHome}/common/nodemanager",
+               cwd       => $nodeMgrHome,
              }
         File{
             owner   => $user,
@@ -114,7 +117,7 @@ define wls::nodemanager($version         = "1111",
         $JAVA_HOME        = "C:\\oracle\\${fullJDKName}"
 
         Exec { path      => $execPath,
-               cwd       => "${wlHome}/common/nodemanager",
+               cwd       => $nodeMgrHome,
              }
 
         File{
@@ -125,6 +128,22 @@ define wls::nodemanager($version         = "1111",
      }
    }
 
+# nodemanager is part of the domain creation
+if $version == "1212" {
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
+
+             exec { 'startNodemanager 1212 ${title}':
+               command => "nohup ${wlHome}/../user_projects/domains/${domain}/bin/startNodeManager.sh &",
+               unless  => "${checkCommand}",
+             }
+         }
+         windows: {
+
+         } 
+      }
+} 
+elsif $version == "1111" {
 
       # create all folders 
       case $operatingsystem {
@@ -159,8 +178,6 @@ define wls::nodemanager($version         = "1111",
 
 
    $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/./urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
-
-
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
@@ -232,4 +249,6 @@ define wls::nodemanager($version         = "1111",
 
      }
    }
+ } 
+
 }
