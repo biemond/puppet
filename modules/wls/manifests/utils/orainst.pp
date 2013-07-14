@@ -25,7 +25,7 @@ define wls::utils::orainst( $oraInventory    = undef,
         if ! defined(File["${oraInstPath}/oraInst.loc"]) {
          file { "${oraInstPath}/oraInst.loc":
            ensure  => present,
-           content => template("wls/oraInst.loc.erb"),
+           content => template("wls/utils/oraInst.loc.erb"),
          }
         }
      }

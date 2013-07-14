@@ -79,6 +79,8 @@ define wls::wlsdomain ($version         = '1111',
                        $reposDbUrl      = undef,
                        $reposPrefix     = undef,
                        $reposPassword   = undef,
+                       $dbUrl           = undef,  
+                       $sysPassword     = undef,
                        ) {
 
    notify {"Domain ${domain} wlHome ${wlHome}":}
@@ -89,15 +91,15 @@ define wls::wlsdomain ($version         = '1111',
 
 
      # check if the domain already exists 
-     $found = domain_exists("${domainPath}/${domain}")
+     $found = domain_exists("${domainPath}/${domain}",$version)
      if $found == undef {
        $continue = true
      } else {
        if ( $found ) {
-         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} already exists":}
+         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} ${version} already exists":}
          $continue = false
        } else {
-         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} does not exists":}
+         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} ${version} does not exists":}
          $continue = true 
        }
      }
@@ -126,6 +128,9 @@ if ( $continue ) {
      $templateJRF          = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf_template_12.1.2.jar"
      $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.12.1.3_template.jar"
      $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/wls/oracle.wsmpm_template_12.1.2.jar"
+
+     $templateSoapJms      = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf.ws.soapjms_template_12.1.2.jar"
+
 
    } else {
 
@@ -158,35 +163,41 @@ if ( $continue ) {
 
    
    if $wlsTemplate == 'standard' {
-      $templateFile  = "wls/domain.xml.erb"
+      $templateFile  = "wls/domains/domain.xml.erb"
       $wlstPath      = "${wlHome}/common/bin"
 
    } elsif $wlsTemplate == 'osb' {
-      $templateFile  = "wls/domain_osb.xml.erb"
+      $templateFile  = "wls/domains/domain_osb.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_OSB1/common/bin"
-
+      $oracleHome    = "${mdwHome}/Oracle_OSB1"
+      
    } elsif $wlsTemplate == 'osb_soa' {
-      $templateFile  = "wls/domain_osb_soa.xml.erb"
+      $templateFile  = "wls/domains/domain_osb_soa.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
+      $oracleHome    = "${mdwHome}/Oracle_SOA1"
 
    } elsif $wlsTemplate == 'adf' {
-      $templateFile  = "wls/domain_adf.xml.erb"
+      $templateFile  = "wls/domains/domain_adf.xml.erb"
       $wlstPath      = "${mdwHome}/oracle_common/common/bin"
+      $oracleHome    = "${mdwHome}/oracle_common"
 
    } elsif $wlsTemplate == 'osb_soa_bpm' {
-      $templateFile  = "wls/domain_osb_soa_bpm.xml.erb"
+      $templateFile  = "wls/domains/domain_osb_soa_bpm.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
-
+      $oracleHome    = "${mdwHome}/Oracle_SOA1"
+      
    } elsif $wlsTemplate == 'wc' {
-      $templateFile  = "wls/domain_wc.xml.erb"
+      $templateFile  = "wls/domains/domain_wc.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_WC1/common/bin"
+      $oracleHome    = "${mdwHome}/Oracle_WC1"
 
    } elsif $wlsTemplate == 'wc_wcc_bpm' {
-      $templateFile  = "wls/domain_wc_wcc_bpm.xml.erb"
+      $templateFile  = "wls/domains/domain_wc_wcc_bpm.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_WCC1/common/bin"
+      $oracleHome    = "${mdwHome}/Oracle_WCC1"
 
    } else {
-      $templateFile  = "wls/domain.xml.erb"
+      $templateFile  = "wls/domains/domain.xml.erb"
       $wlstPath      = "${wlHome}/common/bin"
    } 
 
@@ -312,6 +323,33 @@ if ( $continue ) {
              require => Exec["create ${logDir} directory"],
            }
       }    
+   }
+
+   if ( $version == "1212" and $wlsTemplate == 'adf' ) {
+     # only works for a 12c middleware home
+     # creates RCU for ADF 
+     if ( $dbUrl == undefined or 
+          $sysPassword  == undefined or 
+          $reposPassword  == undefined or 
+          $reposPrefix  == undefined
+     ) {
+       fail("Not all RCU parameters are provided")
+     } 
+     
+     wls::utils::rcu{ "RCU_12c ${title}":
+                     product                => 'adf',
+                     oracleHome             => $oracleHome,
+                     fullJDKName            => $fullJDKName,
+                     user                   => $user,
+                     group                  => $group,
+                     downloadDir            => $downloadDir,
+                     action                 => 'create',
+                     dbUrl                  => $dbUrl,  
+                     sysPassword            => $sysPassword,
+                     schemaPrefix           => $reposPrefix,
+                     reposPassword          => $reposPassword,
+                     notify                 => File["domain.py ${domain} ${title}"]
+    }
    }
 
     

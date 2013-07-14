@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 1.0.4 Weblogic 12.1.2 adf domain creation with RCU 
 - 1.0.3 Weblogic 12.1.2 standard domain creation and start nodemanager of weblogic 12.1.2 domain 
 - 1.0.2 Weblogic 12.1.2 support plus ADF 11g / 12c install manifest, refactoring for weblogic 12.1.2  
 - 1.0.1 Webcenter, BPM and Webcenter Content domain creation, set Domain and Nodemanager passwords in the domain templates + Crossdomain 
@@ -104,7 +105,9 @@ WLS WebLogic Features
 
 WLS WebLogic Facter
 -------------------
-Contains WebLogic Facter which displays the following 
+
+Contains WebLogic Facter which displays the following  
+
 - Middleware homes
 - Oracle Software
 - BSU patches
@@ -114,70 +117,6 @@ Contains WebLogic Facter which displays the following
 - running nodemanagers
 - running WebLogic servers
 
-### Example of the WebLogic Facts 
-
-    oracle installed products
-        ora_inst_loc_data /opt/wls/orainventory
-        ora_inst_patches_opt_wls_middleware11gr1_oracle_common Patches;
-        ora_inst_patches_opt_wls_middleware11gr1_oracle_osb1 Patches;14389126;
-        ora_inst_patches_opt_wls_middleware11gr1_oracle_soa1 Patches;14406487;
-        ora_inst_products /opt/wls/Middleware11gR1/oracle_common;/opt/wls/Middleware11gR1/Oracle_OSB1;/opt/wls/Middleware11gR1/Oracle_SOA1;
-
-        
-    Middleware home 0
-        ora_mdw_0 /opt/wls/Middleware11gR1
-        
-    BSU patches on the Middleware home
-        ora_mdw_0_bsu HYKC;
-        
-    Domain 0
-        ora_mdw_0_domain_0  osbDomain
-    Resource adapter
-        ora_mdw_0_domain_0_eis_aqadapter_entries   eis/AQ/initial;eis/AQ/hr;
-        ora_mdw_0_domain_0_eis_aqadapter_plan	     /opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_AQ.xml
-        ora_mdw_0_domain_0_eis_dbadapter_entries	 eis/DB/initial;eis/DB/hr;
-        ora_mdw_0_domain_0_eis_dbadapter_plan	     /opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_DB.xml
-        ora_mdw_0_domain_0_eis_jmsadapter_entries	 eis/JMS/initial;eis/JMS/hr;
-        ora_mdw_0_domain_0_eis_jmsadapter_plan	   /opt/wls/Middleware11gR1/Oracle_SOA1/soa/connectors/Plan_JMS.xml
-    Deployments
-        ora_mdw_0_domain_0_deployments  FMW Welcome Page Application#11.1.0.0.0
-        ora_mdw_0_domain_0_filestores FileStore;WseeFileStore;jmsModuleFilePersistence;
-    JDBC
-        ora_mdw_0_domain_0_jdbc wlsbjmsrpDataSource;hrDS;jmsDS;
-        ora_mdw_0_domain_0_jdbcstores jmsModuleJdbcPersistence;
-    JMS
-        ora_mdw_0_domain_0_jmsmodule_0_name WseeJmsModule
-        ora_mdw_0_domain_0_jmsmodule_0_objects  WseeMessageQueue;WseeCallbackQueue;
-        ora_mdw_0_domain_0_jmsmodule_0_subdeployments BEA_JMS_MODULE_SUBDEPLOYMENT_WSEEJMSServer;
-        ora_mdw_0_domain_0_jmsmodule_1_name jmsResources
-        ora_mdw_0_domain_0_jmsmodule_1_objects  wli.reporting.jmsprovider.ConnectionFactory
-        ora_mdw_0_domain_0_jmsmodule_1_subdeployments weblogic.wlsb.jms.transporttask.QueueConnectionFactory;wlsbJMSServer;
-        ora_mdw_0_domain_0_jmsmodule_2_name jmsModule
-        ora_mdw_0_domain_0_jmsmodule_2_objects  cf;ErrorQueue;Queue1;Topic1;
-        ora_mdw_0_domain_0_jmsmodule_2_subdeployments wlsServer;JmsServer;
-        ora_mdw_0_domain_0_jmsmodule_cnt  3
-        ora_mdw_0_domain_0_jmsmodules WseeJmsModule;jmsResources;jmsModule;
-        ora_mdw_0_domain_0_jmsservers WseeJmsServer;jmsServer;jmsServer2;wlsbJMSServer;
-    Libraries
-        ora_mdw_0_domain_0_libraries  oracle.bi.jbips#11.1.1@0.1;oracle.bi.composer#11.1.1@0.1
-        ora_mdw_0_domain_0_safagents  jmsModuleJdbcPersistence;
-    Wls Server
-        ora_mdw_0_domain_0_server_0 AdminServer
-        ora_mdw_0_domain_0_server_0_machine LocalMachine
-        ora_mdw_0_domain_0_server_1 osb_server1
-        ora_mdw_0_domain_0_server_1_machine LocalMachine
-        ora_mdw_0_domain_0_server_1_port  8011
-        
-    Domains in first middleware home
-        ora_mdw_0_domain_cnt  1
-        
-    Middleware home counts
-        ora_mdw_cnt 1
-        ora_mdw_homes /opt/wls/Middleware11gR1;
-        
-    Running node managers + WebLogic Servers
-        ora_node_mgr_0  pid: 26113 port: 5556
-        ora_wls_0 pid: 26198 name: AdminServer
 
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/facts.png)
 
@@ -326,56 +265,6 @@ WebLogic configuration examples
 
     include wls
 
-	class wls12{
-	
-	  if $jdkWls12cJDK == undef {
-	    $jdkWls12cJDK = 'jdk1.7.0_25'
-	  }
-	
-	  if $wls12cVersion == undef {
-	    $wls12cVersion = "1212"
-	  }
-	
-	  case $operatingsystem {
-	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
-	       $osOracleHome = "/opt/oracle/wls"
-	       $osMdwHome    = "/opt/oracle/wls/Middleware12c"
-	       $osWlHome     = "/opt/oracle/wls/Middleware12c/wlserver"
-	       $user         = "oracle"
-	       $group        = "dba"
-	       $downloadDir  = "/data/install"
-	     }
-	     windows: { 
-	       $osOracleHome = "c:/oracle"
-	       $osMdwHome    = "c:/oracle/Middleware12c"
-	       $osWlHome     = "c:/oracle/Middleware12c/wlserver"
-	       $user         = "Administrator"
-	       $group        = "Administrators"
-	       $serviceName  = "C_oracle_middleware12c_wlserver"
-	       $downloadDir  = "c:/temp"
-	     }
-	  }
-	
-	  $puppetDownloadMntPoint = "puppet:///middleware/"
-	#  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
-	
-	  # set the defaults
-	  Wls::Installwls {
-	    version                => $wls12cVersion,
-	    fullJDKName            => $jdkWls12cJDK,
-	    oracleHome             => $osOracleHome,
-	    mdwHome                => $osMdwHome,
-	    user                   => $user,
-	    group                  => $group,
-	    downloadDir            => $downloadDir,
-	    puppetDownloadMntPoint => $puppetDownloadMntPoint,     
-	  }
-
-	  # install
-	  wls::installwls{'wls12c':}
-	
-	} 
-	
 	class wls12_adf{
 
 	  if $jdkWls12cJDK == undef {
@@ -963,7 +852,10 @@ WebLogic configuration examples
 	  }
 	
 	  $wlsDomainName   = "adf"
-	  $osTemplate      = "standard"
+	
+	  $osTemplate      = "adf"
+	  #$osTemplate      = "standard"
+	
 	  $adminListenPort = "7001"
 	  $nodemanagerPort = "5556"
 	  $address         = "localhost"
@@ -1000,10 +892,32 @@ WebLogic configuration examples
 	     windows: { 
 	       $userConfigDir = "c:/oracle"
 	     }
-	  }
+	   }
+	   # rcu wc wcc bpm repository
+	   $reposUrl        = "jdbc:oracle:thin:@dbagent2.alfa.local:1521/test.oracle.com"
+	   $rcuDbUrl        = "dbagent2.alfa.local:1521:test"
+	   $reposPrefix     = "DEV3"
+	   # rcu wc repository schema password
+	   $reposPassword   = hiera('database_test_rcu_dev_password')
+	   $sysPassword     = hiera('database_test_sys_password')
 	
 	
-	  # install domain and in 12.1.2 it also creates a nodemanager
+		#   wls::utils::rcu{ "RCU_12c dev3 delete":
+		#                   product                => 'adf',
+		#                   oracleHome             => "${osMdwHome}/oracle_common",
+		#                   fullJDKName            => $jdkWls12gJDK,
+		#                   user                   => $user,
+		#                   group                  => $group,
+		#                   downloadDir            => $downloadDir,
+		#                   action                 => 'delete',
+		#                   dbUrl                  => $rcuDbUrl,  
+		#                   sysPassword            => $sysPassword,
+		#                   schemaPrefix           => $reposPrefix,
+		#                   reposPassword          => $reposPassword,
+		#  }
+		#
+	
+	  # install domain and in 12.1.2 it also creates a RCU schema plus a nodemanager
 	  wls::wlsdomain{
 	   'adfDomain12c':
 	    version         => "1212",
@@ -1020,26 +934,34 @@ WebLogic configuration examples
 	    wlsUser         => "weblogic",
 	    password        => hiera('weblogic_password_default'),
 	    logDir          => $logDir,
+	    reposDbUrl      => $reposUrl,
+	    reposPrefix     => $reposPrefix,
+	    reposPassword   => $reposPassword,
+	    dbUrl           => $rcuDbUrl,
+	    sysPassword     => $sysPassword,
+	  #    require         => Wls::Utils::Rcu["RCU_12c dev3 delete"],
 	  }
 	
 	  Wls::Nodemanager {
 	    wlHome       => $osWlHome,
-	    fullJDKName  => $jdkWls11gJDK,	
+	    fullJDKName  => $jdkWls11gJDK,  
 	    user         => $user,
 	    group        => $group,
 	    serviceName  => $serviceName,  
 	  }
 	
-	   #nodemanager starting
+	   #nodemanager starting 
+	   # in 12c start it after domain creation
 	   wls::nodemanager{'nodemanager11g':
 	     version   => "1212",
-	     domain    => $wlsDomainName,   	 
+	     domain    => $wlsDomainName,      
 	     require   => Wls::Wlsdomain['adfDomain12c'],
 	   }  
 	  
 	
 	  # default parameters for the wlst scripts
 	  Wls::Wlstexec {
+	    version      => "1212", 
 	    wlsDomain    => $wlsDomainName,
 	    wlHome       => $osWlHome,
 	    fullJDKName  => $jdkWls12gJDK,  
@@ -1049,7 +971,7 @@ WebLogic configuration examples
 	    downloadDir  => $downloadDir, 
 	  }
 	  
-	  # start AdminServers for configuration of both domains myTestDomain
+	  # start AdminServer for configuration
 	  wls::wlstexec { 
 	    'startWLSAdminServer12c':
 	     wlsUser     => "weblogic",
@@ -1059,11 +981,10 @@ WebLogic configuration examples
 	     params      =>  ["domain = '${wlsDomainName}'",
 	                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
 	                      "wlsServer = 'AdminServer'"],
-	     require     => Wls::Wlsdomain['adfDomain12c'];
+	     require     => Wls::Nodemanager['nodemanager11g'];
 	
 	  }
 	}
-
     
     class wls_osb_soa_domain{
     

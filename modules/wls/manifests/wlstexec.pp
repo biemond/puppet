@@ -59,14 +59,15 @@
 #
 # 
 
-define wls::wlstexec ($wlsDomain      = undef, 
+define wls::wlstexec ($version        = '1111',
+                      $wlsDomain      = undef, 
                       $wlstype        = undef,
                       $wlsObjectName  = undef,
                       $wlHome         = undef, 
                       $fullJDKName    = undef, 
                       $script         = undef,
                       $address        = "localhost",
-                      $port           = '5556',
+                      $port           = '7001',
                       $wlsUser        = undef,
                       $password       = undef,
                       $userConfigFile = undef,
@@ -85,16 +86,16 @@ define wls::wlstexec ($wlsDomain      = undef,
      $continue = true  
    } else {
      # check if the object already exists on the weblogic domain 
-     $found = artifact_exists($wlsDomain ,$wlstype,$wlsObjectName )
+     $found = artifact_exists($wlsDomain ,$wlstype,$wlsObjectName ,$version)
      if $found == undef {
        $continue = true
-         notify {"wls::wlstexec ${title} continue true cause nill":}
+         notify {"wls::wlstexec ${title} ${version} continue true cause nill":}
      } else {
        if ( $found ) {
-         notify {"wls::wlstexec ${title} continue false cause already exists":}
+         notify {"wls::wlstexec ${title} ${version} continue false cause already exists":}
          $continue = false
        } else {
-         notify {"wls::wlstexec ${title} continue true cause not exists":}
+         notify {"wls::wlstexec ${title} ${version} continue true cause not exists":}
          $continue = true 
        }
      }

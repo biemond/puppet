@@ -3,10 +3,28 @@ module Puppet::Parser::Functions
   newfunction(:domain_exists, :type => :rvalue) do |args|
     
     art_exists = false
-    mdwArg = args[0].strip.downcase
+    if args[0].nil?
+      return art_exists
+    else
+      mdwArg = args[0].strip.downcase
+    end
 
+    if args[1].nil?
+      return art_exists
+    else
+      wlsversion = args[1].strip
+    end
+
+    if wlsversion == "1212"
+      versionStr = "_1212"
+    else
+      versionStr = ""   
+    end
+
+    prefix = "ora_mdw#{versionStr}"
+    
     # check the middleware home
-    mdw_count = lookupvar('ora_mdw_cnt')
+    mdw_count = lookupvar(prefix+'_cnt')
     if mdw_count.nil?
       return art_exists
 
@@ -15,7 +33,7 @@ module Puppet::Parser::Functions
       i = 0
       while ( i < mdw_count.to_i) 
 
-        mdw = lookupvar('ora_mdw_'+i.to_s)
+        mdw = lookupvar(prefix+'_'+i.to_s)
 
         unless mdw.nil?
           mdw = mdw.strip.downcase
@@ -27,12 +45,12 @@ module Puppet::Parser::Functions
           
 
           # how many domains are there in this mdw home
-          domain_count = lookupvar('ora_mdw_'+i.to_s+'_domain_cnt')
+          domain_count = lookupvar(prefix+'_'+i.to_s+'_domain_cnt')
           n = 0
           while ( n < domain_count.to_i )
 
             # lookup up domain
-            domain = lookupvar('ora_mdw_'+i.to_s+'_domain_'+n.to_s)
+            domain = lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s)
             unless domain.nil?
               domain = domain.strip.downcase
               

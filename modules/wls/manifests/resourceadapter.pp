@@ -31,7 +31,8 @@
 #
 # 
 
-define wls::resourceadapter( $wlHome         = undef, 
+define wls::resourceadapter( $version        = '1111',
+                             $wlHome         = undef, 
                              $fullJDKName    = undef, 
                              $domain         = undef, 
                              $adapterName    = undef,
@@ -57,16 +58,16 @@ define wls::resourceadapter( $wlHome         = undef,
      fail("domain, adaptername,adapterPlanDir or adapterplan is nill") 
    } else {
      # check if the object already exists on the weblogic domain 
-     $found = artifact_exists($domain ,"resource",$adapterName,"${adapterPlanDir}/${adapterPlan}" )
+     $found = artifact_exists($domain ,"resource",$adapterName,"${adapterPlanDir}/${adapterPlan}",$version )
      if $found == undef {
        $continuePlan = true
-         notify {"wls::resourceadapter ${title} continue cause nill":}
+         notify {"wls::resourceadapter ${title} ${version} continue cause nill":}
      } else {
        if ( $found ) {
-         notify {"wls::resourceadapter ${title} already exists":}
+         notify {"wls::resourceadapter ${title} ${version} already exists":}
          $continuePlan = false
        } else {
-         notify {"wls::resourceadapter ${title} continue, does not exists":}
+         notify {"wls::resourceadapter ${title} ${version} continue, does not exists":}
          $continuePlan = true 
        }
      }
@@ -77,16 +78,16 @@ define wls::resourceadapter( $wlHome         = undef,
      fail("domain, adaptername or adapterEntry is nill") 
    } else {
      # check if the object already exists on the weblogic domain 
-     $foundEntry = artifact_exists($domain ,"resource_entry",$adapterName,$adapterEntry )
+     $foundEntry = artifact_exists($domain ,"resource_entry",$adapterName,$adapterEntry,$version )
      if $foundEntry == undef {
        $continueEntry = true
-         notify {"wls::resourceadapter entry ${adapterEntry} ${title} continue cause nill":}
+         notify {"wls::resourceadapter entry ${adapterEntry} ${title} ${version} continue cause nill":}
      } else {
        if ( $foundEntry ) {
-         notify {"wls::resourceadapter entry ${adapterEntry} ${title} already exists":}
+         notify {"wls::resourceadapter entry ${adapterEntry} ${title} ${version} already exists":}
          $continueEntry = false
        } else {
-         notify {"wls::resourceadapter entry ${adapterEntry} ${title} continue, does not exists":}
+         notify {"wls::resourceadapter entry ${adapterEntry} ${title} ${version} continue, does not exists":}
          $continueEntry = true 
        }
      }

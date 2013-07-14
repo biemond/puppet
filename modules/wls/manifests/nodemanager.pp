@@ -133,10 +133,16 @@ if $version == "1212" {
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
 
-             exec { 'startNodemanager 1212 ${title}':
+             exec { "startNodemanager 1212 ${title}":
                command => "nohup ${wlHome}/../user_projects/domains/${domain}/bin/startNodeManager.sh &",
                unless  => "${checkCommand}",
              }
+             exec { "sleep 10 sec for wlst exec ${title}":
+               command     => "/bin/sleep 10",
+               subscribe   => Exec ["startNodemanager 1212 ${title}"],
+               refreshonly => true,
+             }  
+
          }
          windows: {
 
@@ -148,7 +154,7 @@ elsif $version == "1111" {
       # create all folders 
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
-             exec { 'create ${logDir} directory':
+             exec { "create ${logDir} directory":
                      command => "mkdir -p ${logDir}",
                      unless  => "test -d ${logDir}",
                      user    => 'root',
@@ -156,7 +162,7 @@ elsif $version == "1111" {
          }
          windows: {
       	   $logDirWin = slash_replace( $logDir )      	  
-           exec { 'create ${logDir} directory':
+           exec { "create ${logDir} directory":
                   command => "${checkCommand} mkdir ${logDirWin}",
                   unless  => "${checkCommand} dir ${logDirWin}",
            }
@@ -172,7 +178,7 @@ elsif $version == "1111" {
              ensure  => directory,
              recurse => false, 
              replace => false,
-             require => Exec['create ${logDir} directory'],
+             require => Exec["create ${logDir} directory"],
            }
       }    
 
