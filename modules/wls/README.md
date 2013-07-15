@@ -219,7 +219,7 @@ puppet module install erwbgy-limits
        config => {
                   '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
                                 },
-                  'oracle'  => { 'nofile'  => { soft => '16384'  , hard => '16384',  },
+                  'oracle'  => {  'nofile'  => { soft => '65535'  , hard => '65535',  },
                                   'nproc'   => { soft => '2048'   , hard => '2048',   },
                                   'memlock' => { soft => '1048576', hard => '1048576',},
                                 },

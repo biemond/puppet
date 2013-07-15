@@ -8,6 +8,13 @@ class orautils::params {
                                     default    => "/opt/wls", 
                                 }
 
+  $osDomainType = $::hostname ? {
+                                    devagent30 => "web",
+                                    devagent31 => "soa",
+                                    default    => "web", 
+                                }
+
+
   $osDownloadFolder = $::hostname ? {
   	                                  devagent1  => "/data/install/oracle", 
                                       default    => "/data/install", 

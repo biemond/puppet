@@ -137,8 +137,8 @@ if $version == "1212" {
                command => "nohup ${wlHome}/../user_projects/domains/${domain}/bin/startNodeManager.sh &",
                unless  => "${checkCommand}",
              }
-             exec { "sleep 10 sec for wlst exec ${title}":
-               command     => "/bin/sleep 10",
+             exec { "sleep 20 sec for wlst exec ${title}":
+               command     => "/bin/sleep 20",
                subscribe   => Exec ["startNodemanager 1212 ${title}"],
                refreshonly => true,
              }  
