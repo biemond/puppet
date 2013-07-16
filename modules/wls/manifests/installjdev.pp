@@ -5,14 +5,16 @@
 #
 # 
 
-define wls::installjdev( $jdevFile     = undef, 
-                         $fullJDKName  = undef,
-                         $mdwHome      = undef,
-                         $soaAddon     = false,
-                         $soaAddonFile = undef,
-                         $user         = 'oracle',
-                         $group        = 'dba',
-                         $downloadDir  = '/install/',
+define wls::installjdev( $version                 = "1111",
+                         $jdevFile                = undef, 
+                         $fullJDKName             = undef,
+                         $oracleHome              = undef,
+                         $mdwHome                 = undef,
+                         $soaAddon                = false,
+                         $soaAddonFile            = undef,
+                         $user                    = 'oracle',
+                         $group                   = 'dba',
+                         $downloadDir             = '/install',
                          $puppetDownloadMntPoint  = undef,   
                       ) {
 
@@ -22,14 +24,14 @@ define wls::installjdev( $jdevFile     = undef,
      $mountPoint =	$puppetDownloadMntPoint
    }
 
-
-
    case $operatingsystem {
       CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
         $path            = $downloadDir
         $wlHome          = "${mdwHome}/wlserver_10.3"
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $javaHome        = "/usr/java/${fullJDKName}"
+
+        $oraInventory    = "${oracleHome}/oraInventory"
         
         Exec { path      => $execPath,
                user      => $user,
@@ -43,80 +45,75 @@ define wls::installjdev( $jdevFile     = undef,
                group   => $group,
              }   
 
-        if ! defined(Group[$group]) {
-          group { $group : 
-                  ensure => present,
-          }
-        }
-        if ! defined(User[$user]) {
-          # http://raftaman.net/?p=1311 for generating password
-          user { $user : 
-              ensure     => present, 
-              groups     => $group,
-              shell      => '/bin/bash',
-              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',  
-              home       => "/home/${user}",
-              comment    => 'This user ${user} was created by Puppet',
-              require    => Group[$group],
-              managehome => true, 
-          }
-        }
-
-
      }
      default: { 
         fail("Unrecognized operating system") 
      }
    }
 
-
-   if ! defined(File[$path]) {
-      # check oracle install folder
-      file { $path :
-        path    => $path,
-        ensure  => directory,
-        recurse => false, 
-        replace => false,
-      }
-   }
-
-   if ! defined(File[$mdwHome]) {
-      # check oracle jdev folder
-      file { $mdwHome :
-        path    => $mdwHome,
-        ensure  => directory,
-        recurse => false, 
-        replace => false,
-      }
+   wls::utils::defaultusersfolders{'create jdev home':
+            oracleHome      => $mdwHome,
+            oraInventory    => $oraInventory, 
+            user            => $user,
+            group           => $group,
+            downloadDir     => $path,
    }
 
    
-   # put weblogic generic jar
+   # put jdeveloper full jar
    file { "${jdevFile}":
      path    => "${path}/${jdevFile}",
      ensure  => file,
      source  => "${mountPoint}/${jdevFile}",
-     require => File[$path],
      replace => false,
      backup  => false,
+     require =>  [ Wls::Utils::Defaultusersfolders['create jdev home']],
    }
 
-   # de xml used by the wls installer
-   file { "silent_jdeveloper.xml ${title}":
-     path    => "${path}/silent_jdeveloper_${title}.xml",
-     ensure  => present,
-     replace => 'yes',
-     content => template("wls/silent_jdeveloper.xml.erb"),
-     require => File[$path],
-   }
+   if $version == "1111" {
 
-   # install jdeveloper
-   exec { "installjdev ${jdevFile}":
-          command     => "java -jar ${path}/${jdevFile} -mode=silent -silent_xml=${path}/silent_jdeveloper_${title}.xml -log=${path}/installJdev_${title}.log",
-          environment => ["JAVA_HOME=/usr/java/${fullJDKName}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
-          require     => [File["${jdevFile}"],File["silent_jdeveloper.xml ${title}"],File[$mdwHome]],
-          creates     => "${mdwHome}/jdeveloper",
+	   # de xml used by the wls installer
+	   file { "silent_jdeveloper.xml ${title}":
+	     path    => "${path}/silent_jdeveloper_${title}.xml",
+	     ensure  => present,
+	     replace => 'yes',
+	     content => template("wls/silent_jdeveloper.xml.erb"),
+	     require => [ Wls::Utils::Defaultusersfolders['create jdev home']],
+	   }
+	
+	   # install jdeveloper 11g
+	   exec { "installjdev ${jdevFile}":
+	          command     => "java -jar ${path}/${jdevFile} -mode=silent -silent_xml=${path}/silent_jdeveloper_${title}.xml -log=${path}/installJdev_${title}.log",
+	          environment => ["JAVA_HOME=/usr/java/${fullJDKName}",
+	                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+	          require     => [File["${jdevFile}"],File["silent_jdeveloper.xml ${title}"]],
+	          creates     => "${mdwHome}/jdeveloper",
+	   }
+   } elsif $version == "1212" {
+
+       wls::utils::orainst{'create jdev oraInst':
+            oraInventory    => $oraInventory, 
+            group           => $group,
+       }
+
+       # de xml used by the wls installer
+       file { "silent_jdeveloper.xml ${title}":
+         path    => "${path}/silent${version}.xml",
+         ensure  => present,
+         replace => 'yes',
+         content => template("wls/silent_jdeveloper_1212.xml.erb"),
+         require => [ Wls::Utils::Orainst ['create jdev oraInst']],
+       }
+
+       $command  = "-silent -responseFile ${path}/silent${version}.xml "
+       
+       exec { "installjdev ${jdevFile}":
+          command     => "java -jar ${path}/${jdevFile} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
+          require     => [ Wls::Utils::Defaultusersfolders['create jdev home'], File["${jdevFile}"],File["silent_jdeveloper.xml ${title}"]],
+          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+          timeout     => 0,
+         }    
+             
    }    
 
    if ( $soaAddon == true ) { 
@@ -126,12 +123,12 @@ define wls::installjdev( $jdevFile     = undef,
        ensure  => present,
        replace => 'no',
        source  => "${mountPoint}/${soaAddonFile}",
-       require => [File[$path],Exec["installjdev ${jdevFile}"]],
+       require => [Exec["installjdev ${jdevFile}"]],
      }
      exec { "extract soa addon ${title}":
        command => "unzip -o ${path}/${soaAddonFile}",
        cwd     => "${mdwHome}/jdeveloper",
-       require => [File[$path],Exec["installjdev ${jdevFile}"],File["jdeveloper soa addon ${title}"]],
+       require => [Exec["installjdev ${jdevFile}"],File["jdeveloper soa addon ${title}"]],
        creates => "${mdwHome}/jdeveloper/jdev/extensions/oracle.sca.modeler.jar",
      }
 
@@ -139,9 +136,6 @@ define wls::installjdev( $jdevFile     = undef,
        command => "chmod -R 775 ${mdwHome}/jdeveloper/bin",
        require => [Exec["extract soa addon ${title}"],Exec["installjdev ${jdevFile}"]],
      }
-
-
-
    }
 
 }

@@ -199,7 +199,7 @@ if ( $continue ) {
 		     path    => "${path}/${wlsFile}",
 		     ensure  => file,
 		     source  => "${mountPoint}/${wlsFile}",
-		     require => File[$path],
+		     require => Wls::Utils::Defaultusersfolders['create wls home'],
 		     replace => false,
 		     backup  => false,
 		   }
@@ -262,7 +262,7 @@ if ( $continue ) {
          ensure  => present,
          replace => 'yes',
          content => template("wls/silent.xml.erb"),
-         require => File[$path],
+         require => Wls::Utils::Defaultusersfolders['create wls home'],
        }
 
 
@@ -271,7 +271,7 @@ if ( $continue ) {
 		     path    => "${path}/${wlsFile}",
 		     ensure  => file,
 		     source  => "${mountPoint}/${wlsFile}",
-		     require => File[$path],
+		     require => Wls::Utils::Defaultusersfolders['create wls home'],
 		     replace => false,
 		     backup  => false,
 		   }

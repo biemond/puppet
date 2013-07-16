@@ -150,7 +150,7 @@ if $version == "1212" {
       }
 } 
 elsif $version == "1111" {
-
+   if $logDir != undef {  
       # create all folders 
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
@@ -181,7 +181,7 @@ elsif $version == "1111" {
              require => Exec["create ${logDir} directory"],
            }
       }    
-
+   }
 
    $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/./urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
     
