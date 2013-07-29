@@ -129,7 +129,8 @@ if ( $continue ) {
      $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.12.1.3_template.jar"
      $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/wls/oracle.wsmpm_template_12.1.2.jar"
 
-     $templateSoapJms      = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf.ws.soapjms_template_12.1.2.jar"
+#     $templateSoapJms      = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf.ws.soapjms_template_12.1.2.jar"
+     $templateSoapJms      = "${wlHome}/common/templates/wls/wls_webservice_soapjms.jar"
 
 
    } else {
