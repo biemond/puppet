@@ -10,8 +10,9 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 1.0.6 Added 12.1.2 Domain features to the 'adf' domain like coherence, jax-ws advanced + soap over jms  
 - 1.0.5 JDeveloper 12.1.2 with soa plugin install for Linux + small bug fixes
-- 1.0.4 Weblogic 12.1.2 adf domain creation with RCU 
+- 1.0.4 Weblogic 12.1.2 adf domain creation with RCU ( plus EM,JRF, OWSM )  
 - 1.0.3 Weblogic 12.1.2 standard domain creation and start nodemanager of weblogic 12.1.2 domain 
 - 1.0.2 Weblogic 12.1.2 support plus ADF 11g / 12c install manifest, refactoring for weblogic 12.1.2  
 - 1.0.1 Webcenter, BPM and Webcenter Content domain creation, set Domain and Nodemanager passwords in the domain templates + Crossdomain 
@@ -69,13 +70,14 @@ WLS WebLogic Features
 - configures + starts nodemanager
 - storeUserConfig for storing credentials and using in WLST
 
-- domain creation + domain pack -> template name = 'standard'   
-- domain OSB creation + domain pack -> template name = 'osb'  
-- domain OSB + SOA creation + domain pack -> template name = 'osb_soa'  
-- domain OSB + SOA + BPM creation + domain pack -> template name = 'osb_soa_bpm'  
-- domain ADF creation + domain pack -> template name = 'adf'  
-- domain WC (webcenter) + WCC (Content)  + BPM creation + domain pack -> template name = 'wc_wcc_bpm'  
-- domain WC (webcenter) + domain pack -> template name = 'wc'  
+- all templates creates a WebLogic domain, log the output and do a domain pack in the download folder  
+- domain 'standard'    -> a default WebLogic    
+- domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
+- domain 'osb'         -> OSB + JRF + EM + OWSM 
+- domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
+- domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
+- domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
+- domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
 
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 

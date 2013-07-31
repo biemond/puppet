@@ -75,7 +75,7 @@ define wls::wlsdomain ($version         = '1111',
                        $user            = 'oracle',
                        $group           = 'dba',
                        $logDir          = undef,
-                       $downloadDir     = '/install/',
+                       $downloadDir     = '/install',
                        $reposDbUrl      = undef,
                        $reposPrefix     = undef,
                        $reposPassword   = undef,
@@ -111,10 +111,11 @@ if ( $continue ) {
 
      $template             = "${wlHome}/common/templates/domains/wls.jar"
      $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
+     # should be also be in wlhome
+     $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
 
      $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
      $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
-     $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
      $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
      $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
 
@@ -123,14 +124,14 @@ if ( $continue ) {
      $template             = "${wlHome}/common/templates/wls/wls.jar"
      $templateWS           = "${wlHome}/common/templates/wls/wls_webservice.jar"
      $templateJaxWS        = "${wlHome}/common/templates/wls/wls_webservice_jaxws.jar"
+     $templateSoapJms      = "${wlHome}/common/templates/wls/wls_webservice_soapjms.jar"
+     $templateCoherence    = "${wlHome}/common/templates/wls/wls_coherence.jar"
 
      $templateEM           = "${mdwHome}/em/common/templates/wls/oracle.em_wls_template_12.1.2.jar"
      $templateJRF          = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf_template_12.1.2.jar"
      $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.12.1.3_template.jar"
      $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/wls/oracle.wsmpm_template_12.1.2.jar"
 
-#     $templateSoapJms      = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf.ws.soapjms_template_12.1.2.jar"
-     $templateSoapJms      = "${wlHome}/common/templates/wls/wls_webservice_soapjms.jar"
 
 
    } else {
