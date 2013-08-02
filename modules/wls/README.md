@@ -30,9 +30,13 @@ Version updates
 
 for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
 
-Repository Creation Utility (RCU)
----------------------------------
+Repository Creation Utility for FMW 11g (RCU)
+---------------------------------------------
 For the RCU configuration of the Soa Suite or WebCenter you can use my oradb puppet module 
+
+Repository Creation Utility for FMW 12.1.2
+------------------------------------------
+RCU configuration of the FMW 12.1.2 is supported by this module and its done by the domain creation  
 
 Windows Puppet agents
 ---------------------
@@ -71,7 +75,6 @@ WLS WebLogic Features
 - configures + starts nodemanager
 - storeUserConfig for storing credentials and using in WLST
 
-
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 
 - can start the AdminServer for WLST Domain configuration 
@@ -99,6 +102,7 @@ Domain creation options
 -----------------------
 
 all templates creates a WebLogic domain, log the output and do a domain pack in the download folder  
+
 - domain 'standard'    -> a default WebLogic    
 - domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
 - domain 'osb'         -> OSB + JRF + EM + OWSM 
@@ -106,6 +110,8 @@ all templates creates a WebLogic domain, log the output and do a domain pack in 
 - domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
 - domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
 - domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
+
+
 
 
 ![Oracle WebLogic Console](https://raw.github.com/biemond/puppet/master/modules/wls/wlsconsole.png)
