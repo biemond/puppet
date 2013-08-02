@@ -153,8 +153,8 @@ Contains WebLogic Facter which displays the following
     
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/modulefiles.png)
     
-Set for WebLogic the following ulimits and kernel parameters
-------------------------------------------------------------
+WebLogic settings for ulimits and kernel parameters
+---------------------------------------------------
 
 install the following module to set the database kernel parameters  
 puppet module install fiddyspence-sysctl  
