@@ -84,6 +84,10 @@ setOption('ServerStartMode', 'dev')
 setOption('JavaHome', '<%= @JAVA_HOME %>')
 setOption('OverwriteDomain', 'false')
 
+if WEBLOGIC_VERSION == "1212":
+    print 'Adding WLS Coherence Template'
+    addTemplate('<%= @templateCoherence %>')
+
 print('write domain...')
 # write path + domain name
 writeDomain(DOMAIN_PATH)

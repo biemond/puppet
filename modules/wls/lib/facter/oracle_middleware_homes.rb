@@ -327,6 +327,29 @@ def get_domain(name,i,wlsversion)
         k += 1            
       end
 
+      server_templates = ""
+      root.elements.each("server-template") do |svr_template|
+        server_templates += svr_template.elements['name'].text + ";"
+      end
+
+      Facter.add("#{prefix}_domain_#{n}_server_templates") do
+         setcode do
+           server_templates
+         end
+      end
+
+      clusters = ""
+      root.elements.each("cluster") do |cluster|
+        clusters += cluster.elements['name'].text + ";"
+      end
+
+      Facter.add("#{prefix}_domain_#{n}_clusters") do
+         setcode do
+           clusters
+         end
+      end
+            
+      
       deployments = ""
       root.elements.each("app-deployment[module-type = 'ear']") do |apps|
         deployments += apps.elements['name'].text + ";"

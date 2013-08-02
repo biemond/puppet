@@ -92,6 +92,27 @@ module Puppet::Parser::Functions
                       end
                     end
                   end
+
+                elsif type == 'cluster'
+                  if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_clusters') != :undefined
+                    clusters =  lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_clusters')
+                    unless clusters.nil?
+                      if clusters.include? wlsObject
+                        return true
+                      end
+                    end
+                  end
+
+                elsif type == 'server_templates'
+                  if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_server_templates') != :undefined
+                    server_templates =  lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_server_templates')
+                    unless server_templates.nil?
+                      if server_templates.include? wlsObject
+                        return true
+                      end
+                    end
+                  end
+                
                 elsif type == 'resource'
 
                   adapter = wlsObject.downcase

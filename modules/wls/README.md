@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
+- 1.0.7 Added 12.1.2 Scripts for creating server templates and dynamic clusters   
 - 1.0.6 Added 12.1.2 Domain features to the 'adf' domain like coherence, jax-ws advanced + soap over jms  
 - 1.0.5 JDeveloper 12.1.2 with soa plugin install for Linux + small bug fixes
 - 1.0.4 Weblogic 12.1.2 adf domain creation with RCU ( plus EM,JRF, OWSM )  
@@ -70,20 +71,14 @@ WLS WebLogic Features
 - configures + starts nodemanager
 - storeUserConfig for storing credentials and using in WLST
 
-- all templates creates a WebLogic domain, log the output and do a domain pack in the download folder  
-- domain 'standard'    -> a default WebLogic    
-- domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
-- domain 'osb'         -> OSB + JRF + EM + OWSM 
-- domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
-- domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
-- domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
-- domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
 
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 
 - can start the AdminServer for WLST Domain configuration 
 - add JCA resource adapter plan
 - add JCA resource adapter entries
+- create server templates ( 12.1.2 )
+- create dynamic clusters ( 12.1.2 )
 - create File or JDBC Persistence Store
 - create JMS Server
 - create JMS Module
@@ -99,6 +94,19 @@ WLS WebLogic Features
 - create Foreign Servers entries
 - run every wlst script with the flexible WLST define
 - deploy an OSB project to the OSB server
+
+Domain creation options
+-----------------------
+
+all templates creates a WebLogic domain, log the output and do a domain pack in the download folder  
+- domain 'standard'    -> a default WebLogic    
+- domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
+- domain 'osb'         -> OSB + JRF + EM + OWSM 
+- domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
+- domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
+- domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
+- domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
+
 
 ![Oracle WebLogic Console](https://raw.github.com/biemond/puppet/master/modules/wls/wlsconsole.png)
 
@@ -859,9 +867,7 @@ WebLogic configuration examples
 	  }
 	
 	  $wlsDomainName   = "adf"
-	
 	  $osTemplate      = "adf"
-	  #$osTemplate      = "standard"
 	
 	  $adminListenPort = "7001"
 	  $nodemanagerPort = "5556"
@@ -946,12 +952,12 @@ WebLogic configuration examples
 	    reposPassword   => $reposPassword,
 	    dbUrl           => $rcuDbUrl,
 	    sysPassword     => $sysPassword,
-	  #    require         => Wls::Utils::Rcu["RCU_12c dev3 delete"],
+	   #    require         => Wls::Utils::Rcu["RCU_12c dev3 delete"],
 	  }
 	
 	  Wls::Nodemanager {
 	    wlHome       => $osWlHome,
-	    fullJDKName  => $jdkWls11gJDK,  
+	    fullJDKName  => $jdkWls12gJDK,	
 	    user         => $user,
 	    group        => $group,
 	    serviceName  => $serviceName,  
@@ -959,16 +965,17 @@ WebLogic configuration examples
 	
 	   #nodemanager starting 
 	   # in 12c start it after domain creation
-	   wls::nodemanager{'nodemanager11g':
-	     version   => "1212",
-	     domain    => $wlsDomainName,      
-	     require   => Wls::Wlsdomain['adfDomain12c'],
+	   wls::nodemanager{'nodemanager12c':
+	     version    => "1212",
+	     listenPort => $nodemanagerPort,
+	     domain     => $wlsDomainName,   	 
+	     require    => Wls::Wlsdomain['adfDomain12c'],
 	   }  
 	  
 	
 	  # default parameters for the wlst scripts
 	  Wls::Wlstexec {
-	    version      => "1212", 
+	  	version      => "1212", 
 	    wlsDomain    => $wlsDomainName,
 	    wlHome       => $osWlHome,
 	    fullJDKName  => $jdkWls12gJDK,  
@@ -976,22 +983,49 @@ WebLogic configuration examples
 	    group        => $group,
 	    address      => $address,
 	    downloadDir  => $downloadDir, 
+	    wlsUser      => "weblogic",
+	    password     => hiera('weblogic_password_default'),
+	
 	  }
 	  
 	  # start AdminServer for configuration
 	  wls::wlstexec { 
 	    'startWLSAdminServer12c':
-	     wlsUser     => "weblogic",
-	     password    => hiera('weblogic_password_default'),
 	     script      => 'startWlsServer.py',
 	     port        =>  $nodemanagerPort,
-	     params      =>  ["domain = '${wlsDomainName}'",
+	     params      =>  ["domain     = '${wlsDomainName}'",
 	                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-	                      "wlsServer = 'AdminServer'"],
-	     require     => Wls::Nodemanager['nodemanager11g'];
+	                      "wlsServer  = 'AdminServer'"],
+	     require     => Wls::Nodemanager['nodemanager12c'];
 	
 	  }
-	}
+	
+	  # create Server template for Dynamic Clusters 
+	  wls::wlstexec { 
+	    'createServerTemplate1':
+	     wlstype       => "server_templates",
+	     wlsObjectName => "serverTemplate1",
+	     script        => 'createServerTemplateCluster.py',
+	     params        =>  ["server_template_name          = 'serverTemplate1'",
+	                        "server_template_listen_port   = 7101",
+	                        "dynamic_server_name_arguments ='-XX:PermSize=256m -XX:MaxPermSize=256m -Xms1g'"],
+	     require       => Wls::Wlstexec['startWLSAdminServer12c'];
+	  }
+	
+	  # create Dynamic Cluster 
+	  wls::wlstexec { 
+	    'createDynamicCluster':
+	     wlstype       => "cluster",
+	     wlsObjectName => "dynamicCluster",
+	     script        => 'createDynamicCluster.py',
+	     params        =>  ["server_template_name       = 'serverTemplate1'",
+	                        "dynamic_cluster_name       = 'dynamicCluster'",
+	                        "dynamic_nodemanager_match  = 'LocalMachine'",
+	                        "dynamic_server_name_prefix = 'dynamic_server_'"],
+	     require       => Wls::Wlstexec['createServerTemplate1'];
+	  }
+	
+    }
     
     class wls_osb_soa_domain{
     
