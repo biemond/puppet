@@ -10,7 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or Oracl
 Version updates
 ---------------
 
-- 1.0.7 Added 12.1.2 Scripts for creating server templates and dynamic clusters   
+- 1.0.7 12.1.2 Fully support for Dynamic Cluster and Elastic JMS, Scripts for creating server templates and dynamic clusters , see class wls12c_adf_domain  
 - 1.0.6 Added 12.1.2 Domain features to the 'adf' domain like coherence, jax-ws advanced + soap over jms  
 - 1.0.5 JDeveloper 12.1.2 with soa plugin install for Linux + small bug fixes
 - 1.0.4 Weblogic 12.1.2 adf domain creation with RCU ( plus EM,JRF, OWSM )  
@@ -105,8 +105,6 @@ all templates creates a WebLogic domain, log the output and do a domain pack in 
 - domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
 - domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
 - domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
-
-
 
 
 ![Oracle WebLogic Console](https://raw.github.com/biemond/puppet/master/modules/wls/wlsconsole.png)
@@ -851,17 +849,13 @@ WebLogic configuration examples
         oepeHome     => 'oepe11.1.1.8',
         require      => Exec["extract ${oepeFile}"],
       }
-    
     }
-
     
 ### templates_app.pp
-
 
     include wls
 
 	class wls12c_adf_domain{
-	
 	
 	  if $jdkWls12gJDK == undef {
 	    $jdkWls12gJDK = 'jdk1.7.0_25'
@@ -1008,8 +1002,8 @@ WebLogic configuration examples
 	     wlsObjectName => "serverTemplate1",
 	     script        => 'createServerTemplateCluster.py',
 	     params        =>  ["server_template_name          = 'serverTemplate1'",
-	                        "server_template_listen_port   = 7101",
-	                        "dynamic_server_name_arguments ='-XX:PermSize=256m -XX:MaxPermSize=256m -Xms1g'"],
+	                        "server_template_listen_port   = 7100",
+	                        "dynamic_server_name_arguments ='-XX:PermSize=128m -XX:MaxPermSize=256m -Xms512m -Xmx1024m'"],
 	     require       => Wls::Wlstexec['startWLSAdminServer12c'];
 	  }
 	
@@ -1026,7 +1020,120 @@ WebLogic configuration examples
 	     require       => Wls::Wlstexec['createServerTemplate1'];
 	  }
 	
-    }
+	  # create file persistence store 1 for dynamic cluster 
+	  wls::wlstexec { 
+	    'createFilePersistenceStoreDynamicCluster':
+	     wlstype       => "filestore",
+	     wlsObjectName => "jmsModuleFilePersistence1",
+	     script        => 'createFilePersistenceStore2.py',
+	     params        =>  ["fileStoreName = 'jmsModuleFilePersistence1'",
+	                      "target          = 'dynamicCluster'",
+	                      "targetType      = 'Cluster'"],
+	     require       => Wls::Wlstexec['createDynamicCluster'];
+	  }
+	
+	  # create jms server 1 for dynamic cluster 
+	  wls::wlstexec { 
+	    'createJmsServerDynamicCluster':
+	     wlstype       => "jmsserver",
+	     wlsObjectName => "jmsServer1",
+	     script      => 'createJmsServer2.py',
+	     params      =>  ["storeName      = 'jmsModuleFilePersistence1'",
+	                      "target         = 'dynamicCluster'",
+	                      "targetType     = 'Cluster'",
+	                      "jmsServerName  = 'jmsServer1'",
+	                      "storeType      = 'file'",
+	                      ],
+	     require     => Wls::Wlstexec['createFilePersistenceStoreDynamicCluster'];
+	  }
+	
+	  # create jms module for dynamic cluster 
+	  wls::wlstexec { 
+	    'createJmsModuleCluster':
+	     wlstype       => "jmsmodule",
+	     wlsObjectName => "jmsClusterModule",
+	     script        => 'createJmsModule.py',
+	     params        =>  ["target         = 'dynamicCluster'",
+	                        "jmsModuleName  = 'jmsClusterModule'",
+	                        "targetType     = 'Cluster'",
+	                       ],
+	     require       => Wls::Wlstexec['createJmsServerDynamicCluster'];
+	  }
+	
+	  # create jms subdeployment for dynamic cluster 
+	  wls::wlstexec { 
+	    'createJmsSubDeploymentForCluster':
+	     wlstype       => "jmssubdeployment",
+	     wlsObjectName => "jmsClusterModule/dynamicCluster",
+	     script        => 'createJmsSubDeployment.py',
+	     params        => ["target         = 'dynamicCluster'",
+	                       "jmsModuleName  = 'jmsClusterModule'",
+	                       "subName        = 'dynamicCluster'",
+	                       "targetType     = 'Cluster'"
+	                      ],
+	     require       => Wls::Wlstexec['createJmsModuleCluster'];
+	  }
+	
+	  # create jms connection factory for jms module 
+	  wls::wlstexec { 
+	  
+	    'createJmsConnectionFactoryforCluster':
+	     wlstype       => "jmsobject",
+	     wlsObjectName => "cf",
+	     script        => 'createJmsConnectionFactory.py',
+	     params        =>["subDeploymentName = 'dynamicCluster'",
+	                      "jmsModuleName     = 'jmsClusterModule'",
+	                      "cfName            = 'cf'",
+	                      "cfJNDIName        = 'jms/cf'",
+	                      "transacted        = 'false'",
+	                      "timeout           = 'xxxx'"
+	                      ],
+	     require       => Wls::Wlstexec['createJmsSubDeploymentForCluster'];
+	  }
+	
+	  # create jms error Queue for jms module 
+	  wls::wlstexec { 
+	  
+	    'createJmsErrorQueueforJmsModule':
+	     wlstype       => "jmsobject",
+	     wlsObjectName => "ErrorQueue2",
+	     script        => 'createJmsQueueOrTopic.py',
+	     params        =>["subDeploymentName = 'dynamicCluster'",
+	                      "jmsModuleName     = 'jmsClusterModule'",
+	                      "jmsName           = 'ErrorQueue2'",
+	                      "jmsJNDIName       = 'jms/ErrorQueue2'",
+	                      "jmsType           = 'queue'",
+	                      "distributed       = 'true'",
+	                      "balancingPolicy   = 'Round-Robin'",
+	                      "useRedirect       = 'false'",
+	                      "limit             = 'xxxxx'",
+	                      "policy            = 'xxxxx'",
+	                      "errorObject       = 'xxxxx'"
+	                      ],
+	     require       => Wls::Wlstexec['createJmsConnectionFactoryforCluster'];
+	  }
+	
+	  # create jms Queue for jms module 
+	  wls::wlstexec { 
+	    'createJmsQueueforJmsModule':
+	     wlstype       => "jmsobject",
+	     wlsObjectName => "Queue1",
+	     script        => 'createJmsQueueOrTopic.py',
+	     params        => ["subDeploymentName  = 'dynamicCluster'",
+	                      "jmsModuleName       = 'jmsClusterModule'",
+	                      "jmsName             = 'Queue1'",
+	                      "jmsJNDIName         = 'jms/Queue1'",
+	                      "jmsType             = 'queue'",
+	                      "distributed         = 'true'",
+	                      "balancingPolicy     = 'Round-Robin'",
+	                      "useRedirect         = 'true'",
+	                      "limit               = '3'",
+	                      "policy              = 'Redirect'",
+	                      "errorObject         = 'ErrorQueue2'"
+	                      ],
+	     require     => Wls::Wlstexec['createJmsErrorQueueforJmsModule'];
+	  }
+	}
     
     class wls_osb_soa_domain{
     

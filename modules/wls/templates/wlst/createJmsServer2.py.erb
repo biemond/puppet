@@ -1,12 +1,11 @@
-# for weblogic < 12.1.2, can only target to a server
-
+# for weblogic 12.1.2 we can also target to a cluster
 
 wlsUser    = '<%= @wlsUser %>'  
 password   = '<%= @password %>' 
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
                                 
-#storeName, serverTarget, jmsServerName ,storeType
+#storeName, target, targetType, jmsServerName ,storeType
 <% params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
@@ -17,8 +16,6 @@ if useStoreConfig != "true":
     connect(wlsUser,password,'t3://'+machine+':'+portNumber)
 else:
     connect(userConfigFile='<%= @userConfigFile %>', userKeyFile='<%= @userKeyFile %>', url='t3://'+machine+':'+portNumber)    
-
-
 
 edit()
 startEdit()
@@ -32,7 +29,7 @@ try:
     else:
         cmo.setPersistentStore(getMBean('/JDBCStores/'+storeName))
 
-    set('Targets', jarray.array([ObjectName('com.bea:Name='+serverTarget+',Type=Server')], ObjectName))
+    set('Targets', jarray.array([ObjectName('com.bea:Name='+target+',Type='+targetType)], ObjectName))
 
     ## Threshold (values are default)
     # cmo.setBytesThresholdHigh(-1)
