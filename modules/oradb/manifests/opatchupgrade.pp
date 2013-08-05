@@ -34,7 +34,7 @@ define oradb::opatchupgrade(
   ) {
 
   case $operatingsystem {
-    CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
       $execPath  = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
       $patchDir  = "${oracleHome}/OPatch"
@@ -94,7 +94,7 @@ define oradb::opatchupgrade(
     }
 
     case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         file { "remove_old":
           ensure  => absent,

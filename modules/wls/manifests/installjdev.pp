@@ -25,7 +25,7 @@ define wls::installjdev( $version                 = "1111",
    }
 
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
         $path            = $downloadDir
         $wlHome          = "${mdwHome}/wlserver_10.3"
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"

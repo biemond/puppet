@@ -42,7 +42,7 @@ define wls::installwc( $mdwHome         = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
@@ -151,7 +151,7 @@ if ( $continue ) {
    $command  = "-silent -response ${path}/${title}silent_wc.xml "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         if ! defined(Exec["extract ${wcFile}"]) {
          exec { "extract ${wcFile}":

@@ -56,7 +56,7 @@ define wls::installwls( $version     = undef,
    $wlsFileDefault       = $wlsFile1036 
 
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $beaHome         = $mdwHome
@@ -213,7 +213,7 @@ if ( $continue ) {
        $command  = "-silent -responseFile ${path}/silent${version}.xml "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
         
         exec { "install wls ${title}":
           command     => "java -jar ${path}/wls/${wlsFile1212_jar} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",

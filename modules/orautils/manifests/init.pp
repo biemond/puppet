@@ -3,7 +3,7 @@ class orautils {
   include orautils::params
 
   case $operatingsystem {
-    CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
     $user         = "oracle"
     $group        = "dba"

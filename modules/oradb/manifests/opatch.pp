@@ -31,7 +31,7 @@ define oradb::opatch(  $oracleProductHome       = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $path             = $downloadDir
@@ -87,7 +87,7 @@ if ( $continue ) {
    $oPatchCommand  = "opatch apply -silent "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         exec { "extract opatch ${patchFile} ${title}":
           command => "unzip -n ${path}/${patchFile} -d ${path}",

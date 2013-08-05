@@ -65,7 +65,7 @@ define wls::wlsdeploy ($wlHome        = undef,
    $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = $downloadDir
@@ -135,7 +135,7 @@ define wls::wlsdeploy ($wlHome        = undef,
    }
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         exec { "execwlst ${title}importOSB.py":
           command     => "${javaCommand} ${path}/${title}importOSB.py",

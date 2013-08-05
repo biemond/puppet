@@ -42,7 +42,7 @@ define wls::opatch(  $oracleProductHome = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $path             = $downloadDir
@@ -134,7 +134,7 @@ if ( $continue ) {
    $oPatchCommand  = "opatch apply -silent -jre"
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         exec { "extract opatch ${patchFile} ${title}":
           command => "unzip -n ${path}/${patchFile} -d ${path}",

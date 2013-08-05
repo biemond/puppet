@@ -113,7 +113,7 @@ if ( $continue ) {
    $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = $downloadDir
@@ -177,7 +177,7 @@ if ( $continue ) {
    }
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         exec { "execwlst ${title}${script}":
           command     => "${javaCommand} ${path}/${title}${script}",

@@ -54,7 +54,7 @@ define wls::installsoa($mdwHome         = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
@@ -169,7 +169,7 @@ if ( $continue ) {
    $command  = "-silent -response ${path}/${title}silent_soa.xml "
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":

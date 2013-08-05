@@ -204,7 +204,7 @@ if ( $continue ) {
    } 
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin"
         $path             = $downloadDir
@@ -294,7 +294,7 @@ if ( $continue ) {
 
       # create all log folders 
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {    
            if ! defined(Exec["create ${logDir} directory"]) {
              exec { "create ${logDir} directory":
                      command => "mkdir -p ${logDir}",
@@ -394,7 +394,7 @@ if ( $continue ) {
    $packCommand    = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -template_name=domain_${domain} -log=${path}/domain_${domain}.log -log_priority=INFO"  
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
         
         exec { "execwlst ${domain} ${title}":
           command     => "${wlstPath}/wlst.sh ${path}/domain_${domain}.py",
@@ -406,7 +406,7 @@ if ( $continue ) {
         }    
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
               exec { "setDebugFlagOnFalse ${domain} ${title}":
                 command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
                 onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
@@ -474,7 +474,7 @@ if ( $continue ) {
    # set our 12.1.2 nodemanager properties
    if ( $version == "1212" ){
        case $operatingsystem {
-          CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris, windows: { 
+          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris, windows: { 
             file { "nodemanager.properties ux 1212 ${title}":
                 path    => "${nodeMgrHome}/nodemanager.properties",
                 ensure  => present,

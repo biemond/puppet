@@ -47,7 +47,7 @@ define wls::changefmwlogdir ($mdwHome        = undef,
 
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         $execPath         = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = $downloadDir
@@ -95,7 +95,7 @@ define wls::changefmwlogdir ($mdwHome        = undef,
    }
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         exec { "execwlst ${title}changeFMWLogFolder.py":
           command     => "${mdwHome}/oracle_common/common/bin/wlst.sh ${path}/${title}changeFMWLogFolder.py",

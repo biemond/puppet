@@ -69,7 +69,7 @@ define wls::nodemanager($version         = "1111",
    }
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $otherPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $execPath         = "/usr/java/${fullJDKName}/bin:${otherPath}"
@@ -131,7 +131,7 @@ define wls::nodemanager($version         = "1111",
 # nodemanager is part of the domain creation
 if $version == "1212" {
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {    
 
              exec { "startNodemanager 1212 ${title}":
                command => "nohup ${wlHome}/../user_projects/domains/${domain}/bin/startNodeManager.sh &",
@@ -153,7 +153,7 @@ elsif $version == "1111" {
    if $logDir != undef {  
       # create all folders 
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {    
              exec { "create ${logDir} directory":
                      command => "mkdir -p ${logDir}",
                      unless  => "test -d ${logDir}",
@@ -186,7 +186,7 @@ elsif $version == "1111" {
    $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/./urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         file { "nodemanager.properties ux ${title}":
                 path    => "${nodeMgrHome}/nodemanager.properties",

@@ -41,7 +41,7 @@ define wls::storeuserconfig( $wlHome        = undef,
    $javaCommand    = "java -Dweblogic.management.confirmKeyfileCreation=true -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = $downloadDir
@@ -105,7 +105,7 @@ define wls::storeuserconfig( $wlHome        = undef,
    }
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         exec { "execwlst ${title}storeUserConfig.py":
           command     => "${javaCommand} ${path}/${title}storeUserConfig.py",

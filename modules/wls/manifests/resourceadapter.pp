@@ -94,7 +94,7 @@ define wls::resourceadapter( $version        = '1111',
    }
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = $downloadDir
@@ -192,7 +192,7 @@ if ( $continuePlan ) {
    $javaCommand    = "java weblogic.Deployer"
      
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         # deploy the plan and update the adapter  
         exec { "exec deployer adapter plan ${title}":
@@ -243,7 +243,7 @@ if ( $continueEntry ) {
 
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         # deploy the plan and update the adapter  
         exec { "exec create resource adapter entry ${title}":
@@ -263,7 +263,7 @@ if ( $continueEntry ) {
         }    
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
 		        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
 		           command => "rm -I ${path}/${title}createResourceAdapterEntry.py",

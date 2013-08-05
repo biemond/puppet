@@ -1,6 +1,6 @@
 {
   "name": "biemond-wls",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "summary": "Oracle WebLogic / Fusion Middleware ( OSB, WebCenter, SOA Suite ) puppet module",
   "author": "Edwin Biemond",
   "description": "Oracle WebLogic / Fusion Middleware puppet module",

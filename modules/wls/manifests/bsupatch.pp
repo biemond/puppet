@@ -47,7 +47,7 @@ define wls::bsupatch($mdwHome         = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
         $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin'
         $path            = $downloadDir
@@ -140,7 +140,7 @@ if ( $continue ) {
    $bsuCommand  = "-install -patchlist=${patchId} -prod_dir=${wlHome} -verbose"
     
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 
         exec { "extract ${patchFile}":
           command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",

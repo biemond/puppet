@@ -5,13 +5,14 @@ created by Edwin Biemond
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
-Should work for RedHat, CentOS, Ubuntu, Debian or OracleLinux 
+Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux 
 
 Works with Puppet 2.7 & 3.0 
 
 Version updates
 ---------------
 
+- 0.7.8 Added Suse SLES as Operating System   
 - 0.7.7 RCU support for WebCenter and SOA Suite  
 - 0.7.6 OPatch upgrade made by Ronald Hatcher  
 - 0.7.5 support for Oracle database 12c or 12.1.0.1 plus bug fixes  

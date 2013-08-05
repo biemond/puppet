@@ -7,7 +7,7 @@ def get_homes()
 
   os = Facter.value(:operatingsystem)
 
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
     beafile = "/home/oracle/bea/beahomelist"
   elsif ["Solaris"].include?os
     beafile = "/export/home/oracle/bea/beahomelist"      
@@ -33,7 +33,7 @@ end
 def get_bsu_patches(name)
   os = Facter.value(:operatingsystem)
 
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
    if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
     output2 = Facter::Util::Resolution.exec("su -l oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
     if output2.nil?
@@ -79,7 +79,7 @@ def get_opatch_patches(name)
 
     os = Facter.value(:operatingsystem)
 
-    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
       output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
     elsif ["Solaris"].include?os
       output3 = Facter::Util::Resolution.exec("su - oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc\"")
@@ -113,7 +113,7 @@ end
 
 
 def get_nodemanagers()
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?Facter.value(:operatingsystem)
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?Facter.value(:operatingsystem)
     output = Facter::Util::Resolution.exec("/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"port:\" , substr(\$0,index(\$0,\"-DListenPort\")+13,4) } '")
     if output.nil?
       return nil
@@ -131,7 +131,7 @@ def get_nodemanagers()
 end
 
 def get_wlsservers()
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?Facter.value(:operatingsystem)
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?Facter.value(:operatingsystem)
     output = Facter::Util::Resolution.exec("/bin/ps -eo pid,cmd | /bin/grep -i weblogic.server | /bin/grep -v grep | awk ' {print \"pid:\", substr(\$0,0,5), \"name:\" ,substr(\$0,index(\$0,\"weblogic.Name\")+14,12) }'")
     if output.nil?
       return nil 
@@ -151,7 +151,7 @@ end
 
 def get_orainst_loc()
   os = Facter.value(:operatingsystem)
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
     if FileTest.exists?("/etc/oraInst.loc")
       str = ""
       output = File.read("/etc/oraInst.loc")
@@ -233,7 +233,7 @@ def get_domain(name,i,wlsversion)
   
   os = Facter.value(:operatingsystem)
 
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris","SLES"].include?os
 
     if FileTest.exists?(name+'/user_projects/domains')
       output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/user_projects/domains')
@@ -282,7 +282,7 @@ def get_domain(name,i,wlsversion)
 
   output2.split(/\r?\n/).each_with_index do |domain, n|
 
-    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris"].include?os
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris","SLES"].include?os
       domainfile = name+'/user_projects/domains/'+domain+'/config/config.xml'
 
     elsif ["windows"].include?os 
@@ -348,8 +348,18 @@ def get_domain(name,i,wlsversion)
            clusters
          end
       end
+
+      coherence_clusters = ""
+      root.elements.each("coherence-cluster-system-resource") do |coherence|
+        coherence_clusters += coherence.elements['name'].text + ";"
+      end
+
+      Facter.add("#{prefix}_domain_#{n}_coherence_clusters") do
+         setcode do
+           coherence_clusters
+         end
+      end
             
-      
       deployments = ""
       root.elements.each("app-deployment[module-type = 'ear']") do |apps|
         deployments += apps.elements['name'].text + ";"
@@ -612,10 +622,18 @@ def get_domain(name,i,wlsversion)
         jmsroot.elements.each("queue") do |queues| 
           jmsstr +=  queues.attributes["name"] + ";"
         end
-
+        jmsroot.elements.each("uniform-distributed-queue") do |dist_queues| 
+          jmsstr +=  dist_queues.attributes["name"] + ";"
+        end
+        
         jmsroot.elements.each("topic") do |topics| 
           jmsstr +=  topics.attributes["name"] + ";"
         end
+        jmsroot.elements.each("uniform-distributed-topic") do |dist_topics| 
+          jmsstr +=  dist_topics.attributes["name"] + ";"
+        end
+
+        
         Facter.add("#{prefix}_domain_#{n}_jmsmodule_#{k}_name") do
           setcode do
             jmsresource.elements['name'].text

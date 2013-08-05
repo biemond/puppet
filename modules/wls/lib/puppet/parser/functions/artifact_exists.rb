@@ -112,7 +112,17 @@ module Puppet::Parser::Functions
                       end
                     end
                   end
-                
+
+                elsif type == 'coherence'
+                  if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_coherence_clusters') != :undefined
+                    coherence_cluster =  lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_coherence_clusters')
+                    unless coherence_cluster.nil?
+                      if coherence_cluster.include? wlsObject
+                        return true
+                      end
+                    end
+                  end
+                                  
                 elsif type == 'resource'
 
                   adapter = wlsObject.downcase

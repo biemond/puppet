@@ -5,11 +5,12 @@ created by Edwin Biemond  email biemond at gmail dot com
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
-Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian or OracleLinux 
+Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux 
 
 Version updates
 ---------------
 
+- 1.0.8 added Suse SLES as Operating System, 12.1.2 support for Coherence CLuster, see class wls12c_adf_domain, Added Distributed Queue/Topics to Facts  
 - 1.0.7 12.1.2 Fully support for Dynamic Cluster and Elastic JMS, Scripts for creating server templates and dynamic clusters , see class wls12c_adf_domain  
 - 1.0.6 Added 12.1.2 Domain features to the 'adf' domain like coherence, jax-ws advanced + soap over jms  
 - 1.0.5 JDeveloper 12.1.2 with soa plugin install for Linux + small bug fixes
@@ -56,7 +57,6 @@ Some manifests like installwls.pp, opatch.pp, bsupatch.pp, installjdev, installo
 When not provided it uses the files location of the wls puppet module  
 else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/wls/" (default) or  "puppet:///middleware/" 
 
-
 WLS WebLogic Features
 ---------------------------
 
@@ -73,23 +73,15 @@ WLS WebLogic Features
 - storeUserConfig for storing credentials and using in WLST
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 - can start the AdminServer for WLST Domain configuration 
-- add JCA resource adapter plan
-- add JCA resource adapter entries
+- add JCA resource adapter plan + Entries
 - create server templates ( 12.1.2 )
 - create dynamic clusters ( 12.1.2 )
+- create coherence clusters ( 12.1.2 )
 - create File or JDBC Persistence Store
-- create JMS Server
-- create JMS Module
-- create JMS subdeployment
-- create JMS connection factory
-- create JMS queue or topic
+- create JMS Server, Module, subdeployment, connection factory, JMS (distributed) queue or topic
 - create users with group
-- create SAF agents 
-- create SAF Remote Destinations
-- create SAf imported Destinations
-- create SAF objects
-- create Foreign Servers
-- create Foreign Servers entries
+- create SAF agents, Remote Destinations, imported Destinations, SAF objects
+- create Foreign Servers + entries
 - run every wlst script with the flexible WLST define
 - deploy an OSB project to the OSB server
 
@@ -118,32 +110,21 @@ Contains WebLogic Facter which displays the following
 
 - Middleware homes
 - Oracle Software
-- BSU patches
-- Opatch patches
-- Domains
+- BSU & OPatch patches
 - Domain configuration ( deployments, datasource, JMS, SAF)
-- running nodemanagers
-- running WebLogic servers
 
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/facts.png)
 
 ### My Files folder of the wls module
      1068506707 wls1036_generic.jar
       922712414 ofm_wls_generic_12.1.2.0.0_disk1_1of1.zip  
-     1887405692 jdevstudio11116install.jar
      1904618055 jdevstudio11117install.jar
       375895263 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
-     1149088683 ofm_osb_generic_11.1.1.6.0_disk1_1of1.zip
      1195403620 ofm_osb_generic_11.1.1.7.0_disk1_1of1.zip
-     1629875643 ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip
-     1291863724 ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip
      1720182214 ofm_soa_generic_11.1.1.7.0_disk1_1of2.zip
      1292438758 ofm_soa_generic_11.1.1.7.0_disk1_2of2.zip
         1024644 p13573621_1036_Generic.zip
-       17283347 p14389126_111160_Generic.zip
-      653488012 p14406487_111160_Generic.zip
        42264472 p14736139_1036_Generic.zip
-      208538583 soa-jdev-extension_11116.zip
       300343386 soa-jdev-extension_11117.zip
      2077610918 ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip
      2052379536 ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip
@@ -160,66 +141,40 @@ puppet module install fiddyspence-sysctl
 install the following module to set the database user limits parameters  
 puppet module install erwbgy-limits  
 
-     # Controls the default maxmimum size of a mesage queue
      sysctl { 'kernel.msgmnb':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '65536',
+       ensure => 'present', permanent => 'yes', value => '65536',
      }
    
-     # Controls the maximum size of a message, in bytes
      sysctl { 'kernel.msgmax':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '65536',
+       ensure => 'present', permanent => 'yes', value => '65536',
      }
    
-     # Controls the maximum number of shared memory segments, in pages
      sysctl { 'kernel.shmmax':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '2147483648',
+       ensure => 'present', permanent => 'yes', value => '2147483648',
      }
    
-     # Controls the maximum shared segment size, in bytes
      sysctl { 'kernel.shmall':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '2097152',
+       ensure => 'present', permanent => 'yes', value => '2097152',
      }
    
      sysctl { 'fs.file-max':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '344030',
+       ensure => 'present', permanent => 'yes', value => '344030',
      }
    
-     # The interval between the last data packet sent (simple ACKs are not considered data) and the first keepalive probe
      sysctl { 'net.ipv4.tcp_keepalive_time':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '1800',
+       ensure => 'present', permanent => 'yes', value => '1800',
      }
    
-     # The interval between subsequential keepalive probes, regardless of what the connection has exchanged in the meantime
      sysctl { 'net.ipv4.tcp_keepalive_intvl':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '30',
+       ensure => 'present', permanent => 'yes', value => '30',
      }
    
-     # The number of unacknowledged probes to send before considering the connection dead and notifying the application layer
      sysctl { 'net.ipv4.tcp_keepalive_probes':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '5',
+       ensure => 'present', permanent => 'yes', value => '5',
      }
    
-     # The time that must elapse before TCP/IP can release a closed connection and reuse its resources. During this TIME_WAIT state, reopening the connection to the client costs less than establishing a new connection. By reducing the value of this entry, TCP/IP can release closed connections faster, making more resources available for new connections.
      sysctl { 'net.ipv4.tcp_fin_timeout':
-       ensure    => 'present',
-       permanent => 'yes',
-       value     => '30',
+       ensure => 'present', permanent => 'yes', value => '30',
      }
    
      class { 'limits':
@@ -273,7 +228,7 @@ WebLogic configuration examples
 	    $wls12cVersion = "1212"
 	  }
 	  case $operatingsystem {
-	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 	       $osOracleHome = "/opt/oracle/wls"
 	       $osMdwHome    = "/opt/oracle/wls/Middleware12cADF"
 	       $osWlHome     = "/opt/oracle/wls/Middleware12cADF/wlserver"
@@ -322,7 +277,7 @@ WebLogic configuration examples
       #$puppetDownloadMntPoint = "puppet:///middleware/"   
       $puppetDownloadMntPoint = "puppet:///modules/wls/" 
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -344,7 +299,7 @@ WebLogic configuration examples
       }
 
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, SLES, Debian: { 
             $mtimeParam = "1"
          }
          Solaris: { 
@@ -353,7 +308,7 @@ WebLogic configuration examples
       }
 
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 		  cron { 'cleanwlstmp' :
 		    command => "find /tmp -name '*.tmp' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/tmp_purge.log 2>&1",
 		    user    => oracle,
@@ -368,39 +323,11 @@ WebLogic configuration examples
 		    minute  => 30,
 		  }
 		 
-		  cron { 'oracle_common_lsinv' :
-		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_common_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 06,
-		    minute  => 31,
-		  }
-		 
-		  cron { 'oracle_osb1_lsinv' :
-		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_osb1_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 06,
-		    minute  => 32,
-		  }
-		 
 		  cron { 'oracle_soa1_lsinv' :
 		    command => "find ${osMdwHome}/Oracle_SOA1/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt'  -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_soa1_purge.log 2>&1",
 		    user    => oracle,
 		    hour    => 06,
 		    minute  => 33,
-		  }
-		 
-		  cron { 'oracle_common_opatch' :
-		    command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_common_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 06,
-		    minute  => 34,
-		  }
-		 
-		  cron { 'oracle_osb1_opatch' :
-		    command => "find ${osMdwHome}/Oracle_OSB1/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_osb_purge.log 2>&1",
-		    user    => oracle,
-		    hour    => 06,
-		    minute  => 35,
 		  }
 		 
 		  cron { 'oracle_soa1_opatch' :
@@ -475,7 +402,6 @@ WebLogic configuration examples
          require      => Wls::Installwls['11gPS5'],
        }
     
-    
        wls::installosb{'osbPS6':
          osbFile      => 'ofm_osb_generic_11.1.1.7.0_disk1_1of1.zip',
          require      => Wls::Bsupatch['p14736139'],
@@ -510,7 +436,7 @@ WebLogic configuration examples
 	  #  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
 	
 	  case $operatingsystem {
-	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 	       $osOracleHome = "/opt/oracle/wls"
 	       $osMdwHome    = "/opt/oracle/wls/Middleware11gR1"
 	       $osWlHome     = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
@@ -584,7 +510,6 @@ WebLogic configuration examples
 	    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
 	  }
 	
-	
 	  Wls::Installsoa {
 	    mdwHome                => $osMdwHome,
 	    wlHome                 => $osWlHome,
@@ -599,7 +524,7 @@ WebLogic configuration examples
 	  # install
 	  wls::installwls{'11gPS5':}
 	
-		# weblogic patch
+	  # weblogic patch
 	  wls::bsupatch{'p14736139':
 	     patchId      => 'HYKC',    
 	     patchFile    => 'p14736139_1036_Generic.zip',  
@@ -625,14 +550,12 @@ WebLogic configuration examples
 	     require       =>  Wls::Installwcc['wccPS6'],
 	  }
 	
-	
 	  #nodemanager configuration and starting
 	  wls::nodemanager{'nodemanager11g':
 	    listenPort  => '5556',
 	    logDir      => $logsDir,
 	    require     => Wls::Installsoa['soaPS6'],
 	  }
-	
 	}
     
     class wls1036osb{
@@ -640,13 +563,12 @@ WebLogic configuration examples
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
-    
       if $wls11gVersion == undef {
         $wls11gVersion = "1036"
       }
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -685,7 +607,6 @@ WebLogic configuration examples
         group        => $group,    
         downloadDir  => $downloadDir, 
       }
-    
       
       Wls::Nodemanager {
         wlHome       => $osWlHome,
@@ -708,7 +629,7 @@ WebLogic configuration examples
       # install
       wls::installwls{'11gPS5':}
     
-    	# weblogic patch
+      # weblogic patch
       wls::bsupatch{'p14736139':
          patchId      => 'HYKC',    
          patchFile    => 'p14736139_1036_Generic.zip',  
@@ -726,7 +647,6 @@ WebLogic configuration examples
          logDir      => '/data/logs',
          require     => Wls::Installosb['osbPS5'],
        }
-    
     }
  
 	class jdeveloper11g_1212_soa {
@@ -758,7 +678,6 @@ WebLogic configuration examples
 	  if $jdkWls11gJDK == undef {
 	    $jdkWls11gJDK = 'jdk1.7.0_25'
 	  }
-	
 	  $user         = "oracle"
 	  $group        = "dba"
 	  $downloadDir  = "/data/install"
@@ -782,11 +701,9 @@ WebLogic configuration examples
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
-    
       if $wls11gVersion == undef {
         $wls11gVersion = "1036"
       }
-    
       $osOracleHome = "/opt/wls"
       $osMdwHome    = "/opt/wls/Middleware11gR1"
       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
@@ -863,20 +780,19 @@ WebLogic configuration examples
 	
 	  $wlsDomainName   = "adf"
 	  $osTemplate      = "adf"
-	
 	  $adminListenPort = "7001"
 	  $nodemanagerPort = "5556"
 	  $address         = "localhost"
 	
 	  case $operatingsystem {
-	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 	       $osOracleHome = "/opt/oracle/wls"
 	       $osMdwHome    = "/opt/oracle/wls/Middleware12cADF"
 	       $osWlHome     = "/opt/oracle/wls/Middleware12cADF/wlserver"
 	       $user         = "oracle"
 	       $group        = "dba"
 	       $downloadDir  = "/data/install"
-	       $logDir      = "/data/logs" 
+	       $logDir       = "/data/logs" 
 	     }
 	     windows: { 
 	       $osOracleHome = "c:/oracle"
@@ -891,7 +807,7 @@ WebLogic configuration examples
 	  }
 	
 	  case $operatingsystem {
-	     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 	       $userConfigDir = '/home/oracle'
 	     }
 	     Solaris: { 
@@ -908,7 +824,6 @@ WebLogic configuration examples
 	   # rcu wc repository schema password
 	   $reposPassword   = hiera('database_test_rcu_dev_password')
 	   $sysPassword     = hiera('database_test_sys_password')
-	
 	
 		#   wls::utils::rcu{ "RCU_12c dev3 delete":
 		#                   product                => 'adf',
@@ -966,7 +881,6 @@ WebLogic configuration examples
 	     domain     => $wlsDomainName,   	 
 	     require    => Wls::Wlsdomain['adfDomain12c'],
 	   }  
-	  
 	
 	  # default parameters for the wlst scripts
 	  Wls::Wlstexec {
@@ -992,7 +906,6 @@ WebLogic configuration examples
 	                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
 	                      "wlsServer  = 'AdminServer'"],
 	     require     => Wls::Nodemanager['nodemanager12c'];
-	
 	  }
 	
 	  # create Server template for Dynamic Clusters 
@@ -1133,47 +1046,76 @@ WebLogic configuration examples
 	                      ],
 	     require     => Wls::Wlstexec['createJmsErrorQueueforJmsModule'];
 	  }
+
+	  # create Server template for Dynamic Coherence Clusters 
+	  wls::wlstexec { 
+	    'createServerTemplateCoherence':
+	     wlstype       => "server_templates",
+	     wlsObjectName => "serverTemplateCoherence",
+	     script        => 'createServerTemplateCluster.py',
+	     params        =>  ["server_template_name          = 'serverTemplateCoherence'",
+	                        "server_template_listen_port   = 7200",
+	                        "dynamic_server_name_arguments ='-XX:PermSize=128m -XX:MaxPermSize=256m -Xms512m -Xmx1024m'"],
+	     require       => Wls::Wlstexec['createJmsQueueforJmsModule'];
+	  }
+	
+	  # create Dynamic Coherence Cluster 
+	  wls::wlstexec { 
+	    'createDynamicClusterCoherence':
+	     wlstype       => "cluster",
+	     wlsObjectName => "dynamicClusterCoherence",
+	     script        => 'createDynamicCluster.py',
+	     params        =>  ["server_template_name       = 'serverTemplateCoherence'",
+	                        "dynamic_cluster_name       = 'dynamicClusterCoherence'",
+	                        "dynamic_nodemanager_match  = 'LocalMachine'",
+	                        "dynamic_server_name_prefix = 'dynamic_coherence_server_'"],
+	     require       => Wls::Wlstexec['createServerTemplateCoherence'];
+	  }
+	
+	  # create Coherence Cluster 
+	  wls::wlstexec { 
+	    'createClusterCoherence':
+	     wlstype       => "coherence",
+	     wlsObjectName => "clusterCoherence",
+	     script        => 'createCoherenceCluster.py',
+	     params        =>  ["coherence_cluster_name = 'clusterCoherence'",
+	                        "target                 = 'dynamicClusterCoherence'",
+	                        "targetType             = 'Cluster'",
+	                        "storage_enabled        = true",
+	                        "unicast_address        = 'localhost'",
+	                        "unicast_port           = 8088",
+	                        "multicast_address      = '231.1.1.1'",
+	                        "multicast_port         = 33387",
+	                        "machines               = ['localhost']"],
+	     require       => Wls::Wlstexec['createDynamicClusterCoherence'];
+	  }
 	}
     
     class wls_osb_soa_domain{
     
-    
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
-    
       $wlsDomainName   = "osbSoaDomain"
       $osTemplate      = "osb_soa"
       $adminListenPort = "7001"
       $nodemanagerPort = "5556"
       $address         = "localhost"
-    
      
       # rcu soa repository
       $reposUrl        = "jdbc:oracle:thin:@dbagent1.alfa.local:1521/test.oracle.com"
-    
-      if $hostname == 'devagent1' {
-        $reposPrefix     = "DEV"
-    
-      } elsif $hostname == 'devagent4' {
-        $reposPrefix     = "DEV2"
-    
-      } else {
-        $reposPrefix     = "DEV"
-      }
+      $reposPrefix     = "DEV"
       # rcu soa repository schema password
       $reposPassword   = "Welcome02"
-    
-     
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
            $osOracleHome  = "/opt/wls"
            $osMdwHome     = "/opt/wls/Middleware11gR1"
            $osWlHome      = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user          = "oracle"
            $group         = "dba"
-           $downloadDir   = "/data/install/"
+           $downloadDir   = "/data/install"
            $userConfigDir = '/home/oracle'
            $logDir        = "/data/logs"
          }
@@ -1189,7 +1131,6 @@ WebLogic configuration examples
            $logDir        = "c:/oracle/logs"       
          }
       }
-    
     
       # install SOA OSB domain
       wls::wlsdomain{'osbSoaDomain':
@@ -1212,7 +1153,6 @@ WebLogic configuration examples
         reposPrefix     => $reposPrefix,
         reposPassword   => $reposPassword,
       }
-    
     
       # default parameters for the wlst scripts
       Wls::Wlstexec {
@@ -1278,25 +1218,9 @@ WebLogic configuration examples
         logDir       => $logDir,
         require      => Wls::Storeuserconfig['osbSoaDomain_keys'],
       }
-    
-      wls::changefmwlogdir{
-       'soa_server1':
-        wlsServer    => "soa_server1",
-        logDir       => $logDir,
-        require      => Wls::Changefmwlogdir['AdminServer'],
-      }
-    
-      wls::changefmwlogdir{
-       'osb_server1':
-        wlsServer    => "osb_server1",
-        logDir       => $logDir,
-        require      => Wls::Changefmwlogdir['soa_server1'],
-      }
-    
     }
     
 	class wls_wc_wcc_bpm_domain{
-	
 	
 	  if $jdkWls11gJDK == undef {
 	    $jdkWls11gJDK = 'jdk1.7.0_25'
@@ -1311,13 +1235,12 @@ WebLogic configuration examples
 	  #$osTemplate      = "wc"
 	  $osTemplate      = "wc_wcc_bpm"
 	
-	
 	  $adminListenPort = "7001"
 	  $nodemanagerPort = "5556"
 	  $address         = "localhost"
 	
 	  case $operatingsystem {
-	     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 	       $userConfigDir = '/home/oracle'
 	     }
 	     Solaris: { 
@@ -1336,7 +1259,7 @@ WebLogic configuration examples
 	  $reposPassword   = hiera('database_test_rcu_dev_password')
 	 
 	  case $operatingsystem {
-	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 	       $osOracleHome  = "/opt/oracle/wls"
 	       $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
 	       $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
@@ -1356,7 +1279,6 @@ WebLogic configuration examples
 	       $logDir        = "c:/oracle/logs" 
 	     }
 	  }
-	
 	
 	  # install WC WCC BPM domain
 	  wls::wlsdomain{'wcWccBpmDomain':
@@ -1420,8 +1342,6 @@ WebLogic configuration examples
 	    downloadDir   => $downloadDir, 
 	    require       => Wls::Wlstexec['startWCAdminServer'],
 	  }
-	
-	
 	}
     
     class wls_osb_domain{
@@ -1429,22 +1349,20 @@ WebLogic configuration examples
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
-    
       $wlsDomainName   = "osbDomain"
       $osTemplate      = "osb"
       $adminListenPort = "7001"
       $nodemanagerPort = "5556"
       $address         = "localhost"
-    
      
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
            $osOracleHome = "/opt/wls"
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
            $group        = "dba"
-           $downloadDir  = "/data/install/"
+           $downloadDir  = "/data/install"
            $userConfigDir = '/home/oracle'
            $logDir        = "/data/logs"
          }
@@ -1455,7 +1373,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
-           $downloadDir  = "c:\\temp\\"
+           $downloadDir  = "c:\\temp"
            $userConfigDir = "c:/oracle"
            $logDir        = "c:/oracle/logs"  
          }
@@ -1506,34 +1424,14 @@ WebLogic configuration examples
          require     => Wls::Wlsdomain['osbDomain'];
       }
     
-      # create keystores for automatic WLST login
-      wls::storeuserconfig{
-       'osbDomain_keys':
-        wlHome        => $osWlHome,
-        fullJDKName   => $jdkWls11gJDK,
-        domain        => $wlsDomainName, 
-        address       => $address,
-        wlsUser       => "weblogic",
-        password      => "weblogic1",
-        port          => $adminListenPort,
-        user          => $user,
-        group         => $group,
-        userConfigDir => $userConfigDir, 
-        downloadDir   => $downloadDir, 
-        require       => Wls::Wlstexec['startOSBAdminServer'],
-      }
-    
-    
       Wls::Changefmwlogdir {
         mdwHome        => $osMdwHome,
         user           => $user,
         group          => $group,
         address        => $address,
         port           => $adminListenPort,
-    #    wlsUser        => "weblogic",
-    #    password       => "weblogic1",
-        userConfigFile => '/home/oracle/oracle-osbDomain-WebLogicConfig.properties',
-        userKeyFile    => '/home/oracle/oracle-osbDomain-WebLogicKey.properties',
+        wlsUser        => "weblogic",
+        password       => "weblogic1",
         downloadDir    => $downloadDir, 
       }
     
@@ -1541,21 +1439,9 @@ WebLogic configuration examples
        'AdminServer':
         wlsServer    => "AdminServer",
         logDir       => $logDir,
-        require      => Wls::Storeuserconfig['osbDomain_keys'],
+        require      => Wls::Wlstexec['startOSBAdminServer'],
       }
-    
-    
-      wls::changefmwlogdir{
-       'osb_server1':
-        wlsServer    => "osb_server1",
-        logDir       => $logDir,
-        require      => Wls::Changefmwlogdir['AdminServer'],
-      }
-    
-    
     }
-  
-
     
     class wls_OSB_application_JDBC{
     
@@ -1563,29 +1449,18 @@ WebLogic configuration examples
         $jdkWls11gJDK = 'jdk1.7.0_09'
       }
     
-      if $hostname == 'devagent1' {
+      $userConfigFile  = '/home/oracle/oracle-osbSoaDomain-WebLogicConfig.properties'
+      $userKeyFile     = '/home/oracle/oracle-osbSoaDomain-WebLogicKey.properties'
     
-        $userConfigFile  = '/home/oracle/oracle-osbSoaDomain-WebLogicConfig.properties'
-        $userKeyFile     = '/home/oracle/oracle-osbSoaDomain-WebLogicKey.properties'
-    
-        $wlsDomainName   = 'osbSoaDomain'
-    
-      } elsif $hostname == 'devagent2' {
-    
-        $userConfigFile  = '/home/oracle/oracle-osbDomain-WebLogicConfig.properties'
-        $userKeyFile     = '/home/oracle/oracle-osbDomain-WebLogicKey.properties'
-    
-        $wlsDomainName   = 'osbDomain'
-      } 
-    
+      $wlsDomainName   = 'osbSoaDomain'
     
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
            $group        = "dba"
-           $downloadDir  = "/data/install/"
+           $downloadDir  = "/data/install"
          }
          windows: { 
            $osMdwHome    = "c:/oracle/wls11g"
@@ -1593,7 +1468,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
-           $downloadDir  = "c:\\temp\\"
+           $downloadDir  = "c:\\temp"
          }
       }
     
@@ -1679,40 +1554,26 @@ WebLogic configuration examples
         downloadDir    => $downloadDir,
         require        => Wls::Resourceadapter['DbAdapter_hr'];
       }
-    
-    
     }  
     
     class wls_OSB_application_JMS{
-    
     
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
     
-      if $hostname == 'devagent1' {
+      $userConfigFile  = '/home/oracle/oracle-osbSoaDomain-WebLogicConfig.properties'
+      $userKeyFile     = '/home/oracle/oracle-osbSoaDomain-WebLogicKey.properties'
     
-        $userConfigFile  = '/home/oracle/oracle-osbSoaDomain-WebLogicConfig.properties'
-        $userKeyFile     = '/home/oracle/oracle-osbSoaDomain-WebLogicKey.properties'
-    
-        $wlsDomainName   = 'osbSoaDomain'
-    
-      } elsif $hostname == 'devagent2' {
-    
-        $userConfigFile  = '/home/oracle/oracle-osbDomain-WebLogicConfig.properties'
-        $userKeyFile     = '/home/oracle/oracle-osbDomain-WebLogicKey.properties'
-    
-        $wlsDomainName   = 'osbDomain'
-      } 
-    
-    
+      $wlsDomainName   = 'osbSoaDomain'
+     
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
            $osMdwHome    = "/opt/wls/Middleware11gR1"
            $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
            $user         = "oracle"
            $group        = "dba"
-           $downloadDir  = "/data/install/"
+           $downloadDir  = "/data/install"
          }
          windows: { 
            $osMdwHome    = "c:/oracle/wls11g"
@@ -1720,7 +1581,7 @@ WebLogic configuration examples
            $user         = "Administrator"
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
-           $downloadDir  = "c:\\temp\\"
+           $downloadDir  = "c:\\temp"
          }
       }
     
@@ -1826,7 +1687,6 @@ WebLogic configuration examples
          require       => Wls::Wlstexec['createJmsServerOSBServer2'];
       }
     
-    
       # create jms subdeployment for jms module 
       wls::wlstexec { 
         'createJmsSubDeploymentWLSforJmsModule':
@@ -1840,7 +1700,6 @@ WebLogic configuration examples
                           ],
          require       => Wls::Wlstexec['createJmsModuleOSBServer'];
      }
-    
     
       # create jms subdeployment for jms module 
       wls::wlstexec { 
@@ -1897,8 +1756,6 @@ WebLogic configuration examples
         require        => Wls::Wlstexec['createJmsConnectionFactoryforJmsModule'];
       }
     
-    
-    
       # create jms error Queue for jms module 
       wls::wlstexec { 
       
@@ -1920,47 +1777,4 @@ WebLogic configuration examples
                           ],
          require     => Wls::Resourceadapter['JmsAdapter_hr'];
       }
-    
-      # create jms Queue for jms module 
-      wls::wlstexec { 
-        'createJmsQueueforJmsModule':
-         wlstype       => "jmsobject",
-         wlsObjectName => "Queue1",
-         script        => 'createJmsQueueOrTopic.py',
-         params        => ["subDeploymentName   = 'JmsServer'",
-                          "jmsModuleName       = 'jmsModule'",
-                          "jmsName             = 'Queue1'",
-                          "jmsJNDIName         = 'jms/Queue1'",
-                          "jmsType             = 'queue'",
-                          "distributed         = 'false'",
-                          "balancingPolicy     = 'xxxxx'",
-                          "useRedirect         = 'true'",
-                          "limit               = '3'",
-                          "policy              = 'Redirect'",
-                          "errorObject         = 'ErrorQueue'"
-                          ],
-         require     => Wls::Wlstexec['createJmsErrorQueueforJmsModule'];
-      }
-    
-      # create jms Topic for jms module 
-      wls::wlstexec { 
-        'createJmsTopicforJmsModule':
-         wlstype       => "jmsobject",
-         wlsObjectName => "Topic1",
-         script        => 'createJmsQueueOrTopic.py',
-         params        => ["subDeploymentName   = 'JmsServer'",
-                          "jmsModuleName       = 'jmsModule'",
-                          "jmsName             = 'Topic1'",
-                          "jmsJNDIName         = 'jms/Topic1'",
-                          "jmsType             = 'topic'",
-                          "distributed         = 'false'",
-                          "balancingPolicy     = 'xxxxx'",
-                          "useRedirect         = 'false'",
-                          "limit               = 'xxxxx'",
-                          "policy              = 'xxxxx'",
-                          "errorObject         = 'xxxxx'"
-                          ],
-         require     => Wls::Wlstexec['createJmsQueueforJmsModule'];
-      }
-    
     }  

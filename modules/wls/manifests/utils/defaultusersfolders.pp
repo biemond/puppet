@@ -14,7 +14,7 @@ define wls::utils::defaultusersfolders(
 
 
 		  case $operatingsystem {
-		     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+		     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
 		
 		        $execPath           = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
 		       
@@ -46,7 +46,7 @@ define wls::utils::defaultusersfolders(
 
 		   # for linux , create a oracle user plus a dba group
 		   case $operatingsystem {
-		      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+		      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 		        if ! defined(Group[$group]) {
 		          group { $group : 
 		                  ensure => present,
@@ -89,7 +89,7 @@ define wls::utils::defaultusersfolders(
 		   }
 	   # create all folders 
 	   case $operatingsystem {
-	      CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {    
+	      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {    
 	          exec { 'create ${oracleHome} directory':
 	                  command => "mkdir -p ${oracleHome}",
 	                  unless  => "test -d ${oracleHome}",
@@ -143,7 +143,7 @@ define wls::utils::defaultusersfolders(
 
        if (  $oraInventory != undef ) {
          case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: {             
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {             
              # also set permissions on oraInventory
              if ! defined(File[$oraInventory]) {
                file { $oraInventory:

@@ -5,7 +5,7 @@ def get_opatch_patches(name)
 
     os = Facter.value(:operatingsystem)
 
-    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
       output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
     elsif ["Solaris"].include?os
       output3 = Facter::Util::Resolution.exec("su - oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc\"")
@@ -29,7 +29,7 @@ def get_opatch_version(name)
 
     os = Facter.value(:operatingsystem)
 
-    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
       opatchOut = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch version\"")
     elsif ["Solaris"].include?os
       opatchOut = Facter::Util::Resolution.exec("su - oracle -c \""+name+"/OPatch/opatch version\"")
@@ -49,7 +49,7 @@ end
 
 def get_orainst_loc()
   os = Facter.value(:operatingsystem)
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian"].include?os
+  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
     if FileTest.exists?("/etc/oraInst.loc")
       str = ""
       output = File.read("/etc/oraInst.loc")

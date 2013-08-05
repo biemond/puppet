@@ -9,7 +9,7 @@ define wls::utils::orainst( $oraInventory    = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
         $oraInstPath        = "/etc"
      }
      Solaris: { 
@@ -21,7 +21,7 @@ define wls::utils::orainst( $oraInventory    = undef,
    }
    
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian,Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
         if ! defined(File["${oraInstPath}/oraInst.loc"]) {
          file { "${oraInstPath}/oraInst.loc":
            ensure  => present,
