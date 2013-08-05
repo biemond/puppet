@@ -291,10 +291,6 @@ if ( $continueEntry ) {
         }     
 
 
-
-
-
-
      }
      windows: { 
         # deploy the plan and update the adapter  

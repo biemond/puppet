@@ -78,7 +78,7 @@ define wls::utils::rcu(  $product                 = 'adf',
    }
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
        $script   = "${oracleHome}/bin/rcu"
        $javaHome = "/usr/java/${fullJDKName}"
 

@@ -188,7 +188,7 @@ if ( $continue ) {
         }    
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
               exec { "rm ${path}/${title}${script}":
                  command => "rm -I ${path}/${title}${script}",
                  require => Exec["execwlst ${title}${script}"],

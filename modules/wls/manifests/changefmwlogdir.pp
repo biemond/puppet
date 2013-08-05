@@ -105,7 +105,7 @@ define wls::changefmwlogdir ($mdwHome        = undef,
         }    
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
             exec { "rm ${path}/${title}changeFMWLogFolder.py":
               command => "rm -I ${path}/${title}changeFMWLogFolder.py",

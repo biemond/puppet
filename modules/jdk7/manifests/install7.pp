@@ -13,7 +13,7 @@ define jdk7::install7( $version     =  "7u25" ,
     }
 
     case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
         $installVersion   = "linux"
         $installExtension = ".tar.gz"
         $path             = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'

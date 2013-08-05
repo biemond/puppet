@@ -12,7 +12,7 @@ define javaexec ($path        = undef,
 
    # install jdk
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
       $execPath         = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
 			$javaInstall      = "/usr/java"
@@ -58,7 +58,7 @@ define javaexec ($path        = undef,
       }
 
       case $operatingsystem {
-        CentOS, RedHat, OracleLinux: {
+        CentOS, RedHat, OracleLinux, SLES: {
 			    # set the java default
           exec { "default java alternatives ${fullversion}":
             command => "alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",

@@ -280,7 +280,7 @@ if ( $continue ) {
 
 		   # install weblogic
 		   case $operatingsystem {
-		     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+		     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 		        exec { "installwls ${path}/${wlsFile}":
 		          command     => "${javaCommand} ${path}/${wlsFile} -mode=silent -silent_xml=${path}/silent${version}.xml",
 		          environment => ["JAVA_VENDOR=Sun",

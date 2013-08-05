@@ -117,7 +117,7 @@ define wls::storeuserconfig( $wlHome        = undef,
         }    
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
 
               exec { "rm ${path}/${title}storeUserConfig.py":
                 command => "rm -I ${path}/${title}storeUserConfig.py",
