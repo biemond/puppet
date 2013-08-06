@@ -10,7 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
-- 1.0.8 added Suse SLES as Operating System, 12.1.2 support for Coherence CLuster, see class wls12c_adf_domain, Added Distributed Queue/Topics to Facts  
+- 1.0.8 added Suse SLES as Operating System, 12.1.2 support for Coherence CLuster, see class wls12c_adf_domain, Added Server, Distributed Queue/Topics to Facts  
 - 1.0.7 12.1.2 Fully support for Dynamic Cluster and Elastic JMS, Scripts for creating server templates and dynamic clusters , see class wls12c_adf_domain  
 - 1.0.6 Added 12.1.2 Domain features to the 'adf' domain like coherence, jax-ws advanced + soap over jms  
 - 1.0.5 JDeveloper 12.1.2 with soa plugin install for Linux + small bug fixes
@@ -29,14 +29,9 @@ Version updates
 - 0.9.3 added storeUserConfig(WLST), this way don't need to provide username/password for the wlst scripts plus small bug fixes in check_artifacts   
 - 0.9.2 added (FMW & WLS ) log folder location to the domain and nodemanager   
 
-for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
-
-Repository Creation Utility for FMW 11g (RCU)
----------------------------------------------
-For the RCU configuration of the Soa Suite or WebCenter you can use my oradb puppet module 
-
-Repository Creation Utility for FMW 12.1.2
-------------------------------------------
+Repository Creation Utility
+---------------------------
+For FMW 11g (RCU) For the RCU configuration of the Soa Suite or WebCenter you can use my oradb puppet module   
 RCU configuration of the FMW 12.1.2 is supported by this module and its done by the domain creation  
 
 Windows Puppet agents
@@ -44,15 +39,11 @@ Windows Puppet agents
 For windows puppet agents it is necessary to install unxutils tools and extract this on the c drive C:\unxutils  
 For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder).  
 For bsu patches facts you need to have the java bin folder in your path var of your system.  
-
 Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) and install this forge module on the puppet master<br>
 puppet module install puppetlabs/registry
 
-For other agents like Solaris, RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
-
 Oracle Big files and alternate download location
 ------------------------------------------------
-
 Some manifests like installwls.pp, opatch.pp, bsupatch.pp, installjdev, installosb, installsoa supports an alternative mountpoint for the big oracle setup/install files.  
 When not provided it uses the files location of the wls puppet module  
 else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/wls/" (default) or  "puppet:///middleware/" 
@@ -74,16 +65,11 @@ WLS WebLogic Features
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 - can start the AdminServer for WLST Domain configuration 
 - add JCA resource adapter plan + Entries
-- create server templates ( 12.1.2 )
-- create dynamic clusters ( 12.1.2 )
-- create coherence clusters ( 12.1.2 )
+- create server templates, dynamic clusters,coherence clusters ( all 12.1.2 )
 - create File or JDBC Persistence Store
-- create JMS Server, Module, subdeployment, connection factory, JMS (distributed) queue or topic
-- create users with group
+- create JMS Server, Module, subdeployment, connection factory, JMS (distributed) queue or topic,Foreign Servers + entries  
 - create SAF agents, Remote Destinations, imported Destinations, SAF objects
-- create Foreign Servers + entries
 - run every wlst script with the flexible WLST define
-- deploy an OSB project to the OSB server
 
 Domain creation options
 -----------------------
@@ -98,7 +84,6 @@ all templates creates a WebLogic domain, log the output and do a domain pack in 
 - domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
 - domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
 
-
 ![Oracle WebLogic Console](https://raw.github.com/biemond/puppet/master/modules/wls/wlsconsole.png)
 
 ![Oracle Enterprise Manager Console](https://raw.github.com/biemond/puppet/master/modules/wls/em.png)
@@ -106,29 +91,16 @@ all templates creates a WebLogic domain, log the output and do a domain pack in 
 WLS WebLogic Facter
 -------------------
 
-Contains WebLogic Facter which displays the following  
-
-- Middleware homes
-- Oracle Software
-- BSU & OPatch patches
-- Domain configuration ( deployments, datasource, JMS, SAF)
+Contains WebLogic Facter which displays the following: Middleware homes, Oracle Software, BSU & OPatch patches, Domain configuration ( everything of a domain like deployments, datasource, JMS, SAF)
 
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/facts.png)
 
-### My Files folder of the wls module
-     1068506707 wls1036_generic.jar
-      922712414 ofm_wls_generic_12.1.2.0.0_disk1_1of1.zip  
-     1904618055 jdevstudio11117install.jar
-      375895263 oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip
-     1195403620 ofm_osb_generic_11.1.1.7.0_disk1_1of1.zip
-     1720182214 ofm_soa_generic_11.1.1.7.0_disk1_1of2.zip
-     1292438758 ofm_soa_generic_11.1.1.7.0_disk1_2of2.zip
-        1024644 p13573621_1036_Generic.zip
-       42264472 p14736139_1036_Generic.zip
-      300343386 soa-jdev-extension_11117.zip
-     2077610918 ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip
-     2052379536 ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip
-      202204151 ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip
+### My WLS module Files folder ( you need to download it yourself and agree to Oracle Licenses )
+WebLogic 11g + patches: wls1036_generic.jar, p13573621_1036_Generic.zip, p14736139_1036_Generic.zip  
+WebLogic 12.1.2: ofm_wls_generic_12.1.2.0.0_disk1_1of1.zip  
+IDE: jdevstudio11117install.jar, soa-jdev-extension_11117.zip, oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip  
+OSB + SOA software: ofm_osb_generic_11.1.1.7.0_disk1_1of1.zip, ofm_soa_generic_11.1.1.7.0_disk1_1of2.zip, ofm_soa_generic_11.1.1.7.0_disk1_2of2.zip    
+Webcenter software: ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip, ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip, ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip  
     
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/modulefiles.png)
     
@@ -141,53 +113,22 @@ puppet module install fiddyspence-sysctl
 install the following module to set the database user limits parameters  
 puppet module install erwbgy-limits  
 
-     sysctl { 'kernel.msgmnb':
-       ensure => 'present', permanent => 'yes', value => '65536',
-     }
-   
-     sysctl { 'kernel.msgmax':
-       ensure => 'present', permanent => 'yes', value => '65536',
-     }
-   
-     sysctl { 'kernel.shmmax':
-       ensure => 'present', permanent => 'yes', value => '2147483648',
-     }
-   
-     sysctl { 'kernel.shmall':
-       ensure => 'present', permanent => 'yes', value => '2097152',
-     }
-   
-     sysctl { 'fs.file-max':
-       ensure => 'present', permanent => 'yes', value => '344030',
-     }
-   
-     sysctl { 'net.ipv4.tcp_keepalive_time':
-       ensure => 'present', permanent => 'yes', value => '1800',
-     }
-   
-     sysctl { 'net.ipv4.tcp_keepalive_intvl':
-       ensure => 'present', permanent => 'yes', value => '30',
-     }
-   
-     sysctl { 'net.ipv4.tcp_keepalive_probes':
-       ensure => 'present', permanent => 'yes', value => '5',
-     }
-   
-     sysctl { 'net.ipv4.tcp_fin_timeout':
-       ensure => 'present', permanent => 'yes', value => '30',
-     }
+     sysctl { 'kernel.msgmnb': ensure => 'present', permanent => 'yes', value => '65536',}
+     sysctl { 'kernel.msgmax': ensure => 'present', permanent => 'yes', value => '65536',}
+     sysctl { 'kernel.shmmax': ensure => 'present', permanent => 'yes', value => '2147483648',}
+     sysctl { 'kernel.shmall': ensure => 'present', permanent => 'yes', value => '2097152',}
+     sysctl { 'fs.file-max': ensure => 'present', permanent => 'yes', value => '344030',}
+     sysctl { 'net.ipv4.tcp_keepalive_time': ensure => 'present', permanent => 'yes', value => '1800',}
+     sysctl { 'net.ipv4.tcp_keepalive_intvl': ensure => 'present', permanent => 'yes', value => '30',}
+     sysctl { 'net.ipv4.tcp_keepalive_probes': ensure => 'present', permanent => 'yes', value => '5',}
+     sysctl { 'net.ipv4.tcp_fin_timeout': ensure => 'present', permanent => 'yes', value => '30',}
    
      class { 'limits':
-       config => {
-                  '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
-                                },
+       config => {'*'       => { 'nofile'  => { soft => '2048'   , hard => '8192',   },},
                   'oracle'  => {  'nofile'  => { soft => '65535'  , hard => '65535',  },
                                   'nproc'   => { soft => '2048'   , hard => '2048',   },
-                                  'memlock' => { soft => '1048576', hard => '1048576',},
-                                },
-                  },
-       use_hiera => false,
-     }
+                                  'memlock' => { soft => '1048576', hard => '1048576',},},},
+       use_hiera => false,}
 
 WebLogic configuration examples
 -------------------------------
@@ -423,15 +364,12 @@ WebLogic configuration examples
     }
 
 	class wls1036_wc{
-	
 	  if $jdkWls11gJDK == undef {
 	    $jdkWls11gJDK = 'jdk1.7.0_25'
 	  }
-	
 	  if $wls11gVersion == undef {
 	    $wls11gVersion = "1036"
 	  }
-	                       
 	  $puppetDownloadMntPoint = "puppet:///middleware/"
 	  #  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
 	
@@ -559,14 +497,12 @@ WebLogic configuration examples
 	}
     
     class wls1036osb{
-    
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
       if $wls11gVersion == undef {
         $wls11gVersion = "1036"
       }
-     
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
            $osOracleHome = "/opt/wls"
@@ -1557,11 +1493,9 @@ WebLogic configuration examples
     }  
     
     class wls_OSB_application_JMS{
-    
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
-    
       $userConfigFile  = '/home/oracle/oracle-osbSoaDomain-WebLogicConfig.properties'
       $userKeyFile     = '/home/oracle/oracle-osbSoaDomain-WebLogicKey.properties'
     
@@ -1601,38 +1535,6 @@ WebLogic configuration examples
         downloadDir    => $downloadDir, 
       }
     
-      # create jdbc jms datasource for jms server 
-      wls::wlstexec { 
-        'createJdbcDatasourceJms':
-         wlstype       => "jdbc",
-         wlsObjectName => "jmsDS",
-         script        => 'createJdbcDatasource.py',
-         params        => ["dsName                      = 'jmsDS'",
-                          "jdbcDatasourceTargets       = 'AdminServer,osb_server1'",
-                          "dsJNDIName                  = 'jdbc/jmsDS'",
-                          "dsDriverName                = 'oracle.jdbc.OracleDriver'",
-                          "dsURL                       = 'jdbc:oracle:thin:@dbagent1.alfa.local:1521/test.oracle.com'",
-                          "dsUserName                  = 'jms'",
-                          "dsPassword                  = 'jms'",
-                          "datasourceTargetType        = 'Server'",
-                          "globalTransactionsProtocol  = 'None'"
-                          ],
-      }
-    
-      # create jdbc persistence store for jmsmodule 
-      wls::wlstexec { 
-        'createJdbcPersistenceStoreOSBServer':
-         wlstype       => "jdbcstore",
-         wlsObjectName => "jmsModuleJdbcPersistence",
-         script        => 'createJdbcPersistenceStore.py',
-         params        => ["jdbcStoreName = 'jmsModuleJdbcPersistence'",
-                          "serverTarget  = 'osb_server1'",
-                          "prefix        = 'jms1'",
-                          "datasource    = 'jmsDS'"
-                          ],
-         require     => Wls::Wlstexec['createJdbcDatasourceJms'];
-      }
-    
       # create file persistence store for osb_server1 
       wls::wlstexec { 
         'createFilePersistenceStoreOSBServer':
@@ -1642,7 +1544,6 @@ WebLogic configuration examples
          port          => $adminServerPort,
          params        =>  ["fileStoreName = 'jmsModuleFilePersistence'",
                           "serverTarget  = 'osb_server1'"],
-         require       => Wls::Wlstexec['createJdbcPersistenceStoreOSBServer'];
       }
       
       # create jms server for osb_server1 
@@ -1659,21 +1560,6 @@ WebLogic configuration examples
          require     => Wls::Wlstexec['createFilePersistenceStoreOSBServer'];
       }
     
-      # create jms server for osb_server1 
-      wls::wlstexec { 
-        'createJmsServerOSBServer2':
-         wlstype       => "jmsserver",
-         wlsObjectName => "jmsServer2",
-         script      => 'createJmsServer.py',
-         port        => $adminServerPort,
-         params      =>  ["storeName      = 'jmsModuleJdbcPersistence'",
-                          "serverTarget   = 'osb_server1'",
-                          "jmsServerName  = 'jmsServer2'",
-                          "storeType      = 'jdbc'",
-                          ],
-         require     => Wls::Wlstexec['createJmsServerOSBServer'];
-      }
-    
       # create jms module for osb_server1 
       wls::wlstexec { 
         'createJmsModuleOSBServer':
@@ -1684,7 +1570,7 @@ WebLogic configuration examples
                             "jmsModuleName  = 'jmsModule'",
                             "targetType     = 'Server'",
                            ],
-         require       => Wls::Wlstexec['createJmsServerOSBServer2'];
+         require       => Wls::Wlstexec['createJmsServerOSBServer'];
       }
     
       # create jms subdeployment for jms module 
