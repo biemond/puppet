@@ -103,6 +103,17 @@ module Puppet::Parser::Functions
                     end
                   end
 
+                elsif type == 'server'
+                  if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_servers') != :undefined
+                    servers =  lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_servers')
+                    unless servers.nil?
+                      if servers.include? wlsObject
+                        return true
+                      end
+                    end
+                  end
+                  
+                  
                 elsif type == 'server_templates'
                   if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_server_templates') != :undefined
                     server_templates =  lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_server_templates')

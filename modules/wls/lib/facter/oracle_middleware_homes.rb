@@ -327,6 +327,18 @@ def get_domain(name,i,wlsversion)
         k += 1            
       end
 
+      servers = ""
+      root.elements.each("server") do |svr|
+        servers += svr.elements['name'].text + ";"
+      end
+
+      Facter.add("#{prefix}_domain_#{n}_servers") do
+         setcode do
+           servers
+         end
+      end
+
+      
       server_templates = ""
       root.elements.each("server-template") do |svr_template|
         server_templates += svr_template.elements['name'].text + ";"
