@@ -63,6 +63,7 @@ define javaexec ($path        = undef,
           exec { "default java alternatives ${fullversion}":
             command => "alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
             require => File['/usr/java/default'],
+            unless  => "alternatives --display java | /bin/grep ${fullversion}",
           }
         }
         Ubuntu, Debian, SLES:{
@@ -70,6 +71,7 @@ define javaexec ($path        = undef,
           exec { "default java alternatives ${fullversion}":
             command => "update-alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
             require => File['/usr/java/default'],
+            unless  => "update-alternatives --list java | /bin/grep ${fullversion}",
           }
 
         }
@@ -78,7 +80,7 @@ define javaexec ($path        = undef,
         
       exec { "set urandom ${fullversion}":
        	command => "sed -i -e's/securerandom.source=file:\/dev\/urandom/securerandom.source=file:\/dev\/.\/urandom/g' /usr/java/${fullversion}/jre/lib/security/java.security",
-        onlyif  => "/bin/grep securerandom.source=file:/dev/urandom /usr/java/${fullversion}/jre/lib/security/java.security | /usr/bin/wc -l",
+        unless  => "/bin/grep '^securerandom.source=file:/dev/./urandom' /usr/java/${fullversion}/jre/lib/security/java.security",
         require => Exec["extract java ${fullversion}"],
       }
 
