@@ -1,0 +1,590 @@
+#
+# one machine setup with 12c database plus weblogic 12.1.2
+#
+# creates an ADF Domain with JAX-WS (advanced , soap), OWSM , Dynamic Cluster , Coherence plus Elastic JMS
+# creates an 12c Database with a 12.1.2 RCU schema
+#
+# needs  oradb, wls , orautils, fiddyspence-sysctl ,erwbgy-limits puppet modules
+#
+
+node 'wls12.alfa.local' inherits default {
+  
+   include os2, db12c2, wls12_adf2, wls12c_adf_domain2, orautils, maintenance
+   
+   Class['os2']  -> Class['wls12_adf2'] -> Class['db12c2'] -> Class['wls12c_adf_domain2'] -> Class['maintenance']
+
+}
+
+# operating settings for Database & Middleware
+class os2 {
+
+  notify{"wls12 node":}
+
+  $remove = [ "java-1.7.0-openjdk.x86_64", "java-1.6.0-openjdk.x86_64" ]
+
+  package { $remove:
+    ensure  => absent,
+  }
+
+  $install = [ 'binutils.x86_64', 'compat-libstdc++-33.x86_64', 'glibc.x86_64','ksh.x86_64','libaio.x86_64',
+               'libgcc.x86_64', 'libstdc++.x86_64', 'make.x86_64','compat-libcap1.x86_64', 'gcc.x86_64',
+               'gcc-c++.x86_64','glibc-devel.x86_64','libaio-devel.x86_64','libstdc++-devel.x86_64',
+               'sysstat.x86_64','unixODBC-devel','glibc.i686']
+               
+               
+  package { $install:
+    ensure  => present,
+  }
+
+
+  include jdk7
+
+  jdk7::install7{ 'jdk1.7.0_25':
+    version     =>  "7u25" , 
+    fullVersion =>  "jdk1.7.0_25", 
+    x64         =>  true,
+    downloadDir =>  "/data/install",
+  }
+
+  class { 'limits':
+    config => {
+               '*'       => { 'nofile'   => { soft => '2048'   , hard => '8192',   },},
+               'oracle'  => {  'nofile'  => { soft => '65536'  , hard => '65536',  },
+                               'nproc'   => { soft => '2048'   , hard => '16384',   },
+                               'memlock' => { soft => '1048576', hard => '1048576',},
+                               'stack'   => { soft => '10240'  ,},},
+               },
+    use_hiera => false,
+  }
+
+  sysctl { 'kernel.msgmnb':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.msgmax':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.shmmax':                 ensure => 'present', permanent => 'yes', value => '2588483584',}
+  sysctl { 'kernel.shmall':                 ensure => 'present', permanent => 'yes', value => '2097152',}
+  sysctl { 'fs.file-max':                   ensure => 'present', permanent => 'yes', value => '6815744',}
+  sysctl { 'net.ipv4.tcp_keepalive_time':   ensure => 'present', permanent => 'yes', value => '1800',}
+  sysctl { 'net.ipv4.tcp_keepalive_intvl':  ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'net.ipv4.tcp_keepalive_probes': ensure => 'present', permanent => 'yes', value => '5',}
+  sysctl { 'net.ipv4.tcp_fin_timeout':      ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'kernel.shmmni':                 ensure => 'present', permanent => 'yes', value => '4096', }
+  sysctl { 'fs.aio-max-nr':                 ensure => 'present', permanent => 'yes', value => '1048576',}
+  sysctl { 'kernel.sem':                    ensure => 'present', permanent => 'yes', value => '250 32000 100 128',}
+  sysctl { 'net.ipv4.ip_local_port_range':  ensure => 'present', permanent => 'yes', value => '9000 65500',}
+  sysctl { 'net.core.rmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.rmem_max':             ensure => 'present', permanent => 'yes', value => '4194304', }
+  sysctl { 'net.core.wmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.wmem_max':             ensure => 'present', permanent => 'yes', value => '1048576',}
+
+}
+
+
+class db12c2 {
+
+    $puppetDownloadMntPoint = "puppet:///database/"
+
+    oradb::installdb{ '12.1.0.1_Linux-x86-64':
+            version                => '12.1.0.1',
+            file                   => 'linuxamd64_12c_database',
+            databaseType           => 'SE',
+            oracleBase             => '/oracle',
+            oracleHome             => '/oracle/product/12.1/db',
+            user                   => 'oracle',
+            group                  => 'dba',
+            downloadDir            => '/data/install',
+            puppetDownloadMntPoint => $puppetDownloadMntPoint,  
+    }
+
+   oradb::net{ 'config net8':
+            oracleHome   => '/oracle/product/12.1/db',
+            version      => '12.1',
+            user         => 'oracle',
+            group        => 'dba',
+            downloadDir  => '/data/install',
+            require      => Oradb::Installdb['12.1.0.1_Linux-x86-64'],
+   }
+
+   oradb::listener{'start listener':
+            oracleBase   => '/oracle',
+            oracleHome   => '/oracle/product/12.1/db',
+            user         => 'oracle',
+            group        => 'dba',
+            action       => 'start',  
+            require      => Oradb::Net['config net8'],
+   }
+
+   oradb::database{ 'testDb': 
+                    oracleBase              => '/oracle',
+                    oracleHome              => '/oracle/product/12.1/db',
+                    version                 => '12.1',
+                    user                    => 'oracle',
+                    group                   => 'dba',
+                    downloadDir             => '/data/install',
+                    action                  => 'create',
+                    dbName                  => 'test',
+                    dbDomain                => 'oracle.com',
+                    sysPassword             => hiera('database_test_sys_password'),
+                    systemPassword          => hiera('database_test_system_password'),
+                    dataFileDestination     => "/oracle/oradata",
+                    recoveryAreaDestination => "/oracle/flash_recovery_area",
+                    characterSet            => "AL32UTF8",
+                    nationalCharacterSet    => "UTF8",
+                    initParams              => "open_cursors=1000,processes=600,job_queue_processes=4,compatible=12.1.0.0.0",
+                    sampleSchema            => 'TRUE',
+                    memoryPercentage        => "40",
+                    memoryTotal             => "800",
+                    databaseType            => "MULTIPURPOSE",                         
+                    require                 => Oradb::Listener['start listener'],
+   }
+
+   oradb::dbactions{ 'start testDb': 
+                   oracleHome              => '/oracle/product/12.1/db',
+                   user                    => 'oracle',
+                   group                   => 'dba',
+                   action                  => 'start',
+                   dbName                  => 'test',
+                   require                 => Oradb::Database['testDb'],
+   }
+
+
+
+}
+
+
+class wls12_adf2{
+
+
+  if $jdkWls12cJDK == undef {
+    $jdkWls12cJDK = 'jdk1.7.0_25'
+  }
+
+  $osOracleHome    = "/oracle"
+  $osMdwHome       = "/oracle/product/Middleware12c"
+  $osWlHome        = "/oracle/product/Middleware12c/wlserver"
+  $user            = "oracle"
+  $group           = "dba"
+  $downloadDir     = "/data/install"
+
+  $puppetDownloadMntPoint = "puppet:///middleware/"
+
+  # set the adf defaults
+  Wls::Installadf {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    oracleHome             => $osOracleHome,
+    fullJDKName            => $jdkWls12cJDK, 
+    user                   => $user,
+    group                  => $group,   
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+  
+
+  wls::installadf{'adf12c':
+     adfFile      => 'ofm_wls_jrf_generic_12.1.2.0.0_disk1_1of1.zip',
+  } 
+
+} 
+
+
+class wls12c_adf_domain2{
+
+
+  if $jdkWls12gJDK == undef {
+    $jdkWls12gJDK = 'jdk1.7.0_25'
+  }
+
+  $wlsDomainName   = "Wls12c"
+  $osTemplate      = "adf"
+
+  $adminListenPort = "7001"
+  $nodemanagerPort = "5556"
+  $address         = "localhost"
+
+  $osOracleHome    = "/oracle"
+  $osMdwHome       = "/oracle/product/Middleware12c"
+  $osWlHome        = "/oracle/product/Middleware12c/wlserver"
+
+  $user         = "oracle"
+  $group        = "dba"
+  $downloadDir  = "/data/install"
+  $logDir       = "/data/logs" 
+
+  case $operatingsystem {
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+       $userConfigDir = '/home/oracle'
+     }
+     Solaris: { 
+       $userConfigDir = '/export/home/oracle'
+     }
+   }
+
+   # rcu repository
+   $reposUrl        = "jdbc:oracle:thin:@localhost:1521/test.oracle.com"
+   $rcuDbUrl        = "localhost:1521:test"
+   $reposPrefix     = "DEV"
+   # rcu repository schema password
+   $reposPassword   = hiera('database_test_rcu_dev_password')
+   $sysPassword     = hiera('database_test_sys_password')
+
+#   wls::utils::rcu{ "RCU_12c DEV delete":
+#                   product                => 'adf',
+#                   oracleHome             => "${osMdwHome}/oracle_common",
+#                   fullJDKName            => $jdkWls12gJDK,
+#                   user                   => $user,
+#                   group                  => $group,
+#                   downloadDir            => $downloadDir,
+#                   action                 => 'delete',
+#                   dbUrl                  => $rcuDbUrl,  
+#                   sysPassword            => $sysPassword,
+#                   schemaPrefix           => $reposPrefix,
+#                   reposPassword          => $reposPassword,
+#  }
+#
+
+  # install domain and in 12.1.2 it also creates a RCU schema plus a nodemanager
+  wls::wlsdomain{
+   'adfDomain12c':
+    version         => "1212",
+    wlHome          => $osWlHome,
+    mdwHome         => $osMdwHome,
+    fullJDKName     => $jdkWls12gJDK,  
+    user            => $user,
+    group           => $group,    
+    downloadDir     => $downloadDir, 
+    wlsTemplate     => $osTemplate,
+    domain          => $wlsDomainName,
+    adminListenPort => $adminListenPort,
+    nodemanagerPort => $nodemanagerPort,
+    wlsUser         => "weblogic",
+    password        => hiera('weblogic_password_default'),
+    logDir          => $logDir,
+    reposDbUrl      => $reposUrl,
+    reposPrefix     => $reposPrefix,
+    reposPassword   => $reposPassword,
+    dbUrl           => $rcuDbUrl,
+    sysPassword     => $sysPassword,
+#    require         => Wls::Utils::Rcu["RCU_12c DEV delete"],
+  }
+
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls12gJDK,	
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+  }
+
+   #nodemanager starting 
+   # in 12c start it after domain creation
+   wls::nodemanager{'nodemanager12c':
+     version    => "1212",
+     listenPort => $nodemanagerPort,
+     domain     => $wlsDomainName,   	 
+     require    => Wls::Wlsdomain['adfDomain12c'],
+   }  
+  
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+  	version      => "1212", 
+    wlsDomain    => $wlsDomainName,
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls12gJDK,  
+    user         => $user,
+    group        => $group,
+    address      => $address,
+    downloadDir  => $downloadDir, 
+    wlsUser      => "weblogic",
+    password     => hiera('weblogic_password_default'),
+
+  }
+  
+  # start AdminServer for configuration
+  wls::wlstexec { 
+    'startWLSAdminServer12c':
+     script      => 'startWlsServer.py',
+     port        =>  $nodemanagerPort,
+     params      =>  ["domain     = '${wlsDomainName}'",
+                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+                      "wlsServer  = 'AdminServer'"],
+     require     => Wls::Nodemanager['nodemanager12c'];
+
+  }
+
+  # create Server template for Dynamic Clusters 
+  wls::wlstexec { 
+    'createServerTemplateCluster':
+     wlstype       => "server_templates",
+     wlsObjectName => "serverTemplateCluster",
+     script        => 'createServerTemplateCluster.py',
+     params        =>  ["server_template_name          = 'serverTemplateCluster'",
+                        "server_template_listen_port   = 7100",
+                        "dynamic_server_name_arguments ='-XX:PermSize=128m -XX:MaxPermSize=256m -Xms512m -Xmx1024m'"],
+     require       => Wls::Wlstexec['startWLSAdminServer12c'];
+  }
+
+  # create Dynamic Cluster 
+  wls::wlstexec { 
+    'createDynamicCluster':
+     wlstype       => "cluster",
+     wlsObjectName => "dynamicCluster",
+     script        => 'createDynamicCluster.py',
+     params        =>  ["server_template_name       = 'serverTemplateCluster'",
+                        "dynamic_cluster_name       = 'dynamicCluster'",
+                        "dynamic_nodemanager_match  = 'LocalMachine'",
+                        "dynamic_server_name_prefix = 'dynamic_server_'"],
+     require       => Wls::Wlstexec['createServerTemplateCluster'];
+  }
+
+  # create file persistence store 1 for dynamic cluster 
+  wls::wlstexec { 
+    'createFilePersistenceStoreDynamicCluster':
+     wlstype       => "filestore",
+     wlsObjectName => "jmsModuleFilePersistence1",
+     script        => 'createFilePersistenceStore2.py',
+     params        =>  ["fileStoreName = 'jmsModuleFilePersistence1'",
+                      "target          = 'dynamicCluster'",
+                      "targetType      = 'Cluster'"],
+     require       => Wls::Wlstexec['createDynamicCluster'];
+  }
+
+  # create jms server 1 for dynamic cluster 
+  wls::wlstexec { 
+    'createJmsServerDynamicCluster':
+     wlstype       => "jmsserver",
+     wlsObjectName => "jmsServer1",
+     script      => 'createJmsServer2.py',
+     params      =>  ["storeName      = 'jmsModuleFilePersistence1'",
+                      "target         = 'dynamicCluster'",
+                      "targetType     = 'Cluster'",
+                      "jmsServerName  = 'jmsServer1'",
+                      "storeType      = 'file'",
+                      ],
+     require     => Wls::Wlstexec['createFilePersistenceStoreDynamicCluster'];
+  }
+
+  # create jms module for dynamic cluster 
+  wls::wlstexec { 
+    'createJmsModuleCluster':
+     wlstype       => "jmsmodule",
+     wlsObjectName => "jmsClusterModule",
+     script        => 'createJmsModule.py',
+     params        =>  ["target         = 'dynamicCluster'",
+                        "jmsModuleName  = 'jmsClusterModule'",
+                        "targetType     = 'Cluster'",
+                       ],
+     require       => Wls::Wlstexec['createJmsServerDynamicCluster'];
+  }
+
+  # create jms subdeployment for dynamic cluster 
+  wls::wlstexec { 
+    'createJmsSubDeploymentForCluster':
+     wlstype       => "jmssubdeployment",
+     wlsObjectName => "jmsClusterModule/dynamicCluster",
+     script        => 'createJmsSubDeployment.py',
+     params        => ["target         = 'dynamicCluster'",
+                       "jmsModuleName  = 'jmsClusterModule'",
+                       "subName        = 'dynamicCluster'",
+                       "targetType     = 'Cluster'"
+                      ],
+     require       => Wls::Wlstexec['createJmsModuleCluster'];
+  }
+
+  # create jms connection factory for jms module 
+  wls::wlstexec { 
+  
+    'createJmsConnectionFactoryforCluster':
+     wlstype       => "jmsobject",
+     wlsObjectName => "cf",
+     script        => 'createJmsConnectionFactory.py',
+     params        =>["subDeploymentName = 'dynamicCluster'",
+                      "jmsModuleName     = 'jmsClusterModule'",
+                      "cfName            = 'cf'",
+                      "cfJNDIName        = 'jms/cf'",
+                      "transacted        = 'false'",
+                      "timeout           = 'xxxx'"
+                      ],
+     require       => Wls::Wlstexec['createJmsSubDeploymentForCluster'];
+  }
+
+  # create jms error Queue for jms module 
+  wls::wlstexec { 
+  
+    'createJmsErrorQueueforJmsModule':
+     wlstype       => "jmsobject",
+     wlsObjectName => "ErrorQueue2",
+     script        => 'createJmsQueueOrTopic.py',
+     params        =>["subDeploymentName = 'dynamicCluster'",
+                      "jmsModuleName     = 'jmsClusterModule'",
+                      "jmsName           = 'ErrorQueue2'",
+                      "jmsJNDIName       = 'jms/ErrorQueue2'",
+                      "jmsType           = 'queue'",
+                      "distributed       = 'true'",
+                      "balancingPolicy   = 'Round-Robin'",
+                      "useRedirect       = 'false'",
+                      "limit             = 'xxxxx'",
+                      "policy            = 'xxxxx'",
+                      "errorObject       = 'xxxxx'"
+                      ],
+     require       => Wls::Wlstexec['createJmsConnectionFactoryforCluster'];
+  }
+
+  # create jms Queue for jms module 
+  wls::wlstexec { 
+    'createJmsQueueforJmsModule':
+     wlstype       => "jmsobject",
+     wlsObjectName => "Queue1",
+     script        => 'createJmsQueueOrTopic.py',
+     params        => ["subDeploymentName  = 'dynamicCluster'",
+                      "jmsModuleName       = 'jmsClusterModule'",
+                      "jmsName             = 'Queue1'",
+                      "jmsJNDIName         = 'jms/Queue1'",
+                      "jmsType             = 'queue'",
+                      "distributed         = 'true'",
+                      "balancingPolicy     = 'Round-Robin'",
+                      "useRedirect         = 'true'",
+                      "limit               = '3'",
+                      "policy              = 'Redirect'",
+                      "errorObject         = 'ErrorQueue2'"
+                      ],
+     require     => Wls::Wlstexec['createJmsErrorQueueforJmsModule'];
+  }
+
+  # create Server template for Dynamic Coherence Clusters 
+  wls::wlstexec { 
+    'createServerTemplateCoherence':
+     wlstype       => "server_templates",
+     wlsObjectName => "serverTemplateCoherence",
+     script        => 'createServerTemplateCluster.py',
+     params        =>  ["server_template_name          = 'serverTemplateCoherence'",
+                        "server_template_listen_port   = 7200",
+                        "dynamic_server_name_arguments ='-XX:PermSize=128m -XX:MaxPermSize=256m -Xms512m -Xmx1024m'"],
+     require       => Wls::Wlstexec['createJmsQueueforJmsModule'];
+  }
+
+  # create Dynamic Coherence Cluster 
+  wls::wlstexec { 
+    'createDynamicClusterCoherence':
+     wlstype       => "cluster",
+     wlsObjectName => "dynamicClusterCoherence",
+     script        => 'createDynamicCluster.py',
+     params        =>  ["server_template_name       = 'serverTemplateCoherence'",
+                        "dynamic_cluster_name       = 'dynamicClusterCoherence'",
+                        "dynamic_nodemanager_match  = 'LocalMachine'",
+                        "dynamic_server_name_prefix = 'dynamic_coherence_server_'"],
+     require       => Wls::Wlstexec['createServerTemplateCoherence'];
+  }
+
+  # create Coherence Cluster 
+  wls::wlstexec { 
+    'createClusterCoherence':
+     wlstype       => "coherence",
+     wlsObjectName => "clusterCoherence",
+     script        => 'createCoherenceCluster.py',
+     params        =>  ["coherence_cluster_name = 'clusterCoherence'",
+                        "target                 = 'dynamicClusterCoherence'",
+                        "targetType             = 'Cluster'",
+                        "storage_enabled        = true",
+                        "unicast_address        = 'localhost'",
+                        "unicast_port           = 8088",
+                        "multicast_address      = '231.1.1.1'",
+                        "multicast_port         = 33387",
+                        "machines               = ['localhost']"],
+     require       => Wls::Wlstexec['createDynamicClusterCoherence'];
+  }
+
+  # create keystores for automatic WLST login
+  wls::storeuserconfig{
+   'Wls12cDomain_keys':
+    wlHome        => $osWlHome,
+    fullJDKName   => $jdkWls12gJDK,
+    domain        => $wlsDomainName, 
+    address       => $address,
+    wlsUser       => "weblogic",
+    password      => hiera('weblogic_password_default'),
+    port          => $adminListenPort,
+    user          => $user,
+    group         => $group,
+    userConfigDir => $userConfigDir, 
+    downloadDir   => $downloadDir, 
+    require       => Wls::Wlstexec['createClusterCoherence'],
+  }
+
+  # set the defaults
+  Wls::Changefmwlogdir {
+    mdwHome        => $osMdwHome,
+    user           => $user,
+    group          => $group,
+    address        => $address,
+    port           => $adminListenPort,
+    userConfigFile => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties",
+    userKeyFile    => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties",
+    downloadDir    => $downloadDir, 
+  }
+
+  # change the FMW logfiles
+  wls::changefmwlogdir{
+   'AdminServer':
+    wlsServer    => "AdminServer",
+    logDir       => $logDir,
+    require      => Wls::Storeuserconfig['Wls12cDomain_keys'],
+  }
+
+
+}
+
+class maintenance {
+
+  case $operatingsystem {
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      $mtimeParam = "1"
+    }
+    Solaris: { 
+      $mtimeParam = "+1"
+    }
+  }
+
+
+	cron { 'oracle_db_opatch' :
+	  command => "find /oracle/product/12.1/db/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_db_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 34,
+	}
+	
+	cron { 'oracle_db_lsinv' :
+	  command => "find /oracle/product/12.1/db/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_db_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 32,
+	}
+
+	cron { 'cleanwlstmp' :
+	  command => "find /tmp -name '*.tmp' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/tmp_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 25,
+	}
+	
+	cron { 'mdwlogs' :
+	  command => "find /oracle/product/Middleware12c/logs -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 30,
+	}
+	
+	cron { 'oracle_common_lsinv' :
+	  command => "find /oracle/product/Middleware12c/oracle_common/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_common_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 31,
+	}
+	
+	cron { 'oracle_common_opatch' :
+	  command => "find /oracle/product/Middleware12c/oracle_common/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_common_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 34,
+	}
+
+}

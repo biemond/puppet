@@ -5,12 +5,14 @@ class orautils::params {
                                     devagent1  => "/opt/oracle/wls",
                                     devagent10 => "/opt/oracle/wls",
                                     devagent30 => "/opt/oracle/wls",
+                                    wls12      => "/oracle/product",
                                     default    => "/opt/wls", 
                                 }
 
   $osDomainType = $::hostname ? {
                                     devagent30 => "web",
                                     devagent31 => "soa",
+                                    wls12      => "admin",
                                     default    => "web", 
                                 }
 
@@ -24,9 +26,13 @@ class orautils::params {
   															         default => "!/bin/sh",
   															       }   
 
+  $osMdwHome     = $::hostname ?  { wls12    => "${osOracleHome}/Middleware12c",
+                                    default  => "${osOracleHome}/Middleware11gR1",
+                                  }   
 
-  $osMdwHome    = "${osOracleHome}/Middleware11gR1"
-  $osWlHome     = "${osOracleHome}/Middleware11gR1/wlserver_10.3" 
+  $osWlHome     = $::hostname ?  { wls12    => "${osOracleHome}/Middleware12c/wlserver",
+                                   default  => "${osOracleHome}/Middleware11gR1/wlserver_10.3",
+                                 }   
 
   $oraUser      = $::hostname ? { default => "oracle", }
 
@@ -37,13 +43,19 @@ class orautils::params {
   															         default => "/etc", 
   															       }
 
-  $osDomain     = $::hostname ? { 
+  $osDomain     = $::hostname ? {   wls12      => "Wls12c",
                                     default    => "osbSoaDomain", 
                                 }
                                 
   $osDomainPath = $::hostname ? { 
                                     default    => "${osMdwHome}/user_projects/domains/${osDomain}", 
                                 }
+
+  $nodeMgrPath = $::hostname ? { 
+                                    wls12      => "${osMdwHome}/user_projects/domains/${osDomain}/bin", 
+                                    default    => "${osMdwHome}/server/bin", 
+                                }
+
 
   $nodeMgrPort = $::hostname ?  { 
                                     default    => "5556", 

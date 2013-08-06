@@ -173,7 +173,7 @@ if ( $continue ) {
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
-          command => "unzip ${path}/${soaFile1} -d ${path}/soa",
+          command => "unzip -o ${path}/${soaFile1} -d ${path}/soa",
           creates => "${path}/soa/Disk1",
           require => [File ["${path}/${soaFile2}"],File ["${path}/${soaFile1}"]],
          }
@@ -181,7 +181,7 @@ if ( $continue ) {
 
         if ! defined(Exec["extract ${soaFile2}"]) {
          exec { "extract ${soaFile2}":
-          command => "unzip ${path}/${soaFile2} -d ${path}/soa",
+          command => "unzip -o ${path}/${soaFile2} -d ${path}/soa",
           creates => "${path}/soa/Disk5",
           require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
          }

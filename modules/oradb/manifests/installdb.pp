@@ -133,7 +133,7 @@ if $version == '12.1.0.1' {
 
 
    exec { "extract ${path}/${file}_1of2.zip":
-      command => "unzip ${path}/${file}_1of2.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_1of2.zip -d ${path}/${file}",
       require => File["${path}/${file}_1of2.zip"],
    }
        
@@ -145,7 +145,7 @@ if $version == '12.1.0.1' {
    }
 
    exec { "extract ${path}/${file}_2of2.zip":
-      command => "unzip ${path}/${file}_2of2.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_2of2.zip -d ${path}/${file}",
       require => File["${path}/${file}_2of2.zip"],
    }
  }
@@ -162,7 +162,7 @@ if $version == '12.1.0.1' {
 
 
    exec { "extract ${path}/${file}_1of2.zip":
-      command => "unzip ${path}/${file}_1of2.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_1of2.zip -d ${path}/${file}",
       require => File["${path}/${file}_1of2.zip"],
    }
        
@@ -174,7 +174,7 @@ if $version == '12.1.0.1' {
    }
 
    exec { "extract ${path}/${file}_2of2.zip":
-      command => "unzip ${path}/${file}_2of2.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_2of2.zip -d ${path}/${file}",
       require => File["${path}/${file}_2of2.zip"],
    }
  }
@@ -189,7 +189,7 @@ if $version == '12.1.0.1' {
 
 
    exec { "extract ${path}/${file}_1of7.zip":
-      command => "unzip ${path}/${file}_1of7.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_1of7.zip -d ${path}/${file}",
       require => File["${path}/${file}_1of7.zip"],
    }
        
@@ -201,7 +201,7 @@ if $version == '12.1.0.1' {
    }
 
    exec { "extract ${path}/${file}_2of7.zip":
-      command => "unzip ${path}/${file}_2of7.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_2of7.zip -d ${path}/${file}",
       require => File["${path}/${file}_2of7.zip"],
    }
        
@@ -213,7 +213,7 @@ if $version == '12.1.0.1' {
    }
 
    exec { "extract ${path}/${file}_3of7.zip":
-      command => "unzip ${path}/${file}_3of7.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_3of7.zip -d ${path}/${file}",
       require => File["${path}/${file}_3of7.zip"],
    }
        
@@ -226,7 +226,7 @@ if $version == '12.1.0.1' {
    }
 
    exec { "extract ${path}/${file}_4of7.zip":
-      command => "unzip ${path}/${file}_4of7.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_4of7.zip -d ${path}/${file}",
       require => File["${path}/${file}_4of7.zip"],
    }
        
@@ -238,7 +238,7 @@ if $version == '12.1.0.1' {
    }
 
    exec { "extract ${path}/${file}_5of7.zip":
-      command => "unzip ${path}/${file}_5of7.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_5of7.zip -d ${path}/${file}",
       require => File["${path}/${file}_5of7.zip"],
    }
        
@@ -251,7 +251,7 @@ if $version == '12.1.0.1' {
    }
 
    exec { "extract ${path}/${file}_6of7.zip":
-      command => "unzip ${path}/${file}_6of7.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_6of7.zip -d ${path}/${file}",
       require => File["${path}/${file}_6of7.zip"],
    }
        
@@ -263,7 +263,7 @@ if $version == '12.1.0.1' {
    }
                                    
    exec { "extract ${path}/${file}_7of7.zip":
-      command => "unzip ${path}/${file}_7of7.zip -d ${path}/${file}",
+      command => "unzip -o ${path}/${file}_7of7.zip -d ${path}/${file}",
       require => File["${path}/${file}_7of7.zip"],
    }
  }

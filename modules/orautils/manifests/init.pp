@@ -71,6 +71,8 @@ class orautils {
       require => File['/opt/scripts/wls'],
     }
 
+    $nodeMgrPath    = $orautils::params::nodeMgrPath
+
     file { "startNodeManager.sh":
       path    => "/opt/scripts/wls/startNodeManager.sh",
       ensure  => present,

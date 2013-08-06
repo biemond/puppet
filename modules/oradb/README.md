@@ -386,7 +386,7 @@ install the following module to set the database user limits parameters
        sysctl { 'kernel.shmmax':
          ensure    => 'present',
          permanent => 'yes',
-         value     => '2147483648',
+         value     => '2588483584',
        }
      
        # Controls the maximum shared segment size, in bytes
@@ -481,12 +481,10 @@ install the following module to set the database user limits parameters
      
        class { 'limits':
          config => {
-                    '*'        => { 'nofile'  => { soft => '2048'   , hard => '8192',   },
-                                  },
-                    'oracle'  => { 'nofile'  => { soft => '1024'   , hard => '65536',  },
-                                    'nproc'   => { soft => '2048'   , hard => '16384',   },
-                                    'stack'   => { soft => '10240'  ,},
-                                  },
+                    '*'       => { 'nofile'  => { soft => '2048'   , hard => '8192',   },},
+                    'oracle'  => { 'nofile'  => { soft => '65536'  , hard => '65536',  },
+                                    'nproc'  => { soft => '2048'   , hard => '16384',  },
+                                    'stack'  => { soft => '10240'  ,},},
                     },
          use_hiera => false,
        }

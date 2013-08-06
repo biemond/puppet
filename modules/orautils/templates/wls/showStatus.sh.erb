@@ -75,7 +75,7 @@ printf "|%18s|%8s|%6s|\n" "AdminServer " $AdminStatus $AdminPid
 if [[ "$domainType" == 'soa' ]]; then
   printf "|%18s|%8s|%6s|\n" soa_server1 $SoaServer1Status $SoaServer1Pid
   printf "|%18s|%8s|%6s|\n" osb_server1 $OsbServer1Status $OsbServer1Pid
-else
+elif [[ "$domainType" == 'web' ]]; then
  printf "|%18s|%8s|%6s|\n" web_server1 $WebServer1Status $WebServer1Pid
 fi
 echo $SEP

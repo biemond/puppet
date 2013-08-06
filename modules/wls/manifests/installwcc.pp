@@ -175,7 +175,7 @@ if ( $continue ) {
 
         if ! defined(Exec["extract ${wccFile1}"]) {
          exec { "extract ${wccFile1}":
-          command => "unzip ${path}/${wccFile1} -d ${path}/wcc",
+          command => "unzip -o ${path}/${wccFile1} -d ${path}/wcc",
           creates => "${path}/wcc/Disk1",
           require => [File ["${path}/${wccFile2}"],File ["${path}/${wccFile1}"]],
          }
