@@ -3,8 +3,11 @@ jdk7 JAVA SE 7 puppet module
 
 Works with Puppet 2.7 & 3.0 
 
+Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux 
+
 Version updates
 ---------------
+- 0.2.1 added SLES as O.S.
 - 0.2 puppet 3.0 compatible, creates download folder
 
 
