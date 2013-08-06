@@ -7,7 +7,7 @@ Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 
 Version updates
 ---------------
-- 0.2.1 added SLES as O.S.
+- 0.2.1 added SLES as O.S. plus SED and alternatives fixes
 - 0.2 puppet 3.0 compatible, creates download folder
 
 
