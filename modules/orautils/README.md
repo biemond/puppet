@@ -3,7 +3,7 @@ Oracle WebLogic orautils puppet module
 
 changes
 
-0.1.5 WebLogic 12.1.2 support for NodeManager 
+0.1.5 WebLogic 12.1.2 support for NodeManager  
 0.1.4 added Suse SLES as Operating System  
 0.1.3 bug fixes  
 0.1.1 support for Solaris  
