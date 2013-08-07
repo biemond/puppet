@@ -145,6 +145,14 @@ class db12c2 {
                    require                 => Oradb::Database['testDb'],
    }
 
+   oradb::autostartdatabase{ 'autostart oracle': 
+                   oracleHome              => '/oracle/product/12.1/db',
+                   user                    => 'oracle',
+                   dbName                  => 'test',
+                   require                 => Oradb::Dbactions['start testDb'],
+   }
+
+
 
 
 }

@@ -12,6 +12,7 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
+- 0.7.9 Autostart of listener and database with chkconfig / init.d   
 - 0.7.8 Added Suse SLES as Operating System   
 - 0.7.7 RCU support for WebCenter and SOA Suite  
 - 0.7.6 OPatch upgrade made by Ronald Hatcher  
@@ -253,6 +254,13 @@ other
                      dbName                  => 'test',
                      require                 => Oradb::Dbactions['stop testDb'],
     }
+
+	oradb::autostartdatabase{ 'autostart oracle': 
+	                   oracleHome              => '/oracle/product/12.1/db',
+	                   user                    => 'oracle',
+	                   dbName                  => 'test',
+	                   require                 => Oradb::Dbactions['start testDb'],
+	}
 
 
 
