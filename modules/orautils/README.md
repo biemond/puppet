@@ -3,6 +3,7 @@ Oracle WebLogic orautils puppet module
 
 changes
 
+0.1.6 Autostart of the Nodemanager ( chkconfig )     
 0.1.5 WebLogic 12.1.2 support for NodeManager  
 0.1.4 added Suse SLES as Operating System  
 0.1.3 bug fixes  
@@ -10,6 +11,23 @@ changes
 
 Generates WLS Scripts in /opt/scripts/wls
 -----------------------------------------
+
+install auto start script for the nodemanager of WebLogic ( 10.3, 11g, 12.1.1 ) or 12.1.2  
+
+	   orautils::nodemanagerautostart{"autostart ${wlsDomainName}":
+	      version     => "1212",
+	      wlHome      => $osWlHome, 
+	      user        => $user,
+	      domain      => $wlsDomainName,
+	      logDir      => $logDir,
+	   }
+
+	   orautils::nodemanagerautostart{"autostart weblogic 11g":
+	      version     => "1111",
+	      wlHome      => $osWlHome, 
+	      user        => $user,
+	   }
+
 
 **cleanOracleEnvironment.sh**  
 Remove all Oracle WebLogic existence so you can deploy again  

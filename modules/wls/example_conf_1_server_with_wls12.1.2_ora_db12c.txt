@@ -4,7 +4,7 @@
 # creates an ADF Domain with JAX-WS (advanced , soap), OWSM , Dynamic Cluster , Coherence plus Elastic JMS
 # creates an 12c Database with a 12.1.2 RCU schema
 #
-# needs  oradb, wls , orautils, fiddyspence-sysctl ,erwbgy-limits puppet modules
+# needs  oradb, jdk7, wls, orautils, fiddyspence-sysctl, erwbgy-limits puppet modules
 #
 
 node 'wls12.alfa.local' inherits default {
@@ -282,6 +282,16 @@ class wls12c_adf_domain2{
      domain     => $wlsDomainName,   	 
      require    => Wls::Wlsdomain['adfDomain12c'],
    }  
+ 
+ 
+   orautils::nodemanagerautostart{"autostart ${wlsDomainName}":
+      version     => "1212",
+      wlHome      => $osWlHome, 
+      user        => $user,
+      domain      => $wlsDomainName,
+      logDir      => $logDir,
+      require     => Wls::Nodemanager['nodemanager12c'];
+   }
   
 
   # default parameters for the wlst scripts

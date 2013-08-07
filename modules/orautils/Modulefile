@@ -1,5 +1,5 @@
 name 'biemond-orautils'
-version '0.1.5'
+version '0.1.6'
 
 author 'Edwin Biemond'
 license 'GNU General Public License version 3 of the License'
