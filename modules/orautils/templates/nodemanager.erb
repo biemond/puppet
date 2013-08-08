@@ -11,7 +11,7 @@
 
 # nodemgr Oracle Weblogic NodeManager service
 #
-# chkconfig:   345 85 15
+# chkconfig:   345 99 15
 # description: Oracle Weblogic NodeManager service
 # 
 
@@ -82,6 +82,7 @@ start() {
     ulimit -n 65535
     [ -x $exec ] || exit 5
     echo -n $"Starting $prog: "
+    sleep 10
     su $user -c "$exec &"
     retval=$?
     echo
