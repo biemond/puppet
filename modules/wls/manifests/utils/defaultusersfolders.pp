@@ -89,30 +89,38 @@ define wls::utils::defaultusersfolders(
 		   }
 	   # create all folders 
 	   case $operatingsystem {
-	      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {    
-	          exec { 'create ${oracleHome} directory':
+	      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
+	        if ! defined(Exec ["create ${oracleHome} directory"]) {    
+	          exec { "create ${oracleHome} directory":
 	                  command => "mkdir -p ${oracleHome}",
 	                  unless  => "test -d ${oracleHome}",
 	                  user    => 'root',
 	          }
-	          exec { 'create ${downloadDir} home directory':
+	        } 
+          if ! defined(Exec ["create ${downloadDir} home directory"]) {    
+	          exec { "create ${downloadDir} home directory":
 	                  command => "mkdir -p ${downloadDir}",
 	                  unless  => "test -d ${downloadDir}",
 	                  user    => 'root',
 	          }
+          }
 	      }
 	      windows: {
 	          # make dir folder suitable for unxtools
 	          $oracleHomeWin  = slash_replace( $oracleHome )
 	          $downloadDirWin = slash_replace( $downloadDir )         
-	          exec { 'create ${oracleHome} directory':
+          if ! defined(Exec ["create ${oracleHome} directory"]) {   
+	          exec { "create ${oracleHome} directory":
 	                  command => "${checkCommand} mkdir ${oracleHomeWin}",
 	                  unless  => "${checkCommand} dir ${oracleHomeWin}",
 	          }
-	          exec { 'create ${downloadDir} home directory':
+	        }
+          if ! defined(Exec ["create ${downloadDir} home directory"]) {   	        
+	          exec { "create ${downloadDir} home directory":
 	                  command => "${checkCommand} mkdir ${downloadDirWin}",
 	                  unless  => "${checkCommand} dir ${downloadDirWin}",
 	          }
+           }
 	       }
 	       default: { 
 	        fail("Unrecognized operating system") 
@@ -127,7 +135,7 @@ define wls::utils::defaultusersfolders(
 		        ensure  => directory,
 		        recurse => false, 
 		        replace => false,
-		        require => [User[$user],Exec['create ${downloadDir} home directory']],
+		        require => [User[$user],Exec["create ${downloadDir} home directory"]],
 		      }
 		   }
 		
@@ -137,7 +145,7 @@ define wls::utils::defaultusersfolders(
 		       ensure  => directory,
 		       recurse => true, 
 		       replace => false,
-		       require => [User[$user],Exec['create ${oracleHome} directory']],
+		       require => [User[$user],Exec["create ${oracleHome} directory"]],
 		     }
 		   }
 
@@ -150,7 +158,7 @@ define wls::utils::defaultusersfolders(
                  ensure  => directory,
                  recurse => true, 
                  replace => false,
-                 require => [User[$user],Exec['create ${oracleHome} directory']],
+                 require => [User[$user],Exec["create ${oracleHome} directory"]],
                }
              }
           }
