@@ -10,7 +10,7 @@ class orautils::params {
                                 }
 
   $osDomainType = $::hostname ? {
-                                    devagent30 => "web",
+                                    devagent30 => "soa",
                                     devagent31 => "soa",
                                     wls12      => "admin",
                                     default    => "web", 
@@ -53,7 +53,7 @@ class orautils::params {
 
   $nodeMgrPath = $::hostname ? { 
                                     wls12      => "${osMdwHome}/user_projects/domains/${osDomain}/bin", 
-                                    default    => "${osMdwHome}/server/bin", 
+                                    default    => "${osWlHome}/server/bin", 
                                 }
 
 

@@ -32,6 +32,8 @@ class orautils {
        require => File['/opt/scripts'],
       }
     }
+
+    $osDomainType     = $orautils::params::osDomainType
     
     file { "showStatus.sh":
       path    => "/opt/scripts/wls/showStatus.sh",
