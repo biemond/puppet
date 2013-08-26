@@ -3,6 +3,7 @@ Oracle WebLogic orautils puppet module
 
 changes
 
+0.1.7 BugFixes for nodemanager startup & showStatus       
 0.1.6 Autostart of the Nodemanager ( chkconfig )     
 0.1.5 WebLogic 12.1.2 support for NodeManager  
 0.1.4 added Suse SLES as Operating System  
