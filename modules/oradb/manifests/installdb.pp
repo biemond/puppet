@@ -179,7 +179,7 @@ if $version == '12.1.0.1' {
    }
  }
 
- if $version == '11.2.0.3' {  
+ if ( $version == '11.2.0.3' or $version == '11.2.0.4' ) {  
 
    # db file 1 installer zip
    file { "${path}/${file}_1of7.zip":
@@ -301,7 +301,7 @@ if $version == '12.1.0.1' {
      } 
    }
 
-   if $version == '11.2.0.3' {     
+   if ( $version == '11.2.0.3' or $version == '11.2.0.4' ) {     
      exec { "install oracle database ${title}":
             command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_7of7.zip"]],

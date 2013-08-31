@@ -12,6 +12,7 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
+- 0.8.0 Autostart bugfixes and support for oracle 11.2.0.4  database   
 - 0.7.9 Autostart of listener and database with chkconfig / init.d   
 - 0.7.8 Added Suse SLES as Operating System   
 - 0.7.7 RCU support for WebCenter and SOA Suite  
@@ -26,6 +27,7 @@ Oracle Database Features
 ---------------------------
 
 - Oracle Database 12.1.0.1 Linux installation
+- Oracle Database 11.2.0.4 Linux installation
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
 - Oracle Database Net configuration   
@@ -43,7 +45,6 @@ else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/"
 Coming in next release
 
 - Oracle Database 11.2.0.1 Linux Client installation
-- Auto startup scripts
                                          
 Files
 -----
@@ -59,7 +60,7 @@ For 12.1.0.1 Download oracle database linux software from http://otn.oracle.com
 1361028723 Jun 27 23:38 linuxamd64_12c_database_1of2.zip  
 1116527103 Jun 27 23:38 linuxamd64_12c_database_2of2.zip  
 
-# database files of linux 11.2.0.3 ( support.oracle.com )
+# database files of linux 11.2.0.3 ( support.oracle.com )  
 1358454646 Mar  9 17:31 p10404530_112030_Linux-x86-64_1of7.zip  
 1142195302 Mar  9 17:47 p10404530_112030_Linux-x86-64_2of7.zip  
  979195792 Mar  9 18:01 p10404530_112030_Linux-x86-64_3of7.zip  
@@ -67,6 +68,15 @@ For 12.1.0.1 Download oracle database linux software from http://otn.oracle.com
  616473105 Mar  9 18:19 p10404530_112030_Linux-x86-64_5of7.zip  
  479890040 Mar  9 18:26 p10404530_112030_Linux-x86-64_6of7.zip  
  113915106 Mar  9 18:28 p10404530_112030_Linux-x86-64_7of7.zip  
+
+# database files of linux 11.2.0.4 ( support.oracle.com )  
+1395582860 Aug 31 16:21 p13390677_112040_Linux-x86-64_1of7.zip  
+1151304589 Aug 31 16:22 p13390677_112040_Linux-x86-64_2of7.zip  
+1205251894 Aug 31 16:22 p13390677_112040_Linux-x86-64_3of7.zip  
+ 656026876 Aug 31 16:22 p13390677_112040_Linux-x86-64_4of7.zip  
+ 599170344 Aug 31 16:23 p13390677_112040_Linux-x86-64_5of7.zip  
+ 488372844 Aug 31 16:23 p13390677_112040_Linux-x86-64_6of7.zip  
+ 119521122 Aug 31 16:23 p13390677_112040_Linux-x86-64_7of7.zip  
 
 # database files of linux 11.2.0.1 ( otn.oracle.com )  
  1239269270 Mar 10 17:05 linux.x64_11gR2_database_1of2.zip  
@@ -126,6 +136,20 @@ The databaseType value should contain only one of these choices.
 
 or
 
+    oradb::installdb{ '112040_Linux-x86-64':
+            version                => '11.2.0.4',
+            file                   => 'p13390677_112040_Linux-x86-64',
+            databaseType           => 'SE',
+            oracleBase             => '/oracle',
+            oracleHome             => '/oracle/product/11.2/db',
+            user                   => 'oracle',
+            group                  => 'dba',
+            downloadDir            => '/install',
+            puppetDownloadMntPoint => $puppetDownloadMntPoint,  
+    }
+
+or
+
      oradb::installdb{ '112030_Linux-x86-64':
             version                => '11.2.0.3',
             file                   => 'p10404530_112030_Linux-x86-64',
@@ -182,38 +206,34 @@ other
 	     puppetDownloadMntPoint => $puppetDownloadMntPoint, 
 	   }
 
-     oradb::net{ 'config net8':
+       oradb::net{ 'config net8':
             oracleHome   => '/oracle/product/11.2/db',
             version      => '11.2' or "12.1",   
             user         => 'oracle',
             group        => 'dba',
             downloadDir  => '/install',
             require      => Oradb::Opatch['14727310_db_patch'],
-     }
+       }
 
-
-
-     oradb::listener{'stop listener':
+       oradb::listener{'stop listener':
             oracleBase   => '/oracle',
             oracleHome   => '/oracle/product/11.2/db',
             user         => 'oracle',
             group        => 'dba',
             action       => 'start',  
             require      => Oradb::Net['config net8'],
-     }
-
+       }
   
-     oradb::listener{'start listener':
+       oradb::listener{'start listener':
             oracleBase   => '/oracle',
             oracleHome   => '/oracle/product/11.2/db',
             user         => 'oracle',
             group        => 'dba',
             action       => 'start',  
             require      => Oradb::Listener['stop listener'],
-     }
+       }
 
-
-     oradb::database{ 'testDb_Create': 
+       oradb::database{ 'testDb_Create': 
                       oracleBase              => '/oracle',
                       oracleHome              => '/oracle/product/11.2/db',
                       version                 => '11.2' or "12.1", 
@@ -376,116 +396,24 @@ install the following module to set the database user limits parameters
      
      node database {
      
-       # Controls the default maxmimum size of a mesage queue
-       sysctl { 'kernel.msgmnb':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '65536',
-       }
-     
-       # Controls the maximum size of a message, in bytes
-       sysctl { 'kernel.msgmax':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '65536',
-       }
-     
-       # Controls the maximum number of shared memory segments, in pages
-       sysctl { 'kernel.shmmax':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '2588483584',
-       }
-     
-       # Controls the maximum shared segment size, in bytes
-       sysctl { 'kernel.shmall':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '2097152',
-       }
-     
-       sysctl { 'fs.file-max':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '6815744',
-       }
-     
-       sysctl { 'kernel.shmmni':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '4096',
-       }
-     
-       sysctl { 'fs.aio-max-nr':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '1048576',
-       }
-       sysctl { 'kernel.sem':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '250 32000 100 128',
-       }
-     
-     
-       # The interval between the last data packet sent (simple ACKs are not considered data) and the first keepalive probe
-       sysctl { 'net.ipv4.tcp_keepalive_time':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '1800',
-       }
-     
-       # The interval between subsequential keepalive probes, regardless of what the connection has exchanged in the meantime
-       sysctl { 'net.ipv4.tcp_keepalive_intvl':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '30',
-       }
-     
-       # The number of unacknowledged probes to send before considering the connection dead and notifying the application layer
-       sysctl { 'net.ipv4.tcp_keepalive_probes':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '5',
-       }
-     
-       # The time that must elapse before TCP/IP can release a closed connection and reuse its resources. During this TIME_WAIT state, reopening the connection to the client costs less than establishing a new connection. By reducing the value of this entry, TCP/IP can release closed connections faster, making more resources available for new connections.
-       sysctl { 'net.ipv4.tcp_fin_timeout':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '30',
-       }
-     
-       sysctl { 'net.ipv4.ip_local_port_range':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '9000 65500',
-       }
-     
-       sysctl { 'net.core.rmem_default':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '262144',
-       }
-     
-       sysctl { 'net.core.rmem_max':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '4194304',
-       }
-     
-       sysctl { 'net.core.wmem_default':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '262144',
-       }
-     
-       sysctl { 'net.core.wmem_max':
-         ensure    => 'present',
-         permanent => 'yes',
-         value     => '1048576',
-       }
-     
+      sysctl { 'kernel.msgmnb':                 ensure => 'present', permanent => 'yes', value => '65536',}
+	  sysctl { 'kernel.msgmax':                 ensure => 'present', permanent => 'yes', value => '65536',}
+	  sysctl { 'kernel.shmmax':                 ensure => 'present', permanent => 'yes', value => '2588483584',}
+	  sysctl { 'kernel.shmall':                 ensure => 'present', permanent => 'yes', value => '2097152',}
+	  sysctl { 'fs.file-max':                   ensure => 'present', permanent => 'yes', value => '6815744',}
+	  sysctl { 'net.ipv4.tcp_keepalive_time':   ensure => 'present', permanent => 'yes', value => '1800',}
+	  sysctl { 'net.ipv4.tcp_keepalive_intvl':  ensure => 'present', permanent => 'yes', value => '30',}
+	  sysctl { 'net.ipv4.tcp_keepalive_probes': ensure => 'present', permanent => 'yes', value => '5',}
+	  sysctl { 'net.ipv4.tcp_fin_timeout':      ensure => 'present', permanent => 'yes', value => '30',}
+	  sysctl { 'kernel.shmmni':                 ensure => 'present', permanent => 'yes', value => '4096', }
+	  sysctl { 'fs.aio-max-nr':                 ensure => 'present', permanent => 'yes', value => '1048576',}
+	  sysctl { 'kernel.sem':                    ensure => 'present', permanent => 'yes', value => '250 32000 100 128',}
+	  sysctl { 'net.ipv4.ip_local_port_range':  ensure => 'present', permanent => 'yes', value => '9000 65500',}
+	  sysctl { 'net.core.rmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+	  sysctl { 'net.core.rmem_max':             ensure => 'present', permanent => 'yes', value => '4194304', }
+	  sysctl { 'net.core.wmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+	  sysctl { 'net.core.wmem_max':             ensure => 'present', permanent => 'yes', value => '1048576',}
+
      
        class { 'limits':
          config => {
@@ -498,73 +426,14 @@ install the following module to set the database user limits parameters
        }
      
      
-       package { 'binutils.x86_64':
+       $install = [ 'binutils.x86_64', 'compat-libstdc++-33.x86_64', 'glibc.x86_64','ksh.x86_64','libaio.x86_64',
+                    'libgcc.x86_64', 'libstdc++.x86_64', 'make.x86_64','compat-libcap1.x86_64', 'gcc.x86_64',
+                    'gcc-c++.x86_64','glibc-devel.x86_64','libaio-devel.x86_64','libstdc++-devel.x86_64',
+                    'sysstat.x86_64','unixODBC-devel','glibc.i686']
+               
+       package { $install:
          ensure  => present,
        }
-     
-       package { 'compat-libstdc++-33.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'glibc.x86_64':
-         ensure  => present,
-       }
-       package { 'ksh.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'libaio.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'libgcc.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'libstdc++.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'make.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'compat-libcap1.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'gcc.x86_64':
-         ensure  => present,
-       }
-       package { 'gcc-c++.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'glibc-devel.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'libaio-devel.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'libstdc++-devel.x86_64':
-         ensure  => present,
-       }
-     
-       package { 'sysstat.x86_64':
-         ensure  => present,
-       }
-
-       package { 'unixODBC-devel':
-         ensure  => present,
-       }
-
-       package { 'glibc.i686':
-         ensure  => present,
-       }
-
-     
      
      }
      
