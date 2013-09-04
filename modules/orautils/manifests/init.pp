@@ -62,6 +62,8 @@ class orautils {
 	  $oraUser          = $orautils::params::oraUser
 	  $userHome         = $orautils::params::userHome
 	  $oraInstHome      = $orautils::params::oraInstHome 
+    $osLogFolder      = $orautils::params::osLogFolder
+    $oraInventory     = $orautils::params::oraInventory
 
     file { "cleanOracleEnvironment.sh":
       path    => "/opt/scripts/wls/cleanOracleEnvironment.sh",

@@ -9,6 +9,9 @@ osWlHome=<%= @osWlHome %>
 oraUser=<%= @oraUser %>
 userHome=<%= @userHome %>
 oraInstHome=<%= @oraInstHome %>
+oraInstHome=<%= @oraInstHome %>
+osLogFolder=<%= @osLogFolder %>
+oraInventory=<%= @oraInventory %>
 
 echo "vars=${osOracleHome} ${osDownloadFolder} ${osMdwHome} ${osWlHome} ${oraUser}"
 
@@ -46,5 +49,12 @@ else
     rm -rf "${osDownloadFolder}/soa"   
     echo "Step 7 Remove ${osDownloadFolder}/*.xml"
     rm -rf $osDownloadFolder/*.xml   
+    echo "Step 8 Remove ${osLogFolder}/*"
+    rm -rf $osLogFolder/*   
+    echo "Step 9 Remove ${oraInventory}"
+    rm -rf $oraInventory   
+    echo "Step 10 Remove domain secureconfig files"
+    rm -rf "${userHome}/${oraUser}/*WebLogicConfig.properties" "${userHome}/${oraUser}/*WebLogicKey.properties"   
+
   fi
 fi

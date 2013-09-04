@@ -1,7 +1,6 @@
 class orautils::params {
 
   $osOracleHome = $::hostname ? { 
-                                    xxxxxx     => "/data/wls",
                                     devagent1  => "/opt/oracle/wls",
                                     devagent10 => "/opt/oracle/wls",
                                     devagent30 => "/opt/oracle/wls",
@@ -9,12 +8,26 @@ class orautils::params {
                                     default    => "/opt/wls", 
                                 }
 
+  $oraInventory = $::hostname ? { 
+                                    devagent1  => "/opt/oracle/oraInventory",
+                                    devagent10 => "/opt/oracle/oraInventory",
+                                    devagent30 => "/opt/oracle/oraInventory",
+                                    wls12      => "/oracle/oraInventory",
+                                    default    => "/opt/wls/oraInventory", 
+                                }
+
+
+
   $osDomainType = $::hostname ? {
                                     devagent30 => "soa",
                                     devagent31 => "soa",
                                     wls12      => "admin",
                                     default    => "web", 
                                 }
+
+  $osLogFolder = $::hostname ? {
+                                      default    => "/data/logs", 
+                               }
 
 
   $osDownloadFolder = $::hostname ? {
