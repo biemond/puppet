@@ -131,22 +131,22 @@ if $version == '12.1.0.1' {
      require => File[$path],
    }
 
-
-   exec { "extract ${path}/${file}_1of2.zip":
-      command => "unzip -o ${path}/${file}_1of2.zip -d ${path}/${file}",
-      require => File["${path}/${file}_1of2.zip"],
-   }
-       
-
    # db file 2 installer zip
    file { "${path}/${file}_2of2.zip":
      source  => "${mountPoint}/${file}_2of2.zip",
      require => File["${path}/${file}_1of2.zip"],
    }
 
+   exec { "extract ${path}/${file}_1of2.zip":
+      command => "unzip -o ${path}/${file}_1of2.zip -d ${path}/${file}",
+      require => File["${path}/${file}_1of2.zip"],
+      creates => "${path}/${file}/database/install/addLangs.sh",
+   }
+
    exec { "extract ${path}/${file}_2of2.zip":
       command => "unzip -o ${path}/${file}_2of2.zip -d ${path}/${file}",
-      require => File["${path}/${file}_2of2.zip"],
+      require => [ File["${path}/${file}_2of2.zip"], Exec["extract ${path}/${file}_1of2.zip"], ],
+      creates => "${path}/${file}/database/stage/Components/oracle.rdbms/12.1.0.1.0/1/DataFiles/filegroup19.6.1.jar",
    }
  }
 
@@ -327,8 +327,10 @@ if $version == '12.1.0.1' {
    }
 
    exec { "sleep 4 min for oracle db install ${title}":
-          command     => "/bin/sleep 240",
-          require     => Exec["install oracle database ${title}"]
+          command   => "/bin/sh -c '/bin/ps aux | /bin/grep [O]raInstall && exit 1 || exit 0'",
+          try_sleep => 10,
+          tries     => 50,
+          require   => Exec["install oracle database ${title}"]
    }    
 
    exec { "run root.sh script ${title}":

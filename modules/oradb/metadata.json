@@ -1,13 +1,47 @@
 {
-  "name": "biemond-oradb",
-  "version": "0.8.0",
-  "summary": "Oracle Database 11g R2 11.2 linux",
-  "author": "Edwin Biemond",
-  "description": "Oracle Database 11g R2 11.2 puppet module",
-  "dependencies": [],
-  "types": [],
-  "checksums": {},
+  "dependencies": [
+
+  ],
+  "summary": "Oracle Database 11g / 12 linux",
   "source": "https://github.com/biemond/puppet/tree/master/modules/oradb",
+  "author": "Edwin Biemond",
+  "checksums": {
+    "templates/db_install_11.2.0.4.rsp.erb": "64f5357e0beb3a0a250119ec2cc48ce8",
+    "templates/db_install_11.2.0.3.rsp.erb": "2f0dcd0516d430391147516ca18a120e",
+    "templates/dbca_12.1.rsp.erb": "bd646f30033bad0562cbc9e61e660f50",
+    "manifests/init.pp": "23dfca4cfc24155519bdc9dfda979481",
+    "manifests/autostartdatabase.pp": "a7ff30c7a1a52f303e06f761ca6cadf4",
+    "Modulefile": "05c777dd80bab2e328c5870d9518896b",
+    "lib/puppet/parser/functions/opatch_version.rb": "56d00c791c8ed050b4d6cd884db45d4a",
+    "templates/oraInst.loc.erb": "70013a28b30ebc30277c6464895c1ffd",
+    "templates/netca_11.2.rsp.erb": "cd8bff624b0830b2002eaae98f4caa8a",
+    "manifests/installdb.pp": "7c1349f8baa6b570269af22244031e63",
+    "templates/db_install_11.2.0.1.rsp.erb": "10de871187658d4cf321e8863c86de0a",
+    "templates/rcu_passwords.txt.erb": "f7ca7a0a3838dc9de3e591b5462db3a7",
+    "manifests/net.pp": "8efe53fc352a17e341a7dc22048fa7d0",
+    "templates/bash_profile.erb": "f7a0947d3b6d87438a96104304de2117",
+    "templates/netca_12.1.rsp.erb": "f03ab883287747c2a49be6fe6c07699d",
+    "manifests/listener.pp": "ac67a70a8979514f6684d5c291c4c4d5",
+    "README.md": "c0cc5dfb00c3f6e7d2ac3424a53da437",
+    "templates/db_install_12.1.0.1.rsp.erb": "c596ade9bd80aec4b1a57033200d7637",
+    "manifests/dbactions.pp": "413c2b714f8cef7c8645cc27f7fd93ff",
+    "lib/facter/oracle_database_homes.rb": "55eb5552346d45438b25a836347e4749",
+    "templates/dbora.erb": "11c3131748faf16206b667229a0ff205",
+    "lib/puppet/parser/functions/oracle_exists.rb": "1e9bf6da767a05da8305d005f45afb40",
+    "templates/rcu_checks.sql.erb": "eb2df79e7d7464f6daae033570fdbace",
+    "templates/dbca_11.2.rsp.erb": "298ace788c4ef52d6ddc74f66b781929",
+    "manifests/opatch.pp": "c146de4aeb3dd1dc4156f0d90270c383",
+    "manifests/opatchupgrade.pp": "8dfd4b335b58d3a3a7b4c9b2a53c14f0",
+    "lib/puppet/parser/functions/opatch_exists.rb": "4f8da5204d5e9618ae20fca443a4b59c",
+    "manifests/rcu.pp": "36be3712120c68d39611f3b367900cc6",
+    "manifests/database.pp": "d80e032dc908b153d5ce0cc4215629b6"
+  },
   "project_page": "https://github.com/biemond/puppet/tree/master/modules/oradb",
-  "license": "GNU General Public License version 3 of the License"
+  "description": "Oracle Database 11g / 12 puppet module",
+  "license": "GNU General Public License version 3 of the License",
+  "version": "0.8.1",
+  "name": "biemond-oradb",
+  "types": [
+
+  ]
 }
