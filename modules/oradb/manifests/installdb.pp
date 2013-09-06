@@ -295,7 +295,7 @@ if $version == '12.1.0.1' {
 
    if $version == '12.1.0.1' {     
      exec { "install oracle database ${title}":
-            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
+            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -waitforcompletion -responseFile ${path}/db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_2of2.zip"]],
             creates     => $oracleHome,
      } 
@@ -303,7 +303,7 @@ if $version == '12.1.0.1' {
 
    if ( $version == '11.2.0.3' or $version == '11.2.0.4' ) {     
      exec { "install oracle database ${title}":
-            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
+            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -waitforcompletion -responseFile ${path}/db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_7of7.zip"]],
             creates     => $oracleHome,
      } 
@@ -311,7 +311,7 @@ if $version == '12.1.0.1' {
 
    if $version == '11.2.0.1' {     
      exec { "install oracle database ${title}":
-            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -responseFile ${path}/db_install_${version}.rsp'",
+            command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -waitforcompletion -responseFile ${path}/db_install_${version}.rsp'",
             require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_2of2.zip"]],
             creates     => $oracleHome,
      } 
@@ -326,18 +326,11 @@ if $version == '12.1.0.1' {
           }
    }
 
-   exec { "sleep 4 min for oracle db install ${title}":
-          command   => "/bin/sh -c '/bin/ps aux | /bin/grep [O]raInstall && exit 1 || exit 0'",
-          try_sleep => 10,
-          tries     => 50,
-          require   => Exec["install oracle database ${title}"]
-   }    
-
    exec { "run root.sh script ${title}":
           command   => "${oracleHome}/root.sh",
           user      => 'root',
           group     => 'root',
-          require   => Exec["sleep 4 min for oracle db install ${title}"],          
+          require   => Exec["install oracle database ${title}"],          
    }    
 
 }

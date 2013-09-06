@@ -12,6 +12,7 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
+- 0.8.1 Removed sleep and replaced by waitforcompletion   
 - 0.8.0 Autostart bugfixes and support for oracle 11.2.0.4  database   
 - 0.7.9 Autostart of listener and database with chkconfig / init.d   
 - 0.7.8 Added Suse SLES as Operating System   
