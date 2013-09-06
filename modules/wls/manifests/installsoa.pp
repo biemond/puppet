@@ -166,7 +166,7 @@ if ( $continue ) {
     }
    }
    
-   $command  = "-silent -response ${path}/${title}silent_soa.xml "
+   $command  = "-silent -response ${path}/${title}silent_soa.xml -waitforcompletion "
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
@@ -186,7 +186,6 @@ if ( $continue ) {
           require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
          }
         }
-
         
         exec { "install soa ${title}":
           command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
@@ -194,13 +193,6 @@ if ( $continue ) {
           creates     => $soaOracleHome,
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
-
-        exec { "sleep 3 min for soa install ${title}":
-          command     => "/bin/sleep 180",
-          require     => Exec ["install soa ${title}"],
-        }    
-
-             
      }
      Solaris: { 
 
@@ -231,13 +223,6 @@ if ( $continue ) {
           require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"],Exec["add -d64 oraparam.ini soa"]],
           creates     => $soaOracleHome,
         }    
-
-        exec { "sleep 3 min for soa install ${title}":
-          command     => "/bin/sleep 180",
-          require     => Exec ["install soa ${title}"],
-        }    
-
-             
      }
 
      windows: { 
@@ -270,12 +255,6 @@ if ( $continue ) {
           require     => [Exec["icacls soa disk ${title}"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile2}"],Exec["extract ${soaFile1}"]],
           creates     => $soaOracleHome, 
         }    
-
-        exec { "sleep 3 min for soa install ${title}":
-          command     => "${checkCommand} sleep 180",
-          require     => Exec ["install soa ${title}"],
-        }    
-
 
      }
    }

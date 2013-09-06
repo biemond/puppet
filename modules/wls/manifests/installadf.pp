@@ -175,7 +175,7 @@ if ( $continue ) {
    }
 
    
-   $command  = "-silent -response ${path}/${title}silent_adf.xml "
+   $command  = "-silent -response ${path}/${title}silent_adf.xml -waitforcompletion "
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
@@ -215,11 +215,7 @@ if ( $continue ) {
             creates     => $commonOracleHome,
             environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           }    
-
-          exec { "sleep 2 min for adf install ${title}":
-           command     => "/bin/sleep 120",
-           require     => Exec ["install adf ${title}"],
-         }           
+         
        }
              
      }
@@ -255,16 +251,12 @@ if ( $continue ) {
 		          require     => [File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"],Exec["add -d64 oraparam.ini osb"]],
 		          creates     => $commonOracleHome,
 		        }    
-		
-		        exec { "sleep 2 min for adf install ${title}":
-		          command     => "/bin/sleep 120",
-		          require     => Exec ["install adf ${title}"],
-		        }    
+ 
 		
 		        # fix opatch bug with d64 param on jdk x64
 		        exec { "chmod ${commonOracleHome}/OPatch/opatch first":
 		          command     => "chmod 775 ${commonOracleHome}/OPatch/opatch",
-		          require     => Exec ["sleep 2 min for adf install ${title}"],        } 
+		          require     => Exec ["install adf ${title}"],        } 
 		   
 		        exec { "add quotes for d64 param in ${commonOracleHome}/OPatch/opatch":
 		          command     => "sed -e's/JRE_MEMORY_OPTIONS=\${MEM_ARGS} \${JVM_D64}/JRE_MEMORY_OPTIONS=\"\${MEM_ARGS} \${JVM_D64}\"/g' ${commonOracleHome}/OPatch/opatch > /tmp/osbpatch.tmp && mv /tmp/osbpatch.tmp ${commonOracleHome}/OPatch/opatch",
@@ -311,11 +303,7 @@ if ( $continue ) {
 		          require     => [Wls::Utils::Defaultusersfolders['create adf home'],Exec["icacls adf disk ${title}"],File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"]],
 		          creates     => $commonOracleHome, 
 		        }    
-		
-		        exec { "sleep 2 min for adf install ${title}":
-		          command     => "${checkCommand} sleep 120",
-		          require     => Exec ["install adf ${title}"],
-		        }    
+  
         }
 
      }

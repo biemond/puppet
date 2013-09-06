@@ -168,7 +168,7 @@ if ( $continue ) {
 
 
    
-   $command  = "-silent -response ${path}/${title}silent_wcc.xml "
+   $command  = "-silent -response ${path}/${title}silent_wcc.xml -waitforcompletion "
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
@@ -197,12 +197,6 @@ if ( $continue ) {
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
-        exec { "sleep 4 min for wcc install ${title}":
-          command     => "/bin/sleep 240",
-          require     => Exec ["install wcc ${title}"],
-        }    
-
-             
      }
      Solaris: { 
 
@@ -232,12 +226,6 @@ if ( $continue ) {
           require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"],Exec["add -d64 oraparam.ini wcc"]],
           creates     => $wccOracleHome,
         }    
-
-        exec { "sleep 4 min for wcc install ${title}":
-          command     => "/bin/sleep 240",
-          require     => Exec ["install wcc ${title}"],
-        }    
-
              
      }
 
@@ -273,12 +261,6 @@ if ( $continue ) {
           require     => [Exec["icacls wcc disk ${title}"],File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile2}"],Exec["extract ${wccFile1}"]],
           creates     => $wccOracleHome, 
         }    
-
-        exec { "sleep 4 min for wcc install ${title}":
-          command     => "${checkCommand} sleep 240",
-          require     => Exec ["install wcc ${title}"],
-        }    
-
 
      }
    }

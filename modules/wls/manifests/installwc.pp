@@ -148,7 +148,7 @@ if ( $continue ) {
    }
 
    
-   $command  = "-silent -response ${path}/${title}silent_wc.xml "
+   $command  = "-silent -response ${path}/${title}silent_wc.xml -waitforcompletion "
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
@@ -168,10 +168,6 @@ if ( $continue ) {
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
-        exec { "sleep 4 min for wc install ${title}":
-          command     => "/bin/sleep 240",
-          require     => Exec ["install wc ${title}"],
-        }    
      }
      Solaris: { 
 
@@ -193,27 +189,6 @@ if ( $continue ) {
           require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"],Exec["add -d64 oraparam.ini wc"]],
           creates     => $wcOracleHome,
         }    
-
-        exec { "sleep 4 min for wc install ${title}":
-          command     => "/bin/sleep 240",
-          require     => Exec ["install wc ${title}"],
-        }    
-#
-#        # fix opatch bug with d64 param on jdk x64
-#        exec { "chmod ${wcOracleHome}/OPatch/opatch first":
-#          command     => "chmod 775 ${wcOracleHome}/OPatch/opatch",
-#          require     => Exec ["sleep 4 min for wc install ${title}"],        } 
-#   
-#        exec { "add quotes for d64 param in ${wcOracleHome}/OPatch/opatch":
-#          command     => "sed -e's/JRE_MEMORY_OPTIONS=\${MEM_ARGS} \${JVM_D64}/JRE_MEMORY_OPTIONS=\"\${MEM_ARGS} \${JVM_D64}\"/g' ${wcOracleHome}/OPatch/opatch > /tmp/wcpatch.tmp && mv /tmp/wcpatch.tmp ${wcOracleHome}/OPatch/opatch",
-#          require     => Exec ["chmod ${wcOracleHome}/OPatch/opatch first"],
-#        }    
-#
-#        exec { "chmod ${wcOracleHome}/OPatch/opatch after":
-#          command     => "chmod 775 ${wcOracleHome}/OPatch/opatch",
-#          require     => Exec ["add quotes for d64 param in ${wcOracleHome}/OPatch/opatch"],
-#        }    
-
 
              
      }
@@ -240,11 +215,6 @@ if ( $continue ) {
           logoutput   => true,
           require     => [Exec["icacls wc disk ${title}"],File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
           creates     => $wcOracleHome, 
-        }    
-
-        exec { "sleep 4 min for wc install ${title}":
-          command     => "${checkCommand} sleep 240",
-          require     => Exec ["install wc ${title}"],
         }    
 
      }

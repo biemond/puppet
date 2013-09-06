@@ -165,7 +165,7 @@ if ( $continue ) {
    }
 
    
-   $command  = "-silent -response ${path}/${title}silent_osb.xml "
+   $command  = "-silent -response ${path}/${title}silent_osb.xml -waitforcompletion "
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
@@ -185,10 +185,6 @@ if ( $continue ) {
           environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
-        exec { "sleep 3 min for osb install ${title}":
-          command     => "/bin/sleep 180",
-          require     => Exec ["install osb ${title}"],
-        }    
              
      }
      Solaris: { 
@@ -213,15 +209,10 @@ if ( $continue ) {
           creates     => $osbOracleHome,
         }    
 
-        exec { "sleep 3 min for osb install ${title}":
-          command     => "/bin/sleep 180",
-          require     => Exec ["install osb ${title}"],
-        }    
-
         # fix opatch bug with d64 param on jdk x64
         exec { "chmod ${osbOracleHome}/OPatch/opatch first":
           command     => "chmod 775 ${osbOracleHome}/OPatch/opatch",
-          require     => Exec ["sleep 3 min for osb install ${title}"],        } 
+          require     => Exec ["install osb ${title}"],        } 
    
         exec { "add quotes for d64 param in ${osbOracleHome}/OPatch/opatch":
           command     => "sed -e's/JRE_MEMORY_OPTIONS=\${MEM_ARGS} \${JVM_D64}/JRE_MEMORY_OPTIONS=\"\${MEM_ARGS} \${JVM_D64}\"/g' ${osbOracleHome}/OPatch/opatch > /tmp/osbpatch.tmp && mv /tmp/osbpatch.tmp ${osbOracleHome}/OPatch/opatch",
@@ -232,9 +223,6 @@ if ( $continue ) {
           command     => "chmod 775 ${osbOracleHome}/OPatch/opatch",
           require     => Exec ["add quotes for d64 param in ${osbOracleHome}/OPatch/opatch"],
         }    
-
-
-             
      }
 
      windows: { 
@@ -261,13 +249,6 @@ if ( $continue ) {
           require     => [Exec["icacls osb disk ${title}"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome, 
         }    
-
-        exec { "sleep 3 min for osb install ${title}":
-          command     => "${checkCommand} sleep 180",
-          require     => Exec ["install osb ${title}"],
-        }    
-
-
      }
    }
 }
