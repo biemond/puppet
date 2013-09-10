@@ -271,6 +271,8 @@ if ( $continue ) {
       $adminNodeMgrLogDir             = "${domainPath}/${domain}/servers/${adminServerName}/logs"
       $osbNodeMgrLogDir               = "${domainPath}/${domain}/servers/osb_server1/logs"
       $soaNodeMgrLogDir               = "${domainPath}/${domain}/servers/soa_server1/logs"
+      $bamNodeMgrLogDir               = "${domainPath}/${domain}/servers/bam_server1/logs"
+
       $wcCollaborationNodeMgrLogDir   = "${domainPath}/${domain}/servers/WC_Collaboration/logs"
       $wcPortletNodeMgrLogDir         = "${domainPath}/${domain}/servers/WC_Portlet/logs"
       $wcSpacesNodeMgrLogDir          = "${domainPath}/${domain}/servers/WC_Spaces/logs"
