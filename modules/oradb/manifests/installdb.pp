@@ -102,7 +102,7 @@ define oradb::installdb( $version                 = undef,
         shell         => '/bin/bash',
         password      => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',
         home          => "/home/${user}",
-        comment       => 'This user ${user} was created by Puppet',
+        comment       => "This user ${user} was created by Puppet",
         require       => Group[$group],
         managehome    => true,
       }
