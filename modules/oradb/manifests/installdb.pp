@@ -40,6 +40,7 @@ define oradb::installdb( $version                 = undef,
                          $user                    = 'oracle',
                          $group                   = 'dba',
                          $downloadDir             = '/install',
+                         $extractedDir            = undef,
                          $puppetDownloadMntPoint  = undef,
 )
 
@@ -268,10 +269,20 @@ define oradb::installdb( $version                 = undef,
     }
 
     if ( $version == '11.2.0.3' or $version == '11.2.0.4' ) {
-      exec { "install oracle database ${title}":
-        command       => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -waitforcompletion -responseFile ${path}/db_install_${version}.rsp'",
-        require       => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_7of7.zip"]],
-        creates       => $oracleHome,
+      if $extractedDir != undef {
+        notify {"already extracted, using custom path!":} #debug
+        exec { "install oracle database ${title}":
+          command     => "/bin/sh -c 'unset DISPLAY;${path}/database/runInstaller -silent -waitforcompletion -responseFile ${path}/db_install_${version}.rsp'",
+          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"]],
+          creates     => $oracleHome,
+        }
+      } else {
+        notify {"extracting from zip!":} #debug
+        exec { "install oracle database ${title}":
+          command     => "/bin/sh -c 'unset DISPLAY;${path}/${file}/database/runInstaller -silent -waitforcompletion -responseFile ${path}/db_install_${version}.rsp'",
+          require     => [File ["${oraInstPath}/oraInst.loc"],File["${path}/db_install_${version}.rsp"],Exec["extract ${path}/${file}_7of7.zip"]],
+          creates     => $oracleHome,
+        }
       }
     }
 
