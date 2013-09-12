@@ -12,6 +12,8 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
+- 0.8.3 support for extracted oracle software (shared storage) with zipExtract +downloadDir parameter     
+- 0.8.2 OPatch upgrade fix for Offline, option to skip to create user and group    
 - 0.8.1 Removed sleep and replaced by waitforcompletion
 - 0.8.0 Autostart bugfixes and support for oracle 11.2.0.4  database
 - 0.7.9 Autostart of listener and database with chkconfig / init.d
