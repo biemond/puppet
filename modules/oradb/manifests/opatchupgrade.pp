@@ -99,7 +99,7 @@ define oradb::opatchupgrade( $oracleHome              = undef,
         if $csiNumber != undef and supportId != undef {
           exec { "exec emocmrsp ${opversion}":
             cwd      => "${patchDir}",
-            command  => "${patchDir}/ocm/bin/emocmrsp ${csiNumber} ${supportId}",
+            command  => "${patchDir}/ocm/bin/emocmrsp -repeater NONE ${csiNumber} ${supportId}",
             require  => Exec["extract opatch ${patchFile}"],
           }
         }
