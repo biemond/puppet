@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.0.10 createUser param in installwls,installadf(12.1.2) and installjdev when you want to create the OS user and group yourself  
 - 1.0.9 replaced sleep with waitforcompletion parameter  
 - 1.0.8 added Suse SLES as Operating System, 12.1.2 support for Coherence CLuster, see class wls12c_adf_domain, Added Server, Distributed Queue/Topics to Facts  
 - 1.0.7 12.1.2 Fully support for Dynamic Cluster and Elastic JMS, Scripts for creating server templates and dynamic clusters , see class wls12c_adf_domain  
@@ -206,6 +207,7 @@ WebLogic configuration examples
 	
 	  wls::installadf{'adf12c':
 	     adfFile      => 'ofm_wls_jrf_generic_12.1.2.0.0_disk1_1of1.zip',
+	     createUser   => true,
 	  } 
 	} 
 	            
@@ -335,7 +337,9 @@ WebLogic configuration examples
       }
     
       # install
-      wls::installwls{'11gPS5':}
+      wls::installwls{'11gPS5':
+        createUser   => true,
+      }
     
     	# weblogic patch
       wls::bsupatch{'p14736139':

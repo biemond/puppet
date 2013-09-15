@@ -34,6 +34,7 @@ define wls::installwls( $version     = undef,
                         $fullJDKName = undef,
                         $oracleHome  = undef,
                         $mdwHome     = undef,
+                        $createUser  = true,
                         $user        = 'oracle',
                         $group       = 'dba',
                         $downloadDir = '/install',
@@ -161,7 +162,8 @@ if ( $continue ) {
 
    wls::utils::defaultusersfolders{'create wls home':
             oracleHome      => $oracleHome,
-            oraInventory    => $oraInventory, 
+            oraInventory    => $oraInventory,
+            createUser      => $createUser, 
             user            => $user,
             group           => $group,
             downloadDir     => $path,
