@@ -63,19 +63,11 @@ class jdk7::urandomfix() {
              path    => $path,
            }           
 
-           service { "start rngd service":
-             name    => "rngd",
+           service { "start rng-tools service":
+             name    => "rng-tools",
              enable  => true,
              ensure  => true,
              require => Exec ["set urandom /etc/default/rng-tools"],
-           }
-
-           exec { "update-rc.d rngd":
-             command => "update-rc.d rngd defaults",
-             require => Service["start rngd service"],
-             user    => 'root',
-             unless  => "update-rc.d | /bin/grep 'rngd'",
-             path    => $path,
            }
         }
 

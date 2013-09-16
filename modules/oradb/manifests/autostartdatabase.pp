@@ -48,7 +48,7 @@ define oradb::autostartdatabase( $oracleHome  = undef,
         command        => "update-rc.d dbora defaults",
         require        => File["/etc/init.d/dbora"],
         user           => 'root',
-        unless         => "update-rc.d | /bin/grep 'dbora'",
+        unless         => "ls /etc/rc3.d/*dbora | /bin/grep 'dbora'",
       }      
     }
   }
