@@ -5,7 +5,7 @@
 # update urandom for weblogic
 
 define javaexec ($path        = undef, 
-                 $fullversion = undef, 
+                 $fullVersion = undef, 
                  $jdkfile     = undef,
                  $user        = undef,
                  $group       = undef,) {
@@ -34,19 +34,19 @@ define javaexec ($path        = undef,
       }
       
       # extract gz file in /usr/java
-      exec { "extract java ${fullversion}":
+      exec { "extract java ${fullVersion}":
         cwd     => "${javaInstall}",
         command => "tar -xzf ${path}/${jdkfile}",
-        creates => "${javaInstall}/${fullversion}",
+        creates => "${javaInstall}/${fullVersion}",
         require => File[$javaInstall],
       }
 
 			# java link to latest
       file { '/usr/java/latest':
         ensure      => link,
-        target      => "/usr/java/${fullversion}",
+        target      => "/usr/java/${fullVersion}",
         mode        => 0755,
-        require     => Exec["extract java ${fullversion}"],
+        require     => Exec["extract java ${fullVersion}"],
       }
 
 			# java link to default
@@ -60,30 +60,23 @@ define javaexec ($path        = undef,
       case $operatingsystem {
         CentOS, RedHat, OracleLinux: {
 			    # set the java default
-          exec { "default java alternatives ${fullversion}":
-            command => "alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
+          exec { "default java alternatives ${fullVersion}":
+            command => "alternatives --install /usr/bin/java java /usr/java/${fullVersion}/bin/java 17065",
             require => File['/usr/java/default'],
-            unless  => "alternatives --display java | /bin/grep ${fullversion}",
+            unless  => "alternatives --display java | /bin/grep ${fullVersion}",
           }
         }
         Ubuntu, Debian, SLES:{
 			    # set the java default
-          exec { "default java alternatives ${fullversion}":
-            command => "update-alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
+          exec { "default java alternatives ${fullVersion}":
+            command => "update-alternatives --install /usr/bin/java java /usr/java/${fullVersion}/bin/java 17065",
             require => File['/usr/java/default'],
-            unless  => "update-alternatives --list java | /bin/grep ${fullversion}",
+            unless  => "update-alternatives --list java | /bin/grep ${fullVersion}",
           }
 
         }
 
       }
-        
-      exec { "set urandom ${fullversion}":
-       	command => "sed -i -e's/securerandom.source=file:\/dev\/urandom/securerandom.source=file:\/dev\/.\/urandom/g' /usr/java/${fullversion}/jre/lib/security/java.security",
-        unless  => "/bin/grep '^securerandom.source=file:/dev/./urandom' /usr/java/${fullversion}/jre/lib/security/java.security",
-        require => Exec["extract java ${fullversion}"],
-      }
-
      
      }
    }

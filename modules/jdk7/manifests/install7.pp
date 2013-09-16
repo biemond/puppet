@@ -1,8 +1,10 @@
 # jdk7::instal7
-define jdk7::install7( $version     =  "7u25" , 
-                       $fullVersion =  "jdk1.7.0_25",
-											 $x64         =  true,
-											 $downloadDir =  '/install', ) {
+define jdk7::install7( $version         =  "7u25" , 
+                       $fullVersion     =  "jdk1.7.0_25",
+											 $x64             =  true,
+											 $downloadDir     =  '/install',
+											 $urandomJavaFix  =  true, 
+											) {
 
     notify {"install7.pp ${title} ${version}":}
 
@@ -62,10 +64,19 @@ define jdk7::install7( $version     =  "7u25" ,
     # install on client 
     javaexec {"jdkexec ${title} ${version}": 
           path        => $downloadDir, 
-          fullversion => $fullVersion,
+          fullVersion => $fullVersion,
           jdkfile     => $jdkfile,
           user        => $user,
           group       => $group,
           require     => File["${downloadDir}/${jdkfile}"],
     }
+    
+    if ( $urandomJavaFix  ==  true ) {
+	    exec { "set urandom ${fullVersion}":
+	        command => "sed -i -e's/securerandom.source=file:\/dev\/urandom/securerandom.source=file:\/dev\/.\/urandom/g' /usr/java/${fullVersion}/jre/lib/security/java.security",
+	        unless  => "/bin/grep '^securerandom.source=file:/dev/./urandom' /usr/java/${fullVersion}/jre/lib/security/java.security",
+	        require => Jdk7::Javaexec["jdkexec ${title} ${version}"],
+	    }
+    }
+    
 }
