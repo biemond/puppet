@@ -8,7 +8,7 @@ Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 Version updates
 ---------------
 
-- 0.3.0 Entropy fix for low on entropy, you can configure the rngd or rng-tools service or add it to java.security 
+- 0.3.1 Entropy fix for low on entropy, you can configure the rngd or rng-tools service or add it to java.security 
 - 0.2.1 added SLES as O.S. plus SED and alternatives fixes
 - 0.2 puppet 3.0 compatible, creates download folder
 

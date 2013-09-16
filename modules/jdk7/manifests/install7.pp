@@ -88,7 +88,9 @@ define jdk7::install7( $version         =  "7u25" ,
 	    exec { "set urandom ${fullVersion}":
 	        command => "sed -i -e's/securerandom.source=file:\/dev\/urandom/securerandom.source=file:\/dev\/.\/urandom/g' /usr/java/${fullVersion}/jre/lib/security/java.security",
 	        unless  => "/bin/grep '^securerandom.source=file:/dev/./urandom' /usr/java/${fullVersion}/jre/lib/security/java.security",
-	        require => Jdk7::Javaexec["jdkexec ${title} ${version}"],
+	        require => Javaexec["jdkexec ${title} ${version}"],
+          user    => 'root',
+          path    => $path,
 	    }
     }
     

@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom   
 - 1.0.10 createUser param in installwls,installadf(12.1.2) and installjdev when you want to create the OS user and group yourself  
 - 1.0.9 replaced sleep with waitforcompletion parameter  
 - 1.0.8 added Suse SLES as Operating System, 12.1.2 support for Coherence CLuster, see class wls12c_adf_domain, Added Server, Distributed Queue/Topics to Facts  
@@ -164,6 +165,9 @@ WebLogic configuration examples
     include wls
 
 	class wls12_adf{
+     
+      class { 'wls::urandomfix' :}
+
 	  if $jdkWls12cJDK == undef {
 	    $jdkWls12cJDK = 'jdk1.7.0_25'
 	  }
@@ -212,6 +216,9 @@ WebLogic configuration examples
 	} 
 	            
     class wls1036osb_soa{
+
+      class { 'wls::urandomfix' :}
+
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
@@ -369,6 +376,9 @@ WebLogic configuration examples
     }
 
 	class wls1036_wc{
+
+      class { 'wls::urandomfix' :}
+
 	  if $jdkWls11gJDK == undef {
 	    $jdkWls11gJDK = 'jdk1.7.0_25'
 	  }
@@ -502,6 +512,8 @@ WebLogic configuration examples
 	}
     
     class wls1036osb{
+      class { 'wls::urandomfix' :}
+
       if $jdkWls11gJDK == undef {
         $jdkWls11gJDK = 'jdk1.7.0_25'
       }
