@@ -39,7 +39,7 @@ can cause certain operations to be very slow. Encryption operations need entropy
 
 If an encryption operation is missing entropy it will wait until enough is generated.
 
-three options 
+three options  
   use rngd service (use this wls::urandomfix class)  
   set java.security in JDK ( jre/lib/security in my jdk7 module )  
   set -Djava.security.egd=file:/dev/./urandom param 
@@ -66,6 +66,7 @@ else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/wls/" (
 WLS WebLogic Features
 ---------------------------
 
+- low on entropy fix ( urandom ) by rngd or rng-tools service  
 - installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
 - apply bsu patch ( WebLogic Patch )
 - installs Oracle ADF 11g & 12c ( 12.1.2)
