@@ -182,7 +182,6 @@ if ( $continue ) {
           command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome,
-          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
              

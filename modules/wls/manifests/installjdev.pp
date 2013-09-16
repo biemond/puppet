@@ -86,8 +86,7 @@ define wls::installjdev( $version                 = "1111",
 	   # install jdeveloper 11g
 	   exec { "installjdev ${jdevFile}":
 	          command     => "java -jar ${path}/${jdevFile} -mode=silent -silent_xml=${path}/silent_jdeveloper_${title}.xml -log=${path}/installJdev_${title}.log",
-	          environment => ["JAVA_HOME=/usr/java/${fullJDKName}",
-	                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+	          environment => ["JAVA_HOME=/usr/java/${fullJDKName}"],
 	          require     => [File["${jdevFile}"],File["silent_jdeveloper.xml ${title}"]],
 	          creates     => "${mdwHome}/jdeveloper",
 	   }
@@ -112,7 +111,6 @@ define wls::installjdev( $version                 = "1111",
        exec { "installjdev ${jdevFile}":
           command     => "java -jar ${path}/${jdevFile} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
           require     => [ Wls::Utils::Defaultusersfolders['create jdev home'], File["${jdevFile}"],File["silent_jdeveloper.xml ${title}"]],
-          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           timeout     => 0,
          }    
              

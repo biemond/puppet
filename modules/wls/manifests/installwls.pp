@@ -220,7 +220,6 @@ if ( $continue ) {
         exec { "install wls ${title}":
           command     => "java -jar ${path}/wls/${wlsFile1212_jar} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
           require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"],Exec["extract ${wlsFile}"]],
-          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           timeout     => 0,
         }    
              
@@ -286,8 +285,7 @@ if ( $continue ) {
 		        exec { "installwls ${path}/${wlsFile}":
 		          command     => "${javaCommand} ${path}/${wlsFile} -mode=silent -silent_xml=${path}/silent${version}.xml",
 		          environment => ["JAVA_VENDOR=Sun",
-		                          "JAVA_HOME=/usr/java/${fullJDKName}",
-		                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+		                          "JAVA_HOME=/usr/java/${fullJDKName}"],
 		          logoutput   => true,
 		          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["wls.jar ${version}"],File ["silent.xml ${version}"]],
 		        }    

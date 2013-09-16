@@ -182,8 +182,7 @@ if ( $continue ) {
         exec { "execwlst ${title}${script}":
           command     => "${javaCommand} ${path}/${title}${script}",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=${JAVA_HOME}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+                          "JAVA_HOME=${JAVA_HOME}"],
           require     => File["${path}/${title}${script}"],
         }    
 

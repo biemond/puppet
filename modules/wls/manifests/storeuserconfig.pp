@@ -110,8 +110,7 @@ define wls::storeuserconfig( $wlHome        = undef,
         exec { "execwlst ${title}storeUserConfig.py":
           command     => "${javaCommand} ${path}/${title}storeUserConfig.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=${JAVA_HOME}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+                          "JAVA_HOME=${JAVA_HOME}"],
           unless      => "ls -l ${userConfigDir}/${user}-${$domain}-WebLogicConfig.properties",
           require     => File["${path}/${title}storeUserConfig.py"],
         }    

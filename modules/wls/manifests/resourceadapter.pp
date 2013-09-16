@@ -198,8 +198,7 @@ if ( $continuePlan ) {
         exec { "exec deployer adapter plan ${title}":
           command     => "${javaCommand} -adminurl t3://${address}:${port} ${credentials} -update -name ${adapterName} -plan ${adapterPlanDir}/${adapterPlan}",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=${JAVA_HOME}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+                          "JAVA_HOME=${JAVA_HOME}"],
         }    
 
      }
@@ -249,16 +248,14 @@ if ( $continueEntry ) {
         exec { "exec create resource adapter entry ${title}":
           command     => "${javaCommandPlan} ${path}/${title}createResourceAdapterEntry.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=${JAVA_HOME}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+                          "JAVA_HOME=${JAVA_HOME}"],
         }    
 
         # deploy the plan and update the adapter  
         exec { "exec redeploy adapter plan ${title}":
           command     => "${javaCommandPlan} ${path}/${title}redeployResourceAdapter.py",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
-                          "JAVA_HOME=${JAVA_HOME}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+                          "JAVA_HOME=${JAVA_HOME}"],
           require  => Exec["exec create resource adapter entry ${title}"],
         }    
 

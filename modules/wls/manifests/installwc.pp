@@ -165,7 +165,6 @@ if ( $continue ) {
           command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
           creates     => $wcOracleHome,
-          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
      }

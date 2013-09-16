@@ -400,8 +400,7 @@ if ( $continue ) {
         
         exec { "execwlst ${domain} ${title}":
           command     => "${wlstPath}/wlst.sh ${path}/domain_${domain}.py",
-          environment => ["JAVA_HOME=${JAVA_HOME}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+          environment => ["JAVA_HOME=${JAVA_HOME}"],
           unless      => "/usr/bin/test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],

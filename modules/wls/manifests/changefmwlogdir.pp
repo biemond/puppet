@@ -99,7 +99,6 @@ define wls::changefmwlogdir ($mdwHome        = undef,
 
         exec { "execwlst ${title}changeFMWLogFolder.py":
           command     => "${mdwHome}/oracle_common/common/bin/wlst.sh ${path}/${title}changeFMWLogFolder.py",
-          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           unless      => "ls -l ${logDir}/${wlsServer}-diagnostic.log",
           require     => File["${path}/${title}changeFMWLogFolder.py"],
         }    

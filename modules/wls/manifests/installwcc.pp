@@ -194,7 +194,6 @@ if ( $continue ) {
           command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"]],
           creates     => $wccOracleHome,
-          environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
         }    
 
      }

@@ -201,7 +201,6 @@ if ( $continue ) {
           exec { "install adf ${title}":
             command     => "java -jar ${path}/adf/${adfFileJar} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
             require     => [Wls::Utils::Defaultusersfolders['create adf home'],File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"]],
-            environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
             timeout     => 0,
           }    
 
@@ -215,7 +214,6 @@ if ( $continue ) {
             command     => "${path}/adf/Disk1/install/${adfInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
             require     => [File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"]],
             creates     => $commonOracleHome,
-            environment => ["CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
           }    
          
        }

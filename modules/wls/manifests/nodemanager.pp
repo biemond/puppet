@@ -183,7 +183,7 @@ elsif $version == "1111" {
       }    
    }
 
-   $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -Djava.security.egd=file:/dev/./urandom -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
+   $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
     
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
@@ -199,8 +199,7 @@ elsif $version == "1111" {
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
-                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/${nativeLib}",
-                          "CONFIG_JVM_ARGS=-Djava.security.egd=file:/dev/./urandom"],
+                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/${nativeLib}"],
           unless      => "${checkCommand}",
           require     => File ["nodemanager.properties ux ${title}"],
         }    
