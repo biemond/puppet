@@ -44,6 +44,13 @@ define javaexec (
     require => File["/usr/java"],
   }
 
+  # set permissions
+  file { "/usr/java/${fullVersion}":
+    ensure  => directory,
+    recurse => true,
+    require => Exec["extract java ${fullVersion}"],
+  }
+
 	# java link to latest
   file { '/usr/java/latest':
     ensure  => link,
