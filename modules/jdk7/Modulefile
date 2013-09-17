@@ -1,5 +1,5 @@
 name 'biemond-jdk7'
-version '0.3.1'
+version '0.3.2'
 
 author 'Edwin Biemond'
 license 'GNU General Public License version 3 of the License'
