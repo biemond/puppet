@@ -8,6 +8,7 @@ Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 Version updates
 ---------------
 
+- 0.3.3 updated license to Apache 2.0
 - 0.3.2 sourceParam, alternativesPriority in install7 plus formatting
 - 0.3.1 Entropy fix for low on entropy, you can configure the rngd or rng-tools service or add it to java.security 
 - 0.2.1 added SLES as O.S. plus SED and alternatives fixes

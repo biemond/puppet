@@ -3,12 +3,13 @@ Oracle WebLogic orautils puppet module
 
 changes
 
-0.1.7 BugFixes for nodemanager startup & showStatus       
-0.1.6 Autostart of the Nodemanager ( chkconfig )     
-0.1.5 WebLogic 12.1.2 support for NodeManager  
-0.1.4 added Suse SLES as Operating System  
-0.1.3 bug fixes  
-0.1.1 support for Solaris  
+- 0.1.8 updated license to Apache 2.0
+- 0.1.7 BugFixes for nodemanager startup & showStatus       
+- 0.1.6 Autostart of the Nodemanager ( chkconfig )     
+- 0.1.5 WebLogic 12.1.2 support for NodeManager  
+- 0.1.4 added Suse SLES as Operating System  
+- 0.1.3 bug fixes  
+- 0.1.1 support for Solaris  
 
 Generates WLS Scripts in /opt/scripts/wls
 -----------------------------------------
