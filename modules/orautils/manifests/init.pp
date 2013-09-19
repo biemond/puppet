@@ -13,7 +13,7 @@ class orautils {
     if ! defined(File['/opt/scripts']) {
      file { '/opt/scripts':
        ensure  => directory,
-       recurse => true, 
+       recurse => false,
        replace => false,
        owner   => $user,
        group   => $group,
@@ -24,7 +24,7 @@ class orautils {
     if ! defined(File['/opt/scripts/wls']) {
      file { '/opt/scripts/wls':
        ensure  => directory,
-       recurse => true, 
+       recurse => false,
        replace => false,
        owner   => $user,
        group   => $group,
@@ -34,11 +34,11 @@ class orautils {
     }
 
     $osDomainType     = $orautils::params::osDomainType
-    
+
     file { "showStatus.sh":
       path    => "/opt/scripts/wls/showStatus.sh",
       ensure  => present,
-      content => template("orautils/wls/showStatus.sh.erb"),  
+      content => template("orautils/wls/showStatus.sh.erb"),
       owner   => $user,
       group   => $group,
       mode    => $mode,
@@ -48,7 +48,7 @@ class orautils {
     file { "stopNodeManager.sh":
       path    => "/opt/scripts/wls/stopNodeManager.sh",
       ensure  => present,
-      content => template("orautils/wls/stopNodeManager.sh.erb"), 
+      content => template("orautils/wls/stopNodeManager.sh.erb"),
       owner   => $user,
       group   => $group,
       mode    => $mode,
@@ -58,10 +58,10 @@ class orautils {
     $osOracleHome     = $orautils::params::osOracleHome
     $osDownloadFolder = $orautils::params::osDownloadFolder
     $osMdwHome        = $orautils::params::osMdwHome
-    $osWlHome         = $orautils::params::osWlHome 
+    $osWlHome         = $orautils::params::osWlHome
 	  $oraUser          = $orautils::params::oraUser
 	  $userHome         = $orautils::params::userHome
-	  $oraInstHome      = $orautils::params::oraInstHome 
+	  $oraInstHome      = $orautils::params::oraInstHome
     $osLogFolder      = $orautils::params::osLogFolder
     $oraInventory     = $orautils::params::oraInventory
 
@@ -89,10 +89,10 @@ class orautils {
 
     $osDomain       = $orautils::params::osDomain
     $osDomainPath   = $orautils::params::osDomainPath
-    $nodeMgrPort    = $orautils::params::nodeMgrPort    															
-    $wlsUser        = $orautils::params::wlsUser   															
-    $wlsPassword    = $orautils::params::wlsPassword   		
-    $wlsAdminServer = $orautils::params::wlsAdminServer   		
+    $nodeMgrPort    = $orautils::params::nodeMgrPort
+    $wlsUser        = $orautils::params::wlsUser
+    $wlsPassword    = $orautils::params::wlsPassword
+    $wlsAdminServer = $orautils::params::wlsAdminServer
 
     file { "startWeblogicAdmin.sh":
       path    => "/opt/scripts/wls/startWeblogicAdmin.sh",

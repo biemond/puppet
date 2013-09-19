@@ -1,6 +1,6 @@
 # == Define: wls::installwcc
 #
-# installs Oracle Webcenter content addon   
+# installs Oracle Webcenter content addon
 #
 # === Examples
 #
@@ -8,14 +8,14 @@
 #    $wls11gVersion = "1036"
 #
 #  case $operatingsystem {
-#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: {
 #       $osMdwHome    = "/opt/wls/Middleware11gR1"
 #       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
 #       $oracleHome   = "/opt/wls/"
 #       $user         = "oracle"
 #       $group        = "dba"
 #     }
-#     windows: { 
+#     windows: {
 #       $osMdwHome    = "c:/oracle/wls11g"
 #       $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
 #       $user         = "Administrator"
@@ -27,20 +27,18 @@
 #  Wls::Installwcc {
 #    mdwHome      => $osMdwHome,
 #    wlHome       => $osWlHome,
-#    fullJDKName  => $jdkWls11gJDK, 
+#    fullJDKName  => $jdkWls11gJDK,
 #    user         => $user,
-#    group        => $group,    
+#    group        => $group,
 #  }
-#  
+#
 #
 #  wls::installwcc{'wccPS6':
 #    wccFile1      => 'ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip',
 #    wccFile2      => 'ofm_wcc_generic_11.1.1.6.0_disk1_2of2.zip',
 #  }
 #
-## 
-
-
+##
 define wls::installwcc($mdwHome         = undef,
                        $wlHome          = undef,
                        $oracleHome      = undef,
@@ -50,20 +48,20 @@ define wls::installwcc($mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install',
-                       $puppetDownloadMntPoint  = undef,  
+                       $puppetDownloadMntPoint  = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $wccOracleHome   = "${mdwHome}/Oracle_WCC1"
         $oraInventory    = "${oracleHome}/oraInventory"
-        
+
         $wccInstallDir   = "linux64"
         $jreLocDir       = "/usr/java/${fullJDKName}"
-        
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -74,9 +72,9 @@ define wls::installwcc($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }        
+             }
      }
-     Solaris: { 
+     Solaris: {
 
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
@@ -85,7 +83,7 @@ define wls::installwcc($mdwHome         = undef,
 
         $wccInstallDir   = "intelsolaris"
         $jreLocDir       = "/usr/jdk/${fullJDKName}"
-                
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -96,20 +94,20 @@ define wls::installwcc($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }        
+             }
      }
-     windows: { 
+     windows: {
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = $downloadDir 
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c"
+        $path             = $downloadDir
         $wccOracleHome    = "${mdwHome}/Oracle_WCC1"
-        
+
         Exec { path      => $execPath,
              }
         File { ensure  => present,
                mode    => 0777,
-             }   
+             }
      }
    }
 
@@ -119,24 +117,23 @@ define wls::installwcc($mdwHome         = undef,
        $continue = true
      } else {
        if ( $found ) {
-         notify {"wls::installwcc ${title} ${wccOracleHome} already exists":}
          $continue = false
        } else {
          notify {"wls::installwcc ${title} ${wccOracleHome} does not exists":}
-         $continue = true 
+         $continue = true
        }
      }
 
 if ( $continue ) {
 
    if $puppetDownloadMntPoint == undef {
-     $mountPoint =  "puppet:///modules/wls/"      
+     $mountPoint =  "puppet:///modules/wls/"
    } else {
      $mountPoint =  $puppetDownloadMntPoint
    }
 
    wls::utils::orainst{'create wcc oraInst':
-            oraInventory    => $oraInventory, 
+            oraInventory    => $oraInventory,
             group           => $group,
    }
 
@@ -166,12 +163,10 @@ if ( $continue ) {
     }
    }
 
-
-   
    $command  = "-silent -response ${path}/${title}silent_wcc.xml -waitforcompletion "
-    
+
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         if ! defined(Exec["extract ${wccFile1}"]) {
          exec { "extract ${wccFile1}":
@@ -189,15 +184,14 @@ if ( $continue ) {
          }
         }
 
-        
         exec { "install wcc ${title}":
           command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"]],
           creates     => $wccOracleHome,
-        }    
+        }
 
      }
-     Solaris: { 
+     Solaris: {
 
         if ! defined(Exec["extract ${wccFile1}"]) {
          exec { "extract ${wccFile1}":
@@ -224,11 +218,11 @@ if ( $continue ) {
           command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"],Exec["add -d64 oraparam.ini wcc"]],
           creates     => $wccOracleHome,
-        }    
-             
+        }
+
      }
 
-     windows: { 
+     windows: {
 
 
         if ! defined(Exec["extract ${wccFile1}"]) {
@@ -248,18 +242,18 @@ if ( $continue ) {
         }
 
 
-        exec {"icacls wcc disk ${title}": 
+        exec {"icacls wcc disk ${title}":
            command    => "${checkCommand} icacls ${path}\\wcc\\* /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
            require    => [Exec["extract ${wccFile2}"],Exec["extract ${wccFile1}"]],
-        } 
+        }
 
         exec { "install wcc ${title}":
           command     => "${path}\\wcc\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
           require     => [Exec["icacls wcc disk ${title}"],File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile2}"],Exec["extract ${wccFile1}"]],
-          creates     => $wccOracleHome, 
-        }    
+          creates     => $wccOracleHome,
+        }
 
      }
    }

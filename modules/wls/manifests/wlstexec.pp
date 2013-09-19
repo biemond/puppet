@@ -1,21 +1,21 @@
 # == Define: wls::wlstexec
 #
-# generic wlst script  
+# generic wlst script
 #
 # pass on the weblogic username or password
 # or provide userConfigFile and userKeyFile file locations
 #
 # === Examples
-#  
+#
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, Ubuntu, debian: { 
+#     centos, redhat, OracleLinux, Ubuntu, debian: {
 #       $osMdwHome    = "/opt/oracle/wls/wls11g"
 #       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
 #       $osDomainPath = "/opt/oracle/wls/wls11g/admin"
 #       $user         = "oracle"
 #       $group        = "dba"
 #     }
-#     windows: { 
+#     windows: {
 #       $osMdwHome    = "c:/oracle/wls/wls11g"
 #       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
 #       $osDomainPath = "c:/oracle/wls/wls11g/admin"
@@ -29,7 +29,7 @@
 #  Wls::Wlstexec {
 #    wlsDomain    => "${osDomainPath}/osbDomain",
 #    wlHome       => $osWlHome,
-#    fullJDKName  => $jdkWls11gJDK,	
+#    fullJDKName  => $jdkWls11gJDK,
 #    user         => $user,
 #    group        => $group,
 #    address      => "localhost",
@@ -38,9 +38,9 @@
 #    port         => "5556",
 #  }
 #
-#  # create jdbc datasource for osb_server1 
-#  wls::wlstexec { 
-#  
+#  # create jdbc datasource for osb_server1
+#  wls::wlstexec {
+#
 #    'createJdbcDatasourceHr':
 #     wlstype       => "jdbc",
 #     wlsObjectName => "hrDS",
@@ -57,14 +57,13 @@
 #                      ],
 #  }
 #
-# 
-
+#
 define wls::wlstexec ($version        = '1111',
-                      $wlsDomain      = undef, 
+                      $wlsDomain      = undef,
                       $wlstype        = undef,
                       $wlsObjectName  = undef,
-                      $wlHome         = undef, 
-                      $fullJDKName    = undef, 
+                      $wlHome         = undef,
+                      $fullJDKName    = undef,
                       $script         = undef,
                       $address        = "localhost",
                       $port           = '7001',
@@ -72,40 +71,37 @@ define wls::wlstexec ($version        = '1111',
                       $password       = undef,
                       $userConfigFile = undef,
                       $userKeyFile    = undef,
-                      $user           = 'oracle', 
+                      $user           = 'oracle',
                       $group          = 'dba',
                       $params         = undef,
                       $downloadDir    = '/install',
+                      $logOutput      = false,
                       ) {
 
-   notify {"wls::wlstexec ${title} execute ${wlsDomain}":}
- 
-   # if these params are empty always continue    
+   # if these params are empty always continue
    if $wlsDomain == undef or $wlstype == undef or wlsObjectName == undef {
-
-     $continue = true  
+     $continue = true
    } else {
-     # check if the object already exists on the weblogic domain 
+     # check if the object already exists on the weblogic domain
      $found = artifact_exists($wlsDomain ,$wlstype,$wlsObjectName ,$version)
      if $found == undef {
        $continue = true
          notify {"wls::wlstexec ${title} ${version} continue true cause nill":}
      } else {
        if ( $found ) {
-         notify {"wls::wlstexec ${title} ${version} continue false cause already exists":}
          $continue = false
        } else {
          notify {"wls::wlstexec ${title} ${version} continue true cause not exists":}
-         $continue = true 
+         $continue = true
        }
      }
    }
 
    # use userConfigStore for the connect
 	 if $password == undef {
-     $useStoreConfig = true  
-   } else {	
-     $useStoreConfig = false  
+     $useStoreConfig = true
+   } else {
+     $useStoreConfig = false
    }
 
 
@@ -113,7 +109,7 @@ if ( $continue ) {
    $javaCommand    = "java -Dweblogic.security.SSL.ignoreHostnameVerification=true weblogic.WLST -skipWLSModuleScanning "
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = $downloadDir
@@ -122,7 +118,7 @@ if ( $continue ) {
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
-               logoutput => true,
+               logoutput => $logOutput,
              }
         File {
                ensure  => present,
@@ -130,9 +126,9 @@ if ( $continue ) {
                mode    => 0555,
                owner   => $user,
                group   => $group,
-             }     
+             }
      }
-     Solaris: { 
+     Solaris: {
 
         $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path             = $downloadDir
@@ -141,7 +137,7 @@ if ( $continue ) {
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
-               logoutput => true,
+               logoutput => $logOutput,
              }
         File {
                ensure  => present,
@@ -149,69 +145,67 @@ if ( $continue ) {
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }   
-     
+             }
+
      }
-     windows: { 
+     windows: {
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $path             = $downloadDir 
+        $path             = $downloadDir
 
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
 
         Exec { path      => $execPath,
-               logoutput => true,
+               logoutput => $logOutput,
              }
         File { ensure  => present,
                replace => 'yes',
                mode    => 0777,
-             }     
+             }
      }
    }
 
-    
+
    # the py script used by the wlst
    file { "${path}/${title}${script}":
       path    => "${path}/${title}${script}",
       content => template("wls/wlst/${script}.erb"),
    }
-     
+
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
         exec { "execwlst ${title}${script}":
           command     => "${javaCommand} ${path}/${title}${script}",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           require     => File["${path}/${title}${script}"],
-        }    
+        }
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
               exec { "rm ${path}/${title}${script}":
                  command => "rm -I ${path}/${title}${script}",
                  require => Exec["execwlst ${title}${script}"],
               }
            }
-           Solaris: { 
+           Solaris: {
               exec { "rm ${path}/${title}${script}":
                  command => "rm ${path}/${title}${script}",
                  require => Exec["execwlst ${title}${script}"],
               }
            }
-        }     
-    
+        }
 
      }
-     windows: { 
+     windows: {
 
         exec { "execwlst ${title}${script}":
           command     => "C:\\Windows\\System32\\cmd.exe /c ${javaCommand} ${path}/${title}${script}",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           require     => File["${path}/${title}${script}"],
-        }    
-
+        }
 
         exec { "rm ${path}/${title}${script}":
            command => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/${title}${script}",
@@ -219,8 +213,6 @@ if ( $continue ) {
         }
      }
    }
-
-
 
 }
 }

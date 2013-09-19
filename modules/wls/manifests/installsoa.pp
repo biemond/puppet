@@ -1,6 +1,6 @@
 # == Define: wls::installsoa
 #
-# installs Oracle SOA Suite addon   
+# installs Oracle SOA Suite addon
 #
 # === Examples
 #
@@ -8,14 +8,14 @@
 #    $wls11gVersion = "1036"
 #
 #  case $operatingsystem {
-#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: {
 #       $osMdwHome    = "/opt/wls/Middleware11gR1"
 #       $osWlHome     = "/opt/wls/Middleware11gR1/wlserver_10.3"
 #       $oracleHome   = "/opt/wls/"
 #       $user         = "oracle"
 #       $group        = "dba"
 #     }
-#     windows: { 
+#     windows: {
 #       $osMdwHome    = "c:/oracle/wls11g"
 #       $osWlHome     = "c:/oracle/wls11g/wlserver_10.3"
 #       $user         = "Administrator"
@@ -27,20 +27,18 @@
 #  Wls::Installsoa {
 #    mdwHome      => $osMdwHome,
 #    wlHome       => $osWlHome,
-#    fullJDKName  => $jdkWls11gJDK,	
+#    fullJDKName  => $jdkWls11gJDK,
 #    user         => $user,
-#    group        => $group,    
+#    group        => $group,
 #  }
-#  
+#
 #
 #  wls::installsoa{'soaPS5':
 #    soaFile1      => 'ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip',
 #    soaFile2      => 'ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip',
 #  }
 #
-## 
-
-
+##
 define wls::installsoa($mdwHome         = undef,
                        $wlHome          = undef,
                        $oracleHome      = undef,
@@ -50,20 +48,20 @@ define wls::installsoa($mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install',
-                       $puppetDownloadMntPoint  = undef,  
+                       $puppetDownloadMntPoint  = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $soaOracleHome   = "${mdwHome}/Oracle_SOA1"
         $oraInventory    = "${oracleHome}/oraInventory"
-        
+
         $soaInstallDir   = "linux64"
         $jreLocDir       = "/usr/java/${fullJDKName}"
-        
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -74,9 +72,9 @@ define wls::installsoa($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }        
+             }
      }
-     Solaris: { 
+     Solaris: {
 
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
@@ -85,7 +83,7 @@ define wls::installsoa($mdwHome         = undef,
 
         $soaInstallDir   = "intelsolaris"
         $jreLocDir       = "/usr/jdk/${fullJDKName}"
-                
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -96,20 +94,20 @@ define wls::installsoa($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }        
+             }
      }
-     windows: { 
+     windows: {
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = $downloadDir 
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c"
+        $path             = $downloadDir
         $soaOracleHome    = "${mdwHome}/Oracle_SOA1"
-        
+
         Exec { path      => $execPath,
              }
         File { ensure  => present,
                mode    => 0777,
-             }   
+             }
      }
    }
 
@@ -119,24 +117,23 @@ define wls::installsoa($mdwHome         = undef,
        $continue = true
      } else {
        if ( $found ) {
-         notify {"wls::installsoa ${title} ${soaOracleHome} already exists":}
          $continue = false
        } else {
          notify {"wls::installsoa ${title} ${soaOracleHome} does not exists":}
-         $continue = true 
+         $continue = true
        }
      }
 
 if ( $continue ) {
 
    if $puppetDownloadMntPoint == undef {
-     $mountPoint =  "puppet:///modules/wls/"    	
+     $mountPoint =  "puppet:///modules/wls/"
    } else {
      $mountPoint =	$puppetDownloadMntPoint
    }
 
    wls::utils::orainst{'create soa oraInst':
-            oraInventory    => $oraInventory, 
+            oraInventory    => $oraInventory,
             group           => $group,
    }
 
@@ -165,11 +162,11 @@ if ( $continue ) {
      require => [File ["${path}/${title}silent_soa.xml"],File["${path}/${soaFile1}"]],
     }
    }
-   
+
    $command  = "-silent -response ${path}/${title}silent_soa.xml -waitforcompletion "
-    
+
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
@@ -186,14 +183,14 @@ if ( $continue ) {
           require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
          }
         }
-        
+
         exec { "install soa ${title}":
           command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
           creates     => $soaOracleHome,
-        }    
+        }
      }
-     Solaris: { 
+     Solaris: {
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
@@ -216,15 +213,15 @@ if ( $continue ) {
           require => [Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
         }
 
-        
+
         exec { "install soa ${title}":
           command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"],Exec["add -d64 oraparam.ini soa"]],
           creates     => $soaOracleHome,
-        }    
+        }
      }
 
-     windows: { 
+     windows: {
 
         if ! defined(Exec["extract ${soaFile1}"]) {
          exec { "extract ${soaFile1}":
@@ -242,18 +239,18 @@ if ( $continue ) {
          }
         }
 
-        exec {"icacls soa disk ${title}": 
+        exec {"icacls soa disk ${title}":
            command    => "${checkCommand} icacls ${path}\\soa\\* /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
            require    => [Exec["extract ${soaFile2}"],Exec["extract ${soaFile1}"]],
-        } 
+        }
 
         exec { "install soa ${title}":
           command     => "${path}\\soa\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
           require     => [Exec["icacls soa disk ${title}"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile2}"],Exec["extract ${soaFile1}"]],
-          creates     => $soaOracleHome, 
-        }    
+          creates     => $soaOracleHome,
+        }
 
      }
    }

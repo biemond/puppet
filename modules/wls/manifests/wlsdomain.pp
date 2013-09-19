@@ -1,11 +1,11 @@
 # == Define: wls::wlsdomain
 #
-# install a new weblogic domain  
+# install a new weblogic domain
 # support a normal WebLogic Domain , OSB , OSB plus SOA, OSB plus SOA & BPM , ADF , Webcenter, Webcenter + Content + BPM
 # use parameter wlsTemplate to control this
 #
 # in weblogic 12.1.2 the domain creation will also create a nodemanager inside the domain folder
-# other version need to manually create a nodemanager. 
+# other version need to manually create a nodemanager.
 #
 # === Examples
 #
@@ -19,16 +19,16 @@
 #  $address         = "localhost"
 #  $wlsUser         = "weblogic"
 #  $password        = "weblogic1"
-# 
-# 
+#
+#
 #  case $operatingsystem {
-#     centos, redhat, OracleLinux, Ubuntu, debian: { 
+#     centos, redhat, OracleLinux, Ubuntu, debian: {
 #       $osMdwHome    = "/opt/oracle/wls/wls11g"
 #       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
 #       $user         = "oracle"
 #       $group        = "dba"
 #     }
-#     windows: { 
+#     windows: {
 #       $osMdwHome    = "c:/oracle/wls/wls11g"
 #       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
 #       $user         = "Administrator"
@@ -42,14 +42,14 @@
 #  Wls::Wlsdomain {
 #    wlHome       => $osWlHome,
 #    mdwHome      => $osMdwHome,
-#    fullJDKName  => $jdkWls11gJDK, 
+#    fullJDKName  => $jdkWls11gJDK,
 #    user         => $user,
-#    group        => $group,    
+#    group        => $group,
 #  }
 #
 # # install OSB domain
 # wls::wlsdomain{
-# 
+#
 #   'osbDomain':
 #   wlsTemplate     => $osTemplate,
 #   domain          => $wlsDomainName,
@@ -57,8 +57,8 @@
 #   adminListenPort => $adminListenPort,
 #   nodemanagerPort => $nodemanagerPort,
 # }
-## 
-# 
+##
+#
 
 define wls::wlsdomain ($version         = '1111',
                        $wlHome          = undef,
@@ -79,30 +79,25 @@ define wls::wlsdomain ($version         = '1111',
                        $reposDbUrl      = undef,
                        $reposPrefix     = undef,
                        $reposPassword   = undef,
-                       $dbUrl           = undef,  
+                       $dbUrl           = undef,
                        $sysPassword     = undef,
                        ) {
-
-   notify {"Domain ${domain} wlHome ${wlHome}":}
 
    $domainPath  = "${mdwHome}/user_projects/domains"
    $appPath     = "${mdwHome}/user_projects/applications"
 
-
-
-     # check if the domain already exists 
-     $found = domain_exists("${domainPath}/${domain}",$version)
-     if $found == undef {
-       $continue = true
+   # check if the domain already exists
+   $found = domain_exists("${domainPath}/${domain}",$version)
+   if $found == undef {
+     $continue = true
+   } else {
+     if ( $found ) {
+       $continue = false
      } else {
-       if ( $found ) {
-         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} ${version} already exists":}
-         $continue = false
-       } else {
-         notify {"wls::wlsdomain ${title} ${domainPath}/${domain} ${version} does not exists":}
-         $continue = true 
-       }
+       notify {"wls::wlsdomain ${title} ${domainPath}/${domain} ${version} does not exists":}
+       $continue = true
      }
+   }
 
 
 if ( $continue ) {
@@ -146,7 +141,7 @@ if ( $continue ) {
      $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
 
    }
-   
+
 
    $templateOSB          = "${mdwHome}/Oracle_OSB1/common/templates/applications/wlsb.jar"
    $templateSOAAdapters  = "${mdwHome}/Oracle_OSB1/common/templates/applications/oracle.soa.common.adapters_template_11.1.1.jar"
@@ -156,14 +151,14 @@ if ( $continue ) {
    $templateBAM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bam_template_11.1.1.jar"
 
    $templateSpaces       = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.wc_spaces_template_11.1.1.jar"
-   $templateBPMSpaces    = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.bpm.spaces_template_11.1.1.jar" 
+   $templateBPMSpaces    = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.bpm.spaces_template_11.1.1.jar"
    $templatePortlets     = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.producer_apps_template_11.1.1.jar"
    $templatePagelet      = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.pagelet-producer_template_11.1.1.jar"
    $templateDiscussion   = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.owc_discussions_template_11.1.1.jar"
 
    $templateUCM          = "${mdwHome}/Oracle_WCC1/common/templates/applications/oracle.ucm.cs_template_11.1.1.jar"
 
-   
+
    if $wlsTemplate == 'standard' {
       $templateFile  = "wls/domains/domain.xml.erb"
       $wlstPath      = "${wlHome}/common/bin"
@@ -172,7 +167,7 @@ if ( $continue ) {
       $templateFile  = "wls/domains/domain_osb.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_OSB1/common/bin"
       $oracleHome    = "${mdwHome}/Oracle_OSB1"
-      
+
    } elsif $wlsTemplate == 'osb_soa' {
       $templateFile  = "wls/domains/domain_osb_soa.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
@@ -187,7 +182,7 @@ if ( $continue ) {
       $templateFile  = "wls/domains/domain_osb_soa_bpm.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
       $oracleHome    = "${mdwHome}/Oracle_SOA1"
-      
+
    } elsif $wlsTemplate == 'wc' {
       $templateFile  = "wls/domains/domain_wc.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_WC1/common/bin"
@@ -201,10 +196,10 @@ if ( $continue ) {
    } else {
       $templateFile  = "wls/domains/domain.xml.erb"
       $wlstPath      = "${wlHome}/common/bin"
-   } 
+   }
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         $execPath         = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin"
         $path             = $downloadDir
@@ -223,9 +218,9 @@ if ( $continue ) {
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }     
+             }
      }
-     Solaris: { 
+     Solaris: {
 
         $execPath         = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin"
         $path             = $downloadDir
@@ -244,24 +239,24 @@ if ( $continue ) {
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }   
-     
+             }
+
      }
-     windows: { 
+     windows: {
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $path             = $downloadDir 
+        $path             = $downloadDir
         $JAVA_HOME        = "c:\\oracle\\${fullJDKName}"
         $nodeMgrMachine   = "Machine"
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c"
+
         Exec { path      => $execPath,
                logoutput => true,
              }
         File { ensure  => present,
                replace => 'yes',
                mode    => 0777,
-             }     
+             }
      }
    }
 
@@ -294,9 +289,9 @@ if ( $continue ) {
 
       $nodeMgrLogDir                  = "${logDir}/nodemanager_${domain}.log"
 
-      # create all log folders 
+      # create all log folders
       case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {    
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
            if ! defined(Exec["create ${logDir} directory"]) {
              exec { "create ${logDir} directory":
                      command => "mkdir -p ${logDir}",
@@ -306,7 +301,7 @@ if ( $continue ) {
            }
          }
          windows: {
-           $logDirWin = slash_replace( $logDir )          
+           $logDirWin = slash_replace( $logDir )
            if ! defined(Exec["create ${logDir} directory"]) {
              exec { "create ${logDir} directory":
                   command => "${checkCommand} mkdir ${logDirWin}",
@@ -314,32 +309,32 @@ if ( $continue ) {
              }
            }
          }
-         default: { 
-           fail("Unrecognized operating system") 
+         default: {
+           fail("Unrecognized operating system")
          }
-      }   
-   
+      }
+
       if ! defined(File["${logDir}"]) {
            file { "${logDir}" :
              ensure  => directory,
-             recurse => false, 
+             recurse => false,
              replace => false,
              require => Exec["create ${logDir} directory"],
            }
-      }    
+      }
    }
 
    if ( $version == "1212" and $wlsTemplate == 'adf' ) {
      # only works for a 12c middleware home
-     # creates RCU for ADF 
-     if ( $dbUrl == undefined or 
-          $sysPassword  == undefined or 
-          $reposPassword  == undefined or 
+     # creates RCU for ADF
+     if ( $dbUrl == undefined or
+          $sysPassword  == undefined or
+          $reposPassword  == undefined or
           $reposPrefix  == undefined
      ) {
        fail("Not all RCU parameters are provided")
-     } 
-     
+     }
+
      wls::utils::rcu{ "RCU_12c ${title}":
                      product                => 'adf',
                      oracleHome             => $oracleHome,
@@ -348,7 +343,7 @@ if ( $continue ) {
                      group                  => $group,
                      downloadDir            => $downloadDir,
                      action                 => 'create',
-                     dbUrl                  => $dbUrl,  
+                     dbUrl                  => $dbUrl,
                      sysPassword            => $sysPassword,
                      schemaPrefix           => $reposPrefix,
                      reposPassword          => $reposPassword,
@@ -356,19 +351,19 @@ if ( $continue ) {
     }
    }
 
-    
+
    # the domain.py used by the wlst
    file { "domain.py ${domain} ${title}":
      path    => "${path}/domain_${domain}.py",
      content => template($templateFile),
    }
 
-   # make the default domain folders 
+   # make the default domain folders
    if ! defined(File["${mdwHome}/user_projects"]) {
       # check oracle install folder
       file { "${mdwHome}/user_projects" :
         ensure  => directory,
-        recurse => false, 
+        recurse => false,
         replace => false,
       }
    }
@@ -377,7 +372,7 @@ if ( $continue ) {
       # check oracle install folder
       file { "${mdwHome}/user_projects/domains" :
         ensure  => directory,
-        recurse => false, 
+        recurse => false,
         replace => false,
         require => File["${mdwHome}/user_projects"],
       }
@@ -387,27 +382,27 @@ if ( $continue ) {
       # check oracle install folder
       file { "${mdwHome}/user_projects/applications" :
         ensure  => directory,
-        recurse => false, 
+        recurse => false,
         replace => false,
         require => File["${mdwHome}/user_projects"],
       }
    }
 
-   $packCommand    = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -template_name=domain_${domain} -log=${path}/domain_${domain}.log -log_priority=INFO"  
+   $packCommand    = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -template_name=domain_${domain} -log=${path}/domain_${domain}.log -log_priority=INFO"
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
-        
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
+
         exec { "execwlst ${domain} ${title}":
           command     => "${wlstPath}/wlst.sh ${path}/domain_${domain}.py",
           environment => ["JAVA_HOME=${JAVA_HOME}"],
           unless      => "/usr/bin/test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
-        }    
+        }
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
               exec { "setDebugFlagOnFalse ${domain} ${title}":
                 command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
                 onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
@@ -418,7 +413,7 @@ if ( $continue ) {
                 require     => Exec["execwlst ${domain} ${title}"],
               }
            }
-           Solaris: { 
+           Solaris: {
              exec { "setDebugFlagOnFalse ${domain} ${title}":
                command => "sed -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh > /tmp/test.tmp && mv /tmp/test.tmp ${domainPath}/${domain}/bin/setDomainEnv.sh",
                onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
@@ -429,32 +424,32 @@ if ( $continue ) {
                 require     => Exec["execwlst ${domain} ${title}"],
              }
            }
-        }     
+        }
 
         exec { "pack domain ${domain} ${title}":
            command     => "${wlHome}/common/bin/pack.sh ${packCommand}",
            require     => Exec["setDebugFlagOnFalse ${domain} ${title}"],
            creates     => "${path}/domain_${domain}.jar",
         }
-     
+
      }
-     windows: { 
-     
+     windows: {
+
         notify{"${domainPath}/${domain} ${title}":}
-        
+
         exec { "execwlst ${domain} ${title}":
           command     => "C:\\Windows\\System32\\cmd.exe /c ${wlstPath}/wlst.cmd ${path}/domain_${domain}.py",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           creates     => "${domainPath}/${domain}",
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
-        }    
+        }
 
-        exec {"icacls domain ${title}": 
+        exec {"icacls domain ${title}":
            command    => "C:\\Windows\\System32\\cmd.exe /c  icacls ${domainPath}/${domain} /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
            require   => Exec["execwlst ${domain} ${title}"],
-        } 
+        }
 
         exec { "domain.py ${domain} ${title}":
            command     => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/domain_${domain}.py",
@@ -468,14 +463,14 @@ if ( $continue ) {
         }
      }
    }
- 
+
    $nodeMgrHome  = "${domainPath}/${domain}/nodemanager"
    $listenPort   = $nodemanagerPort
-     
+
    # set our 12.1.2 nodemanager properties
    if ( $version == "1212" ){
        case $operatingsystem {
-          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris, windows: { 
+          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris, windows: {
             file { "nodemanager.properties ux 1212 ${title}":
                 path    => "${nodeMgrHome}/nodemanager.properties",
                 ensure  => present,
@@ -486,5 +481,5 @@ if ( $continue ) {
           }
        }
      }
-}  
+}
 }

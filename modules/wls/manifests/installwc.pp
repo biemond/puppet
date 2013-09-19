@@ -1,6 +1,6 @@
 # == Define: wls::installwc
 #
-# installs Oracle Webcenter    
+# installs Oracle Webcenter
 #
 # === Examples
 #
@@ -17,41 +17,41 @@
 #  Wls::Installwc {
 #    mdwHome      => $osMdwHome,
 #    wlHome       => $osWlHome,
-#    fullJDKName  => $jdkWls11gJDK, 
+#    fullJDKName  => $jdkWls11gJDK,
 #    user         => $user,
-#    group        => $group,    
+#    group        => $group,
 #  }
-#  
+#
 #
 #  wls::installwc{'wcPS6':
 #    wcFile      => 'ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip',
 #  }
 #
-## 
+##
 
 
 define wls::installwc( $mdwHome         = undef,
                        $wlHome          = undef,
                        $oracleHome      = undef,
                        $fullJDKName     = undef,
-                       $wcFile          = undef, 
+                       $wcFile          = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install',
-                       $puppetDownloadMntPoint  = undef,  
+                       $puppetDownloadMntPoint  = undef,
                     ) {
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
         $wcOracleHome    = "${mdwHome}/Oracle_WC1"
         $oraInventory    = "${oracleHome}/oraInventory"
-        
+
         $wcInstallDir    = "linux64"
         $jreLocDir       = "/usr/java/${fullJDKName}"
-        
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -62,9 +62,9 @@ define wls::installwc( $mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }        
+             }
      }
-     Solaris: { 
+     Solaris: {
 
         $execPath        = "/usr/jdk/${fullJDKName}/bin/amd64:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
@@ -73,7 +73,7 @@ define wls::installwc( $mdwHome         = undef,
 
         $wcInstallDir    = "intelsolaris"
         $jreLocDir       = "/usr/jdk/${fullJDKName}"
-                
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -84,20 +84,20 @@ define wls::installwc( $mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }        
+             }
      }
-     windows: { 
+     windows: {
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = $downloadDir 
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c"
+        $path             = $downloadDir
         $wcOracleHome     = "${mdwHome}/Oracle_WC1"
-        
+
         Exec { path      => $execPath,
              }
         File { ensure  => present,
                mode    => 0555,
-             }   
+             }
      }
    }
 
@@ -107,11 +107,10 @@ define wls::installwc( $mdwHome         = undef,
        $continue = true
      } else {
        if ( $found ) {
-         notify {"wls::installwc ${title} ${$wcOracleHome} already exists":}
          $continue = false
        } else {
          notify {"wls::installwc ${title} ${$wcOracleHome} does not exists":}
-         $continue = true 
+         $continue = true
        }
      }
 
@@ -119,13 +118,13 @@ define wls::installwc( $mdwHome         = undef,
 if ( $continue ) {
 
    if $puppetDownloadMntPoint == undef {
-     $mountPoint =  "puppet:///modules/wls/"      
+     $mountPoint =  "puppet:///modules/wls/"
    } else {
      $mountPoint =  $puppetDownloadMntPoint
    }
 
    wls::utils::orainst{'create wc oraInst':
-            oraInventory    => $oraInventory, 
+            oraInventory    => $oraInventory,
             group           => $group,
    }
 
@@ -147,11 +146,11 @@ if ( $continue ) {
     }
    }
 
-   
+
    $command  = "-silent -response ${path}/${title}silent_wc.xml -waitforcompletion "
-    
+
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         if ! defined(Exec["extract ${wcFile}"]) {
          exec { "extract ${wcFile}":
@@ -160,15 +159,15 @@ if ( $continue ) {
           creates => "${path}/wc",
          }
         }
-        
+
         exec { "install wc ${title}":
           command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
           creates     => $wcOracleHome,
-        }    
+        }
 
      }
-     Solaris: { 
+     Solaris: {
 
         if ! defined(Exec["extract ${wcFile}"]) {
          exec { "extract ${wcFile}":
@@ -187,34 +186,34 @@ if ( $continue ) {
           command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"],Exec["add -d64 oraparam.ini wc"]],
           creates     => $wcOracleHome,
-        }    
+        }
 
-             
+
      }
 
-     windows: { 
+     windows: {
 
         if ! defined(Exec["extract ${wcFile}"]) {
          exec { "extract ${wcFile}":
           command => "${checkCommand} unzip ${path}/${wcFile} -d ${path}/wc",
           require => File ["${path}/${wcFile}"],
-          creates => "${path}/wc/Disk1", 
+          creates => "${path}/wc/Disk1",
           cwd     => $path,
          }
         }
 
-        exec {"icacls wc disk ${title}": 
+        exec {"icacls wc disk ${title}":
            command    => "${checkCommand} icacls ${path}\\wc\\* /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
            require    => Exec["extract ${wcFile}"],
-        } 
+        }
 
         exec { "install wc ${title}":
           command     => "${path}\\wc\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
           require     => [Exec["icacls wc disk ${title}"],File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
-          creates     => $wcOracleHome, 
-        }    
+          creates     => $wcOracleHome,
+        }
 
      }
    }
