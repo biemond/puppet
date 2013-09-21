@@ -247,8 +247,6 @@ elsif $version == "1111" {
                 ensure     => true,
                 require    => File ["nodemanager.properties win ${title}"],
         }
-
-
      }
    }
  }

@@ -10,7 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
-- 1.1.1 updated license to Apache 2.0, less notify output and logOutput parameters    
+- 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
 - 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom, removed java.security.egd parameter    
 - 1.0.10 createUser param in installwls,installadf(12.1.2) and installjdev when you want to create the OS user and group yourself  
 - 1.0.9 replaced sleep with waitforcompletion parameter  
@@ -78,6 +78,7 @@ WLS WebLogic Features
 - apply oracle patch ( OPatch for Oracle products )
 - installs Oracle JDeveloper 11g / 12.1.2 + soa suite plugin
 - configures + starts nodemanager
+- start or stop a WebLogic server
 - storeUserConfig for storing credentials and using in WLST
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 - can start the AdminServer for WLST Domain configuration 
@@ -861,20 +862,28 @@ WebLogic configuration examples
 	    downloadDir  => $downloadDir, 
 	    wlsUser      => "weblogic",
 	    password     => hiera('weblogic_password_default'),
-	
 	  }
-	  
-	  # start AdminServer for configuration
-	  wls::wlstexec { 
-	    'startWLSAdminServer12c':
-	     script      => 'startWlsServer.py',
-	     port        =>  $nodemanagerPort,
-	     params      =>  ["domain     = '${wlsDomainName}'",
-	                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-	                      "wlsServer  = 'AdminServer'"],
-	     require     => Wls::Nodemanager['nodemanager12c'];
+
+	  # start AdminServers for configuration
+	  wls::wlscontrol{'startWLSAdminServer12c':
+	    wlsDomain     => $wlsDomainName,
+	    wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+	    wlsServer     => "AdminServer",
+	    action        => 'start',
+	    wlHome        => $osWlHome,
+	    fullJDKName   => $jdkWls12gJDK,  
+	    wlsUser       => "weblogic",
+	    password      => hiera('weblogic_password_default'),
+	    address       => $address,
+	    port          => $nodemanagerPort,
+	    user          => $user,
+	    group         => $group,
+	    downloadDir   => $downloadDir,
+	    logOutput     => true, 
+	    require       => Wls::Nodemanager['nodemanager12c'],
 	  }
-	
+
+
 	  # create Server template for Dynamic Clusters 
 	  wls::wlstexec { 
 	    'createServerTemplate1':
@@ -884,7 +893,7 @@ WebLogic configuration examples
 	     params        =>  ["server_template_name          = 'serverTemplate1'",
 	                        "server_template_listen_port   = 7100",
 	                        "dynamic_server_name_arguments ='-XX:PermSize=128m -XX:MaxPermSize=256m -Xms512m -Xmx1024m'"],
-	     require       => Wls::Wlstexec['startWLSAdminServer12c'];
+	     require       => Wls::Wlscontrol['startWLSAdminServer12c'];
 	  }
 	
 	  # create Dynamic Cluster 
@@ -1120,32 +1129,26 @@ WebLogic configuration examples
         reposPrefix     => $reposPrefix,
         reposPassword   => $reposPassword,
       }
-    
-      # default parameters for the wlst scripts
-      Wls::Wlstexec {
-        wlsDomain    => $wlsDomainName,
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
-        user         => $user,
-        group        => $group,
-        address      => $address,
-        downloadDir  => $downloadDir, 
-      }
-      
-      # start AdminServers for configuration of WLS Domain
-      wls::wlstexec { 
-        'startOSBSOAAdminServer':
-         wlsUser     => "weblogic",
-         password    => "weblogic1",
-       #  userConfigFile => "${userConfigDir}/${user}-osbSoaDomain-WebLogicConfig.properties"
-       #  userKeyFile    => "${userConfigDir}/${user}-osbSoaDomain-WebLogicKey.properties", 
-         script      => 'startWlsServer.py',
-         port        => $nodemanagerPort,
-         params      =>  ["domain     = '${wlsDomainName}'",
-                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-                          "wlsServer  = 'AdminServer'"],
-         require     => Wls::Wlsdomain['osbSoaDomain'];
-      }
+
+	  # start AdminServers for configuration
+	  wls::wlscontrol{'startOSBSOAAdminServer':
+	    wlsDomain     => $wlsDomainName,
+	    wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+	    wlsServer     => "AdminServer",
+	    action        => 'start',
+	    wlHome        => $osWlHome,
+	    fullJDKName   => $jdkWls11gJDK,  
+	    wlsUser       => "weblogic",
+	    password      => hiera('weblogic_password_default'),
+	    address       => $address,
+	    port          => $nodemanagerPort,
+	    user          => $user,
+	    group         => $group,
+	    downloadDir   => $downloadDir,
+	    logOutput     => true, 
+	    require       =>  Wls::Wlsdomain['osbSoaDomain'],
+	  }
+
     
       # create keystores for automatic WLST login
       wls::storeuserconfig{
@@ -1161,7 +1164,7 @@ WebLogic configuration examples
         group         => $group,
         userConfigDir => $userConfigDir, 
         downloadDir   => $downloadDir, 
-        require       => Wls::Wlstexec['startOSBSOAAdminServer'],
+        require       => Wls::Wlscontrol['startOSBSOAAdminServer'],
       }
     
       # set the defaults
@@ -1268,29 +1271,24 @@ WebLogic configuration examples
 	    reposPrefix     => $reposPrefix,
 	    reposPassword   => $reposPassword,
 	  }
-	
-	  # default parameters for the wlst scripts
-	  Wls::Wlstexec {
-	    wlsDomain    => $wlsDomainName,
-	    wlHome       => $osWlHome,
-	    fullJDKName  => $jdkWls11gJDK,  
-	    user         => $user,
-	    group        => $group,
-	    address      => $address,
-	    downloadDir  => $downloadDir, 
-	  }
-	  
-	  # start AdminServers for configuration of WLS Domain
-	  wls::wlstexec { 
-	    'startWCAdminServer':
-	     wlsUser     => "weblogic",
-	     password    => hiera('weblogic_password_default'),
-	     script      => 'startWlsServer.py',
-	     port        => $nodemanagerPort,
-	     params      =>  ["domain     = '${wlsDomainName}'",
-	                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-	                      "wlsServer  = 'AdminServer'"],
-	     require     => Wls::Wlsdomain['wcWccBpmDomain'];
+
+	  # start AdminServers for configuration
+	  wls::wlscontrol{'startWCAdminServer':
+	    wlsDomain     => $wlsDomainName,
+	    wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+	    wlsServer     => "AdminServer",
+	    action        => 'start',
+	    wlHome        => $osWlHome,
+	    fullJDKName   => $jdkWls11gJDK,  
+	    wlsUser       => "weblogic",
+	    password      => hiera('weblogic_password_default'),
+	    address       => $address,
+	    port          => $nodemanagerPort,
+	    user          => $user,
+	    group         => $group,
+	    downloadDir   => $downloadDir,
+	    logOutput     => true, 
+	    require       =>  Wls::Wlsdomain['wcWccBpmDomain'],
 	  }
 	
 	  # create keystores for automatic WLST login
@@ -1307,7 +1305,7 @@ WebLogic configuration examples
 	    group         => $group,
 	    userConfigDir => $userConfigDir, 
 	    downloadDir   => $downloadDir, 
-	    require       => Wls::Wlstexec['startWCAdminServer'],
+	    require       => Wls::Wlscontrol['startWCAdminServer'],
 	  }
 	}
     
@@ -1364,32 +1362,25 @@ WebLogic configuration examples
         logDir          => $logDir,
         downloadDir     => $downloadDir, 
       }
-    
-      # default parameters for the wlst scripts
-      Wls::Wlstexec {
-        wlsDomain    => $wlsDomainName,
-        wlHome       => $osWlHome,
-        fullJDKName  => $jdkWls11gJDK,  
-        user         => $user,
-        group        => $group,
-        address      => $address,
-        downloadDir  => $downloadDir, 
-      }
-      
-      # start AdminServers for configuration of WLS Domain
-      wls::wlstexec { 
-        'startOSBAdminServer':
-         wlsUser     => "weblogic",
-         password    => "weblogic1",
-    #     userConfigFile => '/home/oracle/oracle-osbDomain-WebLogicConfig.properties',
-    #     userKeyFile    => '/home/oracle/oracle-osbDomain-WebLogicKey.properties',
-         script      => 'startWlsServer.py',
-         port        => $nodemanagerPort,
-         params      =>  ["domain     = '${wlsDomainName}'",
-                          "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-                          "wlsServer  = 'AdminServer'"],
-         require     => Wls::Wlsdomain['osbDomain'];
-      }
+
+	  # start AdminServers for configuration
+	  wls::wlscontrol{'startOSBAdminServer':
+	    wlsDomain     => $wlsDomainName,
+	    wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+	    wlsServer     => "AdminServer",
+	    action        => 'start',
+	    wlHome        => $osWlHome,
+	    fullJDKName   => $jdkWls11gJDK,  
+	    wlsUser       => "weblogic",
+	    password      => hiera('weblogic_password_default'),
+	    address       => $address,
+	    port          => $nodemanagerPort,
+	    user          => $user,
+	    group         => $group,
+	    downloadDir   => $downloadDir,
+	    logOutput     => true, 
+	    require       =>  Wls::Wlsdomain['osbDomain'],
+	  }
     
       Wls::Changefmwlogdir {
         mdwHome        => $osMdwHome,
@@ -1406,7 +1397,7 @@ WebLogic configuration examples
        'AdminServer':
         wlsServer    => "AdminServer",
         logDir       => $logDir,
-        require      => Wls::Wlstexec['startOSBAdminServer'],
+        require      => Wls::Wlscontrol['startOSBAdminServer'],
       }
     }
     
