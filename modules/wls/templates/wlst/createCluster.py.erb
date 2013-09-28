@@ -1,0 +1,42 @@
+
+wlsUser    = '<%= @wlsUser %>'  
+password   = '<%= @password %>' 
+machine    = '<%= @address %>'  
+portNumber = '<%= @port %>'     
+
+# clusterName, clusterNodes
+<% params.each do |param| -%>   
+<%= param %>                    
+<% end -%>                      
+
+clusterNodesTargets=String(clusterNodes).split(",")
+
+useStoreConfig = '<%= @useStoreConfig %>'
+
+if useStoreConfig != "true":
+    connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+else:
+    connect(userConfigFile='<%= @userConfigFile %>', userKeyFile='<%= @userKeyFile %>', url='t3://'+machine+':'+portNumber)    
+
+edit()
+startEdit()
+
+try:
+    cd('/')
+    print 'Create Cluster';
+    cmo.createCluster(clusterName)
+
+    cd('/Clusters/WebCluster')
+    cmo.setClusterMessagingMode('unicast')
+    cmo.setMigrationBasis('consensus')
+
+    for node in clusterNodesTargets:
+      cd('/Servers/'+node)
+      cmo.setCluster(getMBean('/Clusters/'+clusterName))
+
+    save()
+    activate()          
+except:
+    print "Unexpected error:", sys.exc_info()[0]
+    undo('true','y')
+    stopEdit('y')
