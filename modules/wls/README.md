@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.1.2 create Managed Server, less notify output    
 - 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
 - 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom, removed java.security.egd parameter    
 - 1.0.10 createUser param in installwls,installadf(12.1.2) and installjdev when you want to create the OS user and group yourself  
@@ -1148,7 +1149,6 @@ WebLogic configuration examples
 	    logOutput     => true, 
 	    require       =>  Wls::Wlsdomain['osbSoaDomain'],
 	  }
-
     
       # create keystores for automatic WLST login
       wls::storeuserconfig{
@@ -1166,6 +1166,39 @@ WebLogic configuration examples
         downloadDir   => $downloadDir, 
         require       => Wls::Wlscontrol['startOSBSOAAdminServer'],
       }
+
+	  $userConfigFile = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties"
+	  $userKeyFile    = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties"
+	
+	  # default parameters for the wlst scripts
+	  Wls::Wlstexec {
+	    wlsDomain      => $wlsDomainName,
+	    wlHome         => $osWlHome,
+	    fullJDKName    => $jdkWls11gJDK,  
+	    user           => $user,
+	    group          => $group,
+	    address        => "localhost",
+	    userConfigFile => $userConfigFile,
+	    userKeyFile    => $userKeyFile,
+	    port           => "7001",
+	    downloadDir    => $downloadDir,
+	    logOutput      => false, 
+	  }
+	
+	  # create managed server 
+	  wls::wlstexec { 
+	    'createManagerServerWlsServer1':
+	     wlstype       => "server",
+	     wlsObjectName => "wlsServer1",
+	     script        => 'createServer.py',
+	     params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer1.out -Dweblogic.Stderr=/data/logs/wlsServer1_err.out'",
+	                       "wlsServerName    = 'wlsServer1'",
+	                       "machineName      = 'LocalMachine'",
+	                       "listenAddress    = 9201",
+	                       "nodeMgrLogDir    = '/data/logs'",
+	                      ],
+	    require      => Wls::Storeuserconfig['osbSoaDomain_keys'],
+	  }
     
       # set the defaults
       Wls::Changefmwlogdir {
@@ -1186,7 +1219,7 @@ WebLogic configuration examples
        'AdminServer':
         wlsServer    => "AdminServer",
         logDir       => $logDir,
-        require      => Wls::Storeuserconfig['osbSoaDomain_keys'],
+        require      => Wls::Wlstexec['createManagerServerWlsServer1'],
       }
     }
     

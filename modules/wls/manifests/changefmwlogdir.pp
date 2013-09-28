@@ -42,20 +42,21 @@ define wls::changefmwlogdir ($mdwHome        = undef,
                              $group          = 'dba',
                              $wlsServer      = undef,
                              $logDir         = undef,
-                             $downloadDir    = '/install/',
+                             $downloadDir    = '/install',
+                             $logOutput      = false,
                             ) {
 
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
-        $execPath         = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-        $path             = $downloadDir
+        $execPath = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+        $path     = $downloadDir
 
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
-               logoutput => true,
+               logoutput => $logOutput,
              }
         File {
                ensure  => present,
@@ -67,12 +68,12 @@ define wls::changefmwlogdir ($mdwHome        = undef,
      }
      windows: {
 
-        $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $path             = $downloadDir
+        $execPath = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
+        $path     = $downloadDir
 
 
         Exec { path      => $execPath,
-               logoutput => true,
+               logoutput => $logOutput,
              }
         File { ensure  => present,
                replace => 'yes',
@@ -103,22 +104,6 @@ define wls::changefmwlogdir ($mdwHome        = undef,
           require     => File["${path}/${title}changeFMWLogFolder.py"],
         }
 
-        case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
-
-            exec { "rm ${path}/${title}changeFMWLogFolder.py":
-              command => "rm -I ${path}/${title}changeFMWLogFolder.py",
-              require => Exec["execwlst ${title}changeFMWLogFolder.py"],
-            }
-           }
-           Solaris: {
-
-            exec { "rm ${path}/${title}changeFMWLogFolder.py":
-              command => "rm ${path}/${title}changeFMWLogFolder.py",
-              require => Exec["execwlst ${title}changeFMWLogFolder.py"],
-            }
-           }
-        }
      }
      windows: {
 
@@ -128,10 +113,6 @@ define wls::changefmwlogdir ($mdwHome        = undef,
           require     => File["${path}/${title}changeFMWLogFolder.py"],
         }
 
-        exec { "rm ${path}/${title}changeFMWLogFolder.py":
-           command => "C:\\Windows\\System32\\cmd.exe /c rm ${path}/${title}changeFMWLogFolder.py",
-           require => Exec["execwlst ${title}changeFMWLogFolder.py"],
-        }
      }
    }
 }
