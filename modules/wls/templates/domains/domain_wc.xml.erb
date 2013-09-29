@@ -3,6 +3,8 @@ WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
 APP_PATH='<%= @appPath %>/<%= @domain %>'
 
+WEBLOGIC_VERSION='<%= @version %>'
+
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
 WC_COLLABORATION_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @wcCollaborationNodeMgrLogDir %>/wc_collaboration.out -Dweblogic.Stderr=<%= @wcCollaborationNodeMgrLogDir %>/wc_collaboration_err.out'
 WC_PORTLET_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @wcPortletNodeMgrLogDir %>/wc_portlet.out -Dweblogic.Stderr=<%= @wcPortletNodeMgrLogDir %>/wc_portlet_err.out'

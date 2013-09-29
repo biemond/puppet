@@ -3,6 +3,8 @@ WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
 APP_PATH='<%= @appPath %>/<%= @domain %>'
 
+WEBLOGIC_VERSION='<%= @version %>'
+
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
 OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @osbNodeMgrLogDir %>/osb_server1.out -Dweblogic.Stderr=<%= @osbNodeMgrLogDir %>/osb_server1_err.out'
 SOA_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @soaNodeMgrLogDir %>/soa_server1.out -Dweblogic.Stderr=<%= @soaNodeMgrLogDir %>/soa_server1_err.out'

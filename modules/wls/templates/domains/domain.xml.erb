@@ -3,6 +3,8 @@ WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
 APP_PATH='<%= @appPath %>/<%= @domain %>'
 
+WEBLOGIC_VERSION='<%= @version %>'
+
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
 
 print('Start normal domain... with template <%= @template %>')
