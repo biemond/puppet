@@ -4,6 +4,8 @@ class orautils::params {
                                     devagent1  => "/opt/oracle/wls",
                                     devagent10 => "/opt/oracle/wls",
                                     devagent30 => "/opt/oracle/wls",
+                                    devagent40 => "/opt/oracle/wls",
+                                    devagent41 => "/opt/oracle/wls",
                                     wls12      => "/oracle/product",
                                     default    => "/opt/wls", 
                                 }
@@ -12,6 +14,8 @@ class orautils::params {
                                     devagent1  => "/opt/oracle/oraInventory",
                                     devagent10 => "/opt/oracle/oraInventory",
                                     devagent30 => "/opt/oracle/oraInventory",
+                                    devagent40 => "/opt/oracle/oraInventory",
+                                    devagent41 => "/opt/oracle/oraInventory",
                                     wls12      => "/oracle/oraInventory",
                                     default    => "/opt/wls/oraInventory", 
                                 }
@@ -22,6 +26,8 @@ class orautils::params {
                                     devagent30 => "soa",
                                     devagent31 => "soa",
                                     wls12      => "admin",
+                                    devagent40 => "admin",
+                                    devagent41 => "admin",
                                     default    => "web", 
                                 }
 
