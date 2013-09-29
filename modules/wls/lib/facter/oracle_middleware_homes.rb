@@ -338,6 +338,17 @@ def get_domain(name,i,wlsversion)
          end
       end
 
+      machines = ""
+      root.elements.each("machine") do |mch|
+        machines += mch.elements['name'].text + ";"
+      end
+
+      Facter.add("#{prefix}_domain_#{n}_machines") do
+         setcode do
+           machines
+         end
+      end
+      
       
       server_templates = ""
       root.elements.each("server-template") do |svr_template|
