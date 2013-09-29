@@ -1,5 +1,5 @@
 name 'biemond-wls'
-version '1.1.2'
+version '1.2.0'
 
 author 'Edwin Biemond'
 license 'Apache 2.0'

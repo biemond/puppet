@@ -63,6 +63,8 @@ class orautils::params {
   															       }
 
   $osDomain     = $::hostname ? {   wls12      => "Wls12c",
+                                    devagent40 => "WlsDomain", 
+                                    devagent41 => "WlsDomain", 
                                     default    => "osbSoaDomain", 
                                 }
                                 

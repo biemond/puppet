@@ -10,7 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
-- 1.1.2 create Machine, Managed Server & Cluster, less notify output    
+- 1.2.0 Multi node domain support with copydomain class, create Machine, Managed Server & Cluster, less notify output    
 - 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
 - 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom, removed java.security.egd parameter    
 - 1.0.10 createUser param in installwls,installadf(12.1.2) and installjdev when you want to create the OS user and group yourself  
@@ -65,6 +65,17 @@ Some manifests like installwls.pp, opatch.pp, bsupatch.pp, installjdev, installo
 When not provided it uses the files location of the wls puppet module  
 else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/wls/" (default) or  "puppet:///middleware/" 
 
+Oracle WebLogic Domain on multi machines
+----------------------------------------
+When having a Domain on multiple servers you can use the copydomain class, this uses the sshpass and scp utilities to copy the domain to a local folder  
+for sshpass you need to install epel yum repository, do this by installing "puppet module install stahnma/epel"  
+for a complete multinode cluster example see example_conf_2_multi_node_domain_with_cluster.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls   
+
+Everything on 1 machine ( WebLogic 12.1.2 & Database 12c)
+---------------------------------------------------------
+When you want a FMW WebLogic Domain and a Database with a RCU on 1 machine you can look at the following example see example_conf_1_server_with_wls12.1.2_ora_db12c.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls   
+
+
 WLS WebLogic Features
 ---------------------------
 
@@ -84,6 +95,7 @@ WLS WebLogic Features
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 - can start the AdminServer for WLST Domain configuration 
 - add JCA resource adapter plan + Entries
+- Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
 - create machines, managed servers, clusters, server templates, dynamic clusters,coherence clusters ( all 12.1.2 )
 - create File or JDBC Persistence Store
 - create JMS Server, Module, subdeployment, connection factory, JMS (distributed) queue or topic,Foreign Servers + entries  
@@ -1190,125 +1202,193 @@ WebLogic configuration examples
       }
      }
 
-    class wls_application_Cluster {
-  
-      if $jdkWls11gJDK == undef {
-        $jdkWls11gJDK = 'jdk1.7.0_25'
-      }
-  
-      $wlsDomainName   = "osbSoaDomain"
-      $adminListenPort = "7001"
-      $nodemanagerPort = "5556"
-      $address         = "localhost"
-    
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
-           $userConfigDir = '/home/oracle'
-         }
-         Solaris: { 
-           $userConfigDir = '/export/home/oracle'
-         }
-         windows: { 
-           $userConfigDir = "c:/oracle"
-         }
-      }
-     
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
-           $osOracleHome  = "/opt/oracle"
-           $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
-           $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
-           $user          = "oracle"
-           $group         = "dba"
-           $downloadDir   = "/data/install"
-           $logDir        = "/data/logs"
-         }
-         windows: { 
-           $osOracleHome  = "c:/oracle"
-           $osMdwHome     = "c:/oracle/middleware/wls11g"
-           $osWlHome      = "c:/oracle/middleware/wls11g/wlserver_10.3"
-           $user          = "Administrator"
-           $group         = "Administrators"
-           $serviceName   = "C_oracle_middleware_wls11g_wlserver_10.3"
-           $downloadDir   = "c:/temp"
-           $logDir        = "c:/oracle/logs" 
-         }
-      }
-    
-      $userConfigFile = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties"
-      $userKeyFile    = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties"
-    
-      # default parameters for the wlst scripts
-      Wls::Wlstexec {
-        wlsDomain      => $wlsDomainName,
-        wlHome         => $osWlHome,
-        fullJDKName    => $jdkWls11gJDK,  
-        user           => $user,
-        group          => $group,
-        address        => "localhost",
-        userConfigFile => $userConfigFile,
-        userKeyFile    => $userKeyFile,
-        port           => "7001",
-        downloadDir    => $downloadDir,
-        logOutput      => false, 
-      }
-  
-  
-      # create machine
-      wls::wlstexec { 
-        'createRemoteMachine':
-         wlstype       => "machine",
-         wlsObjectName => "RemoteMachine",
-         script        => 'createMachine.py',
-         params        => ["machineName      = 'RemoteMachine'",
-                           "machineDnsName   = 'devagent41.alfa.local'",
-                          ],
-      }
-    
-    
-      # create managed server 1
-      wls::wlstexec { 
-        'createManagerServerWlsServer1':
-         wlstype       => "server",
-         wlsObjectName => "wlsServer1",
-         script        => 'createServer.py',
-         params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer1.out -Dweblogic.Stderr=/data/logs/wlsServer1_err.out'",
-                           "wlsServerName    = 'wlsServer1'",
-                           "machineName      = 'LocalMachine'",
-                           "listenAddress    = 9201",
-                           "nodeMgrLogDir    = '/data/logs'",
-                          ],
-        require        => Wls::Wlstexec['createRemoteMachine'],
-      }
-    
-      # create managed server 2
-      wls::wlstexec { 
-        'createManagerServerWlsServer2':
-         wlstype       => "server",
-         wlsObjectName => "wlsServer2",
-         script        => 'createServer.py',
-         params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer2.out -Dweblogic.Stderr=/data/logs/wlsServer2_err.out'",
-                           "wlsServerName    = 'wlsServer2'",
-                           "machineName      = 'RemoteMachine'",
-                           "listenAddress    = 9202",
-                           "nodeMgrLogDir    = '/data/logs'",
-                          ],
-        require        => Wls::Wlstexec['createManagerServerWlsServer1'],
-      }
-    
-      # create cluster
-      wls::wlstexec { 
-        'createClusterWeb':
-         wlstype       => "cluster",
-         wlsObjectName => "WebCluster",
-         script        => 'createCluster.py',
-         params        => ["clusterName      = 'WebCluster'",
-                           "clusterNodes     = 'wlsServer1,wlsServer2'",
-                          ],
-        require        => Wls::Wlstexec['createManagerServerWlsServer2'],
-      }
-    }
-
+	class wls_cluster2 {
+	  
+	    if $jdkWls11gJDK == undef {
+	      $jdkWls11gJDK = 'jdk1.7.0_25'
+	    }
+	  
+	    $wlsDomainName   = "WlsDomain"
+	  
+	  
+	    $adminListenPort = "7001"
+	    $nodemanagerPort = "5556"
+	    $address         = "devagent40.alfa.local"
+	  
+	    case $operatingsystem {
+	       CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+	         $userConfigDir = '/home/oracle'
+	       }
+	       Solaris: { 
+	         $userConfigDir = '/export/home/oracle'
+	       }
+	       windows: { 
+	         $userConfigDir = "c:/oracle"
+	       }
+	    }
+	   
+	    case $operatingsystem {
+	       CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	         $osOracleHome  = "/opt/oracle"
+	         $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
+	         $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+	         $user          = "oracle"
+	         $group         = "dba"
+	         $downloadDir   = "/data/install"
+	         $logDir        = "/data/logs"
+	       }
+	       windows: { 
+	         $osOracleHome  = "c:/oracle"
+	         $osMdwHome     = "c:/oracle/middleware/wls11g"
+	         $osWlHome      = "c:/oracle/middleware/wls11g/wlserver_10.3"
+	         $user          = "Administrator"
+	         $group         = "Administrators"
+	         $serviceName   = "C_oracle_middleware_wls11g_wlserver_10.3"
+	         $downloadDir   = "c:/temp"
+	         $logDir        = "c:/oracle/logs" 
+	       }
+	    }
+	  
+	    $userConfigFile = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties"
+	    $userKeyFile    = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties"
+	  
+	    # default parameters for the wlst scripts
+	    Wls::Wlstexec {
+	      wlsDomain      => $wlsDomainName,
+	      wlHome         => $osWlHome,
+	      fullJDKName    => $jdkWls11gJDK,  
+	      user           => $user,
+	      group          => $group,
+	      address        => "localhost",
+	      userConfigFile => $userConfigFile,
+	      userKeyFile    => $userKeyFile,
+	      port           => "7001",
+	      downloadDir    => $downloadDir,
+	      logOutput      => false, 
+	    }
+	
+	
+	    # create machine
+	    wls::wlstexec { 
+	      'createRemoteMachine':
+	       wlstype       => "machine",
+	       wlsObjectName => "RemoteMachine",
+	       script        => 'createMachine.py',
+	       params        => ["machineName      = 'RemoteMachine'",
+	                         "machineDnsName   = 'devagent41.alfa.local'",
+	                        ],
+	    }
+	  
+	  
+	    # create managed server 1
+	    wls::wlstexec { 
+	      'createManagerServerWlsServer1':
+	       wlstype       => "server",
+	       wlsObjectName => "wlsServer1",
+	       script        => 'createServer.py',
+	       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer1.out -Dweblogic.Stderr=/data/logs/wlsServer1_err.out'",
+	                         "wlsServerName    = 'wlsServer1'",
+	                         "machineName      = 'LocalMachine'",
+	                         "listenAddress    = 9201",
+	                         "nodeMgrLogDir    = '/data/logs'",
+	                        ],
+	      require        => Wls::Wlstexec['createRemoteMachine'],
+	    }
+	  
+	    # create managed server 2
+	    wls::wlstexec { 
+	      'createManagerServerWlsServer2':
+	       wlstype       => "server",
+	       wlsObjectName => "wlsServer2",
+	       script        => 'createServer.py',
+	       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer2.out -Dweblogic.Stderr=/data/logs/wlsServer2_err.out'",
+	                         "wlsServerName    = 'wlsServer2'",
+	                         "machineName      = 'RemoteMachine'",
+	                         "listenAddress    = 9202",
+	                         "nodeMgrLogDir    = '/data/logs'",
+	                        ],
+	      require        => Wls::Wlstexec['createManagerServerWlsServer1'],
+	    }
+	  
+	    # create cluster
+	    wls::wlstexec { 
+	      'createClusterWeb':
+	       wlstype       => "cluster",
+	       wlsObjectName => "WebCluster",
+	       script        => 'createCluster.py',
+	       params        => ["clusterName      = 'WebCluster'",
+	                         "clusterNodes     = 'wlsServer1,wlsServer2'",
+	                        ],
+	      require        => Wls::Wlstexec['createManagerServerWlsServer2'],
+	    }
+	}
+	
+	
+	class wls_copydomain2 {
+	
+	    if $jdkWls11gJDK == undef {
+	      $jdkWls11gJDK = 'jdk1.7.0_25'
+	    }
+	  
+	    $wlsDomainName   = "WlsDomain"
+	  
+	  
+	    $adminListenPort = "7001"
+	    $nodemanagerPort = "5556"
+	    $address         = "devagent40.alfa.local"
+	  
+	    case $operatingsystem {
+	       CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+	         $userConfigDir = '/home/oracle'
+	       }
+	       Solaris: { 
+	         $userConfigDir = '/export/home/oracle'
+	       }
+	       windows: { 
+	         $userConfigDir = "c:/oracle"
+	       }
+	    }
+	   
+	    case $operatingsystem {
+	       CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+	         $osOracleHome  = "/opt/oracle"
+	         $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
+	         $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+	         $user          = "oracle"
+	         $group         = "dba"
+	         $downloadDir   = "/data/install"
+	         $logDir        = "/data/logs"
+	       }
+	       windows: { 
+	         $osOracleHome  = "c:/oracle"
+	         $osMdwHome     = "c:/oracle/middleware/wls11g"
+	         $osWlHome      = "c:/oracle/middleware/wls11g/wlserver_10.3"
+	         $user          = "Administrator"
+	         $group         = "Administrators"
+	         $serviceName   = "C_oracle_middleware_wls11g_wlserver_10.3"
+	         $downloadDir   = "c:/temp"
+	         $logDir        = "c:/oracle/logs" 
+	       }
+	    }
+	 	
+	    # install SOA OSB domain
+	    wls::copydomain{'copyWlsDomain':
+	     version         => '1111',
+	     wlHome          => $osWlHome,
+	     mdwHome         => $osMdwHome,
+	     fullJDKName     => $jdkWls11gJDK, 
+	     domain          => $wlsDomainName,
+	     adminListenAdr  => $address,
+	     adminListenPort => $adminListenPort,
+	     wlsUser         => "weblogic",
+	     password        => hiera('weblogic_password_default'),
+	     user            => $user,
+	     userPassword    => 'oracle',
+	     group           => $group,    
+	     downloadDir     => $downloadDir, 
+	    }
+	
+	}	
     
     class wls_wc_wcc_bpm_domain{
   

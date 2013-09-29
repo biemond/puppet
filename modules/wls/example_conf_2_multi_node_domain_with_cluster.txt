@@ -1,0 +1,506 @@
+
+# require the following puppet modules jdk7, orautils, wls, sysctl ,limits
+
+node 'devagent40.alfa.local' inherits default {
+
+   include os3, wls2, wls_domain2, wls_cluster2
+   include orautils
+   Class['os3'] -> Class['wls2'] -> Class['wls_domain2'] -> Class['wls_cluster2']
+
+}
+
+node 'devagent41.alfa.local' inherits default {
+
+   include os3, wls2 
+   include orautils
+   include wls_copydomain2
+   Class['os3'] -> Class['wls2'] -> Class['wls_copydomain2'] 
+
+   # puppet module install stahnma/epel
+   include epel
+
+   package { 'sshpass':
+      ensure  => present,
+   }
+
+}
+
+# operating settings for Middleware
+class os3 {
+
+
+  $remove = [ "java-1.7.0-openjdk.x86_64", "java-1.6.0-openjdk.x86_64" ]
+
+  package { $remove:
+    ensure  => absent,
+  }
+
+  include jdk7
+
+  jdk7::install7{ 'jdk1.7.0_40':
+      version              => "7u40" , 
+      fullVersion          => "jdk1.7.0_40",
+      alternativesPriority => 18000, 
+      x64                  => true,
+      downloadDir          => "/install",
+      urandomJavaFix       => false,
+      sourcePath           => "puppet:///modules/jdk7/"
+  }
+    
+  class { 'limits':
+    config => {
+               '*'       => { 'nofile'   => { soft => '2048'   , hard => '8192',   },},
+               'oracle'  => {  'nofile'  => { soft => '65536'  , hard => '65536',  },
+                               'nproc'   => { soft => '2048'   , hard => '16384',   },
+                               'memlock' => { soft => '1048576', hard => '1048576',},
+                               'stack'   => { soft => '10240'  ,},},
+               },
+    use_hiera => false,
+  }
+
+  sysctl { 'kernel.msgmnb':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.msgmax':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.shmmax':                 ensure => 'present', permanent => 'yes', value => '2588483584',}
+  sysctl { 'kernel.shmall':                 ensure => 'present', permanent => 'yes', value => '2097152',}
+  sysctl { 'fs.file-max':                   ensure => 'present', permanent => 'yes', value => '6815744',}
+  sysctl { 'net.ipv4.tcp_keepalive_time':   ensure => 'present', permanent => 'yes', value => '1800',}
+  sysctl { 'net.ipv4.tcp_keepalive_intvl':  ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'net.ipv4.tcp_keepalive_probes': ensure => 'present', permanent => 'yes', value => '5',}
+  sysctl { 'net.ipv4.tcp_fin_timeout':      ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'kernel.shmmni':                 ensure => 'present', permanent => 'yes', value => '4096', }
+  sysctl { 'fs.aio-max-nr':                 ensure => 'present', permanent => 'yes', value => '1048576',}
+  sysctl { 'kernel.sem':                    ensure => 'present', permanent => 'yes', value => '250 32000 100 128',}
+  sysctl { 'net.ipv4.ip_local_port_range':  ensure => 'present', permanent => 'yes', value => '9000 65500',}
+  sysctl { 'net.core.rmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.rmem_max':             ensure => 'present', permanent => 'yes', value => '4194304', }
+  sysctl { 'net.core.wmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.wmem_max':             ensure => 'present', permanent => 'yes', value => '1048576',}
+
+}
+
+
+class wls2{
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_40'
+  }
+
+  if $wls11gVersion == undef {
+    $wls11gVersion = "1036"
+  }
+
+  class { 'wls::urandomfix' :}
+
+                       
+  $puppetDownloadMntPoint = "puppet:///middleware/"
+                    
+ 
+  case $operatingsystem {
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
+       $osOracleHome = "/opt/oracle/wls"
+       $osMdwHome    = "/opt/oracle/wls/Middleware11gR1"
+       $osWlHome     = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+       $user         = "oracle"
+       $group        = "dba"
+       $downloadDir  = "/data/install"
+       $logsDir      = "/data/logs"       
+     }
+     windows: { 
+       $osOracleHome = "c:/oracle/middleware"
+       $osMdwHome    = "c:/oracle/middleware/wls11g"
+       $osWlHome     = "c:/oracle/middleware/wls11g/wlserver_10.3"
+       $user         = "Administrator"
+       $group        = "Administrators"
+       $serviceName  = "C_oracle_middleware_wls11g_wlserver_10.3"
+       $downloadDir  = "c:/temp"
+       $logsDir      = "c:/oracle/logs" 
+     }
+  }
+
+  case $operatingsystem {
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      $mtimeParam = "1"
+    }
+    Solaris: { 
+      $mtimeParam = "+1"
+    }
+  }
+
+  case $operatingsystem {
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+
+      cron { 'cleanwlstmp' :
+        command => "find /tmp -name '*.tmp' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/tmp_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 25,
+      }
+     
+      cron { 'mdwlogs' :
+        command => "find ${osMdwHome}/logs -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 30,
+      }
+    }
+  }
+     
+
+  # set the defaults
+  Wls::Installwls {
+    version                => $wls11gVersion,
+    fullJDKName            => $jdkWls11gJDK,
+    oracleHome             => $osOracleHome,
+    mdwHome                => $osMdwHome,
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint,
+  }
+  
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,  
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+    downloadDir  => $downloadDir, 
+  }
+
+  Wls::Bsupatch {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    fullJDKName            => $jdkWls11gJDK,
+    user                   => $user,
+    group                  => $group,
+    downloadDir            => $downloadDir, 
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+  # install
+  wls::installwls{'11gPS5':}
+
+  # weblogic patch 10.3.6.0.5
+  wls::bsupatch{'p16619891':
+     patchId      => 'L51R',    
+     patchFile    => 'p16619891_1036_Generic.zip',  
+     require      => Wls::Installwls['11gPS5'],
+  }
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager11g':
+     listenPort  => '5556',
+     logDir      => $logsDir,
+     require     => Wls::Bsupatch['p16619891'],
+  }
+
+	orautils::nodemanagerautostart{"autostart weblogic 11g":
+	   version     => "1111",
+	   wlHome      => $osWlHome, 
+	   user        => $user,
+     require     => Wls::Nodemanager['nodemanager11g'],
+	}
+
+}
+
+
+
+class wls_domain2{
+
+
+  if $jdkWls11gJDK == undef {
+    $jdkWls11gJDK = 'jdk1.7.0_40'
+  }
+
+  $wlsDomainName   = "WlsDomain"  
+  $osTemplate      = "standard"
+
+  $adminListenPort = "7001"
+  $nodemanagerPort = "5556"
+  $address         = "devagent40.alfa.local"
+
+  case $operatingsystem {
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+       $userConfigDir = '/home/oracle'
+     }
+     Solaris: { 
+       $userConfigDir = '/export/home/oracle'
+     }
+     windows: { 
+       $userConfigDir = "c:/oracle"
+     }
+  }
+ 
+  case $operatingsystem {
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+       $osOracleHome  = "/opt/oracle/wls"
+       $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
+       $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+       $user          = "oracle"
+       $group         = "dba"
+       $downloadDir   = "/data/install"
+       $logDir        = "/data/logs"
+     }
+     windows: { 
+       $osOracleHome  = "c:/oracle/middleware"
+       $osMdwHome     = "c:/oracle/middleware/wls11g"
+       $osWlHome      = "c:/oracle/middleware/wls11g/wlserver_10.3"
+       $user          = "Administrator"
+       $group         = "Administrators"
+       $serviceName   = "C_oracle_middleware_wls11g_wlserver_10.3"
+       $downloadDir   = "c:/temp"
+       $logDir        = "c:/oracle/logs" 
+     }
+  }
+
+
+  # install SOA OSB domain
+  wls::wlsdomain{'wlsDomain':
+    wlHome          => $osWlHome,
+    mdwHome         => $osMdwHome,
+    fullJDKName     => $jdkWls11gJDK, 
+    wlsTemplate     => $osTemplate,
+    domain          => $wlsDomainName,
+    adminServerName => "AdminServer",
+    adminListenAdr  => $address,
+    adminListenPort => $adminListenPort,
+    nodemanagerPort => $nodemanagerPort,
+    wlsUser         => "weblogic",
+    password        => hiera('weblogic_password_default'),
+    user            => $user,
+    group           => $group,    
+    logDir          => $logDir,
+    downloadDir     => $downloadDir, 
+    reposDbUrl      => $reposUrl,
+    reposPrefix     => $reposPrefix,
+    reposPassword   => $reposPassword,
+  }
+
+  
+  # start AdminServers for configuration
+  wls::wlscontrol{'startWlsAdminServer':
+      wlsDomain     => $wlsDomainName,
+      wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+      wlsServer     => "AdminServer",
+      action        => 'start',
+      wlHome        => $osWlHome,
+      fullJDKName   => $jdkWls11gJDK,  
+      wlsUser       => "weblogic",
+      password      => hiera('weblogic_password_default'),
+      address       => $address,
+      port          => $nodemanagerPort,
+      user          => $user,
+      group         => $group,
+      downloadDir   => $downloadDir,
+      logOutput     => true, 
+      require       => Wls::Wlsdomain['wlsDomain'],
+  }
+
+  # create keystores for automatic WLST login
+  wls::storeuserconfig{
+   'osbSoaDomain_keys':
+    wlHome        => $osWlHome,
+    fullJDKName   => $jdkWls11gJDK,
+    domain        => $wlsDomainName, 
+    address       => $address,
+    wlsUser       => "weblogic",
+    password      => hiera('weblogic_password_default'),
+    port          => $adminListenPort,
+    user          => $user,
+    group         => $group,
+    userConfigDir => $userConfigDir, 
+    downloadDir   => $downloadDir, 
+    require       => Wls::Wlscontrol['startWlsAdminServer'],
+  }
+
+
+}
+
+
+class wls_cluster2 {
+  
+    if $jdkWls11gJDK == undef {
+      $jdkWls11gJDK = 'jdk1.7.0_40'
+    }
+  
+    $wlsDomainName   = "WlsDomain"
+  
+  
+    $adminListenPort = "7001"
+    $nodemanagerPort = "5556"
+    $address         = "devagent40.alfa.local"
+  
+    case $operatingsystem {
+       CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         $userConfigDir = '/home/oracle'
+       }
+       Solaris: { 
+         $userConfigDir = '/export/home/oracle'
+       }
+       windows: { 
+         $userConfigDir = "c:/oracle"
+       }
+    }
+   
+    case $operatingsystem {
+       CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         $osOracleHome  = "/opt/oracle"
+         $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
+         $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+         $user          = "oracle"
+         $group         = "dba"
+         $downloadDir   = "/data/install"
+         $logDir        = "/data/logs"
+       }
+       windows: { 
+         $osOracleHome  = "c:/oracle"
+         $osMdwHome     = "c:/oracle/middleware/wls11g"
+         $osWlHome      = "c:/oracle/middleware/wls11g/wlserver_10.3"
+         $user          = "Administrator"
+         $group         = "Administrators"
+         $serviceName   = "C_oracle_middleware_wls11g_wlserver_10.3"
+         $downloadDir   = "c:/temp"
+         $logDir        = "c:/oracle/logs" 
+       }
+    }
+  
+    $userConfigFile = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties"
+    $userKeyFile    = "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties"
+  
+    # default parameters for the wlst scripts
+    Wls::Wlstexec {
+      wlsDomain      => $wlsDomainName,
+      wlHome         => $osWlHome,
+      fullJDKName    => $jdkWls11gJDK,  
+      user           => $user,
+      group          => $group,
+      address        => "localhost",
+      userConfigFile => $userConfigFile,
+      userKeyFile    => $userKeyFile,
+      port           => "7001",
+      downloadDir    => $downloadDir,
+      logOutput      => false, 
+    }
+
+
+    # create machine
+    wls::wlstexec { 
+      'createRemoteMachine':
+       wlstype       => "machine",
+       wlsObjectName => "RemoteMachine",
+       script        => 'createMachine.py',
+       params        => ["machineName      = 'RemoteMachine'",
+                         "machineDnsName   = 'devagent41.alfa.local'",
+                        ],
+    }
+  
+  
+    # create managed server 1
+    wls::wlstexec { 
+      'createManagerServerWlsServer1':
+       wlstype       => "server",
+       wlsObjectName => "wlsServer1",
+       script        => 'createServer.py',
+       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer1.out -Dweblogic.Stderr=/data/logs/wlsServer1_err.out'",
+                         "wlsServerName    = 'wlsServer1'",
+                         "machineName      = 'LocalMachine'",
+                         "listenAddress    = 9201",
+                         "nodeMgrLogDir    = '/data/logs'",
+                        ],
+      require        => Wls::Wlstexec['createRemoteMachine'],
+    }
+  
+    # create managed server 2
+    wls::wlstexec { 
+      'createManagerServerWlsServer2':
+       wlstype       => "server",
+       wlsObjectName => "wlsServer2",
+       script        => 'createServer.py',
+       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer2.out -Dweblogic.Stderr=/data/logs/wlsServer2_err.out'",
+                         "wlsServerName    = 'wlsServer2'",
+                         "machineName      = 'RemoteMachine'",
+                         "listenAddress    = 9202",
+                         "nodeMgrLogDir    = '/data/logs'",
+                        ],
+      require        => Wls::Wlstexec['createManagerServerWlsServer1'],
+    }
+  
+    # create cluster
+    wls::wlstexec { 
+      'createClusterWeb':
+       wlstype       => "cluster",
+       wlsObjectName => "WebCluster",
+       script        => 'createCluster.py',
+       params        => ["clusterName      = 'WebCluster'",
+                         "clusterNodes     = 'wlsServer1,wlsServer2'",
+                        ],
+      require        => Wls::Wlstexec['createManagerServerWlsServer2'],
+    }
+}
+
+
+class wls_copydomain2 {
+
+    if $jdkWls11gJDK == undef {
+      $jdkWls11gJDK = 'jdk1.7.0_40'
+    }
+  
+    $wlsDomainName   = "WlsDomain"
+  
+  
+    $adminListenPort = "7001"
+    $nodemanagerPort = "5556"
+    $address         = "devagent40.alfa.local"
+  
+    case $operatingsystem {
+       CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+         $userConfigDir = '/home/oracle'
+       }
+       Solaris: { 
+         $userConfigDir = '/export/home/oracle'
+       }
+       windows: { 
+         $userConfigDir = "c:/oracle"
+       }
+    }
+   
+    case $operatingsystem {
+       CentOS, RedHat, OracleLinux, Ubuntu, Debian, Solaris: { 
+         $osOracleHome  = "/opt/oracle"
+         $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
+         $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+         $user          = "oracle"
+         $group         = "dba"
+         $downloadDir   = "/data/install"
+         $logDir        = "/data/logs"
+       }
+       windows: { 
+         $osOracleHome  = "c:/oracle"
+         $osMdwHome     = "c:/oracle/middleware/wls11g"
+         $osWlHome      = "c:/oracle/middleware/wls11g/wlserver_10.3"
+         $user          = "Administrator"
+         $group         = "Administrators"
+         $serviceName   = "C_oracle_middleware_wls11g_wlserver_10.3"
+         $downloadDir   = "c:/temp"
+         $logDir        = "c:/oracle/logs" 
+       }
+    }
+ 	
+    # install SOA OSB domain
+    wls::copydomain{'copyWlsDomain':
+     version         => '1111',
+     wlHome          => $osWlHome,
+     mdwHome         => $osMdwHome,
+     fullJDKName     => $jdkWls11gJDK, 
+     domain          => $wlsDomainName,
+     adminListenAdr  => $address,
+     adminListenPort => $adminListenPort,
+     wlsUser         => "weblogic",
+     password        => hiera('weblogic_password_default'),
+     user            => $user,
+     userPassword    => 'oracle',
+     group           => $group,    
+     downloadDir     => $downloadDir, 
+    }
+
+}	
