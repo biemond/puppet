@@ -35,7 +35,7 @@ define wls::opatch(  $oracleProductHome = undef,
                      $patchFile         = undef,
                      $user              = 'oracle',
                      $group             = 'dba',
-                     $downloadDir       = '/install/',
+                     $downloadDir       = '/install',
                      $puppetDownloadMntPoint  = undef,
                     ) {
 
@@ -140,7 +140,7 @@ if ( $continue ) {
         }
 
         exec { "exec opatch ux ${title}":
-          command     => "${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleProductHome} ${path}${patchId}",
+          command     => "${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleProductHome} ${path}/${patchId}",
           require     => Exec["extract opatch ${patchFile} ${title}"],
         }
 

@@ -1,5 +1,5 @@
 name 'biemond-jdk7'
-version '0.3.3'
+version '0.3.4'
 
 author 'Edwin Biemond'
 license 'Apache 2.0'

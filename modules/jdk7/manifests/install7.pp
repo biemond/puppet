@@ -54,6 +54,7 @@ define jdk7::install7 (
     replace => false,
     owner   => $user,
     group   => $group,
+    mode    => 0777,
   }
 
   exec { "create ${$downloadDir} directory":
