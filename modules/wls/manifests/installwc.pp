@@ -164,6 +164,7 @@ if ( $continue ) {
           command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
           creates     => $wcOracleHome,
+          timeout     => 0,
         }
 
      }
@@ -186,6 +187,7 @@ if ( $continue ) {
           command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"],Exec["add -d64 oraparam.ini wc"]],
           creates     => $wcOracleHome,
+          timeout     => 0,
         }
 
 
@@ -213,6 +215,7 @@ if ( $continue ) {
           logoutput   => true,
           require     => [Exec["icacls wc disk ${title}"],File ["${path}/${title}silent_wc.xml"],Exec["extract ${wcFile}"]],
           creates     => $wcOracleHome,
+          timeout     => 0,
         }
 
      }

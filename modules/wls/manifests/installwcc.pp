@@ -188,6 +188,7 @@ if ( $continue ) {
           command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"]],
           creates     => $wccOracleHome,
+          timeout     => 0,
         }
 
      }
@@ -218,6 +219,7 @@ if ( $continue ) {
           command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile1}"],Exec["extract ${wccFile2}"],Exec["add -d64 oraparam.ini wcc"]],
           creates     => $wccOracleHome,
+          timeout     => 0,
         }
 
      }
@@ -253,6 +255,7 @@ if ( $continue ) {
           logoutput   => true,
           require     => [Exec["icacls wcc disk ${title}"],File["${path}/${title}silent_wcc.xml"],Exec["extract ${wccFile2}"],Exec["extract ${wccFile1}"]],
           creates     => $wccOracleHome,
+          timeout     => 0,
         }
 
      }

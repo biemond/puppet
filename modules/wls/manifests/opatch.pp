@@ -119,7 +119,7 @@ if ( $continue ) {
    }
 
 
-   # the patch used by the bsu
+   # the patch used by the opatch
    if ! defined(File["${path}/${patchFile}"]) {
     file { "${path}/${patchFile}":
      source  => "${mountPoint}/${patchFile}",

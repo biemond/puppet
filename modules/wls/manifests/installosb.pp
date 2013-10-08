@@ -181,9 +181,8 @@ if ( $continue ) {
           command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome,
+          timeout     => 0,
         }
-
-
      }
      Solaris: {
 
@@ -205,6 +204,7 @@ if ( $continue ) {
           command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"],Exec["add -d64 oraparam.ini osb"]],
           creates     => $osbOracleHome,
+          timeout     => 0,
         }
 
         # fix opatch bug with d64 param on jdk x64
@@ -246,6 +246,7 @@ if ( $continue ) {
           logoutput   => true,
           require     => [Exec["icacls osb disk ${title}"],File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome,
+          timeout     => 0,
         }
      }
    }

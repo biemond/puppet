@@ -188,6 +188,7 @@ if ( $continue ) {
           command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
           creates     => $soaOracleHome,
+          timeout     => 0,
         }
      }
      Solaris: {
@@ -218,6 +219,7 @@ if ( $continue ) {
           command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"],Exec["add -d64 oraparam.ini soa"]],
           creates     => $soaOracleHome,
+          timeout     => 0,
         }
      }
 
@@ -250,6 +252,7 @@ if ( $continue ) {
           logoutput   => true,
           require     => [Exec["icacls soa disk ${title}"],File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile2}"],Exec["extract ${soaFile1}"]],
           creates     => $soaOracleHome,
+          timeout     => 0,
         }
 
      }
