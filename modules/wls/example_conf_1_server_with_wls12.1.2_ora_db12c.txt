@@ -316,17 +316,24 @@ class wls12c_adf_domain2{
     password     => hiera('weblogic_password_default'),
 
   }
-  
-  # start AdminServer for configuration
-  wls::wlstexec { 
-    'startWLSAdminServer12c':
-     script      => 'startWlsServer.py',
-     port        =>  $nodemanagerPort,
-     params      =>  ["domain     = '${wlsDomainName}'",
-                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
-                      "wlsServer  = 'AdminServer'"],
-     require     => Wls::Nodemanager['nodemanager12c'];
 
+  # start AdminServers for configuration
+  wls::wlscontrol{'startWLSAdminServer12c':
+      wlsDomain     => $wlsDomainName,
+      wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+      wlsServer     => "AdminServer",
+      action        => 'start',
+      wlHome        => $osWlHome,
+      fullJDKName   => $jdkWls12gJDK,  
+      wlsUser       => "weblogic",
+      password      => hiera('weblogic_password_default'),
+      address       => $address,
+      port          => $nodemanagerPort,
+      user          => $user,
+      group         => $group,
+      downloadDir   => $downloadDir,
+      logOutput     => true, 
+      require       => Wls::Nodemanager['nodemanager12c'],
   }
 
   # create Server template for Dynamic Clusters 
@@ -338,7 +345,7 @@ class wls12c_adf_domain2{
      params        =>  ["server_template_name          = 'serverTemplateCluster'",
                         "server_template_listen_port   = 7100",
                         "dynamic_server_name_arguments ='-XX:PermSize=128m -XX:MaxPermSize=256m -Xms512m -Xmx1024m'"],
-     require       => Wls::Wlstexec['startWLSAdminServer12c'];
+     require       => Wls::Wlscontrol['startWLSAdminServer12c'];
   }
 
   # create Dynamic Cluster 

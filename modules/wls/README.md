@@ -76,6 +76,10 @@ Everything on 1 machine ( WebLogic 12.1.2 & Database 12c)
 ---------------------------------------------------------
 When you want a FMW WebLogic Domain and a Database with a RCU on 1 machine you can look at the following example see example_conf_1_server_with_wls12.1.2_ora_db12c.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls   
 
+Standard WebLogic 12.1.2 server with a domain ( no ADF or FMW )
+------------------------------------------------------------------------
+see example_conf_3_server_wls12.1.2_standard.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
+
 
 WLS WebLogic Features
 ---------------------------
