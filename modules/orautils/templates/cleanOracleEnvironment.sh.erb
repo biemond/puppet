@@ -1,4 +1,4 @@
-#!/bin/sh
+#<%= @shell %>
 # *************************************************************************
 # This script can be used to clean the oracle environment
 #
@@ -7,10 +7,24 @@ osDownloadFolder=<%= @osDownloadFolder %>
 osMdwHome=<%= @osMdwHome %>
 osWlHome=<%= @osWlHome %>
 oraUser=<%= @oraUser %>
+userHome=<%= @userHome %>
+oraInstHome=<%= @oraInstHome %>
+oraInstHome=<%= @oraInstHome %>
+osLogFolder=<%= @osLogFolder %>
+oraInventory=<%= @oraInventory %>
+
 echo "vars=${osOracleHome} ${osDownloadFolder} ${osMdwHome} ${osWlHome} ${oraUser}"
 
-PID=`/bin/ps -eo pid,cmd | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
-AdminPID=`/bin/ps -eo pid,cmd | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
+
+unamestr=`uname`
+if [[ "$unamestr" == 'SunOS' ]]; then
+   checkStmt='/usr/ucb/ps wwxa'
+else 
+   checkStmt='/bin/ps -eo pid,cmd'
+fi
+
+PID=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
+AdminPID=`${checkStmt} | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
 
 if [ ${PID} ]
 then
@@ -26,14 +40,21 @@ else
     echo "Step 2 Remove mdwhome, $osOracleHome"
     rm -rf $osOracleHome
     echo "Step 3 Remove beahome list of user $oraUser"
-    rm -rf "/home/${oraUser}/bea"
-    echo "Step 4 Remove /etc/oraInst.loc"
-    rm -rf /etc/oraInst.loc  
+    rm -rf "${userHome}/${oraUser}/bea"
+    echo "Step 4 Remove ${oraInstHome}/oraInst.loc"
+    rm -rf "${oraInstHome}/oraInst.loc"  
     echo "Step 5 Remove ${osDownloadFolder}/osb"
     rm -rf "${osDownloadFolder}/osb"  
     echo "Step 6 Remove ${osDownloadFolder}/soa"
     rm -rf "${osDownloadFolder}/soa"   
     echo "Step 7 Remove ${osDownloadFolder}/*.xml"
     rm -rf $osDownloadFolder/*.xml   
+    echo "Step 8 Remove ${osLogFolder}/*"
+    rm -rf $osLogFolder/*   
+    echo "Step 9 Remove ${oraInventory}"
+    rm -rf $oraInventory   
+    echo "Step 10 Remove domain secureconfig files"
+    rm -rf "${userHome}/${oraUser}/*WebLogicConfig.properties" "${userHome}/${oraUser}/*WebLogicKey.properties"   
+
   fi
 fi

@@ -1,0 +1,162 @@
+
+WLHOME='<%= @wlHome %>'
+DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
+APP_PATH='<%= @appPath %>/<%= @domain %>'
+
+WEBLOGIC_VERSION='<%= @version %>'
+
+ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
+OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @osbNodeMgrLogDir %>/osb_server1.out -Dweblogic.Stderr=<%= @osbNodeMgrLogDir %>/osb_server1_err.out'
+
+
+print('Start...wls domain with template <%= @template %>')
+readTemplate('<%= @template %>')
+
+print('Set nodemanager password and crossdomain')
+create('base_domain','SecurityConfiguration')
+cd('/SecurityConfiguration/base_domain')
+set('CrossDomainSecurityEnabled',true)
+set('NodeManagerPasswordEncrypted','<%= @password %>' )
+set('NodeManagerUsername','<%= @wlsUser %>' )
+
+cd('/')
+print('Set domain log')
+create('base_domain','Log')
+cd('/Log/base_domain')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+
+cd('/')
+create('LocalMachine', '<%= @nodeMgrMachine %>')
+
+
+cd('/Servers/AdminServer')
+
+# name of adminserver
+set('Name','<%= @adminServerName %>' )
+
+cd('/Servers/<%= @adminServerName %>')
+set('Machine','LocalMachine')
+
+# address and port
+#set('ListenAddress','<%= @adminListenAdr %>')
+set('ListenPort',<%= @adminListenPort %>)
+
+setOption( "AppDir", APP_PATH )
+
+create('<%= @adminServerName %>','ServerStart')
+cd('ServerStart/<%= @adminServerName %>')
+set('Arguments', ADM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','SSL')
+cd('SSL/<%= @adminServerName %>')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','Log')
+cd('/Server/<%= @adminServerName %>/Log/<%= @adminServerName %>')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+
+
+print('Set password...')
+cd('/')
+cd('Security/base_domain/User/weblogic')
+
+# weblogic user name + password
+set('Name','<%= @wlsUser %>')
+cmo.setPassword('<%= @password %>')
+
+# Set domain save options:
+# - CreateStartMenu: Enable creation of Start Menu shortcut.
+# - ServerStartMode: Set mode to development.
+# - JavaHome: Sets home directory for the JVM used when starting the server.
+# - OverwriteDomain: Overwrites domain, when saving, if one exists.
+
+setOption('ServerStartMode', 'dev')
+setOption('JavaHome', '<%= @JAVA_HOME %>')
+setOption('OverwriteDomain', 'false')
+
+print('write domain...')
+# write path + domain name
+writeDomain('<%= @domainPath %>/<%= @domain %>')
+
+closeTemplate()
+
+es = encrypt('<%= @password %>',DOMAIN_PATH)
+
+readDomain(DOMAIN_PATH)
+
+print('set domain password...') 
+cd('/SecurityConfiguration/<%= @domain %>')
+set('CredentialEncrypted',es)
+cd('/')
+
+
+setOption( "AppDir", APP_PATH )
+
+print 'Adding EM Template'
+addTemplate('<%= @templateEM %>')
+
+dumpStack();
+
+print('Extend...osb domain with template <%= @templateOSB %>')
+addTemplate('<%= @templateWS %>')
+addTemplate('<%= @templateOSB %>')
+
+dumpStack();
+updateDomain()
+
+closeDomain();
+readDomain(DOMAIN_PATH)
+
+setOption( "AppDir", APP_PATH )
+
+cd('Servers/osb_server1')
+set('Machine','LocalMachine')
+
+create('osb_server1','ServerStart')
+cd('ServerStart/osb_server1')
+set('Arguments', OSB_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+
+cd('/Server/osb_server1')
+create('osb_server1','SSL')
+cd('SSL/osb_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+cd('/Server/osb_server1')
+create('osb_server1','Log')
+cd('/Server/osb_server1/Log/osb_server1')
+set('FileName','<%= @osbNodeMgrLogDir %>/osb_server1.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+dumpStack();
+updateDomain()
+closeDomain()
+
+#createBootPropertiesFile(DOMAIN_PATH+'/servers/osb_server1/security','<%= @wlsUser %>',<%= @password %>)
+
+print('Exiting...')
+exit()

@@ -17,6 +17,30 @@ add the jdk-7u7-linux-x64.tar.gz (downloaded from Oracle website) to the files f
 - set this java as default
 - updates urandom device for weblogic performance in java.security
 
+JRockit JAVA SE 6 puppet module
+==============================
+
+Installs the jdk and optionally the jre, demos etc.
+---------------------------------------------------
+
+Installs the jrockit jdk on linux and windows based systems with 64 or 32 bit architecture. The approriate installer must be copied to the files directory of the module; for example jrockit-jdk1.6.0_45-R28.2.7-4.1.0-linux-x64.bin
+
+The module does the following:
+
+- downloads the installer to the download folder of the puppet agent host
+- performs a silent installation
+- sets the java links in /usr/java ( latest and default ) 
+- adds to alternatives for linux systems
+- optionally sets JRockit as default java
+
+The default settings are:
+
+- Demos are not installed
+- Source is not installed
+- The jre is installed
+- The installed version is set as the default
+
+
 Oracle Database Linux puppet module
 =================================================
 
@@ -24,88 +48,40 @@ created by Edwin Biemond
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
-Should work for RedHat,CentOS ,Ubuntu, Debian or OracleLinux 
+Should work for RedHat,CentOS ,Ubuntu, Debian, Suse SLES or OracleLinux 
 
 Oracle Database Features
 ---------------------------
 
+- Oracle Database 12.1.0.1 Linux installation
 - Oracle Database 11.2.0.3 Linux installation
 - Oracle Database 11.2.0.1 Linux installation
 - Oracle Database Net configuration   
-- Oracle Database Listener   
+- Oracle Database Listener
+- OPatch upgrade      
 - Apply OPatch  
 - Create database instances  
 - Stop/Start database instances  
-- Installs RCU repositoy for Oracle SOA Suite   
+- Installs RCU repositoy for Oracle SOA Suite / Webcenter ( 11.1.1.6.0 and 11.1.1.7.0 )   
 
-Coming in next release
-
-- Oracle Database 11.2.0.1 Linux Client installation
    
   
-
 Oracle WebLogic / Fusion Middleware puppet module
 =================================================
 
-created by Edwin Biemond   
+created by Edwin Biemond  email biemond at gmail dot com   
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)    
 
-for more infomation about this Oracle WebLogic / FMW puppet module see this [AMIS blogpost](http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/)
+Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux 
 
-Windows Puppet agents
---------------
-for windows puppet agents it is necessary to install unxutils tools and extract this on the c drive C:\unxutils<br>
-For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the space in c:\program files folder).<br>
-
-Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) and install this forge module on the puppet master<br>
-puppet module install puppetlabs/registry
-
-For other agents like RedHat,CentOS ,Ubuntu, Debian or OracleLinux should work without any problems 
-
-WLS WebLogic Features
----------------------------
-
-- installs WebLogic 10g,11g,12c
-- apply bsu patch ( WebLogic Patch )
-
-- installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
-- installs Oracle Soa Suite 11g 
-- apply oracle patch ( OPatch for OSB and Soa Suite )
-
-- installs Oracle JDeveloper 11g + soa suite plugin
-
-- configures + starts nodemanager
-- storeUserConfig for storing credentials and using in WLST
-
-- domain creation + domain pack
-- domain OSB creation + domain pack
-- domain OSB + SOA creation + domain pack
-- set the log folder of the WebLogic Domain, Managed servers and FMW   
-
-- can start the AdminServer for configuration 
-- add JCA resource adapter plan
-- add JCA resource adapter entries
-- create File or JDBC Persistence Store
-- create JMS Server
-- create JMS Module
-- create JMS subdeployment
-- create JMS connection factory
-- create JMS queue or topic
-- create users with group
-- create SAF agents 
-- create SAF Remote Destinations
-- create SAf imported Destinations
-- create SAF objects
-- create Foreign Servers
-- create Foreign Servers entries
-- run every wlst script with the flexible WLST define
-- deploy an OSB project to the OSB server
-
+See the wls module for all the latest details
 
 
 Oracle WebLogic orautils puppet module
 =======================================================
+
+Autostart the WebLogic Nodemanager ( etc/init.d , chkconfig )
 
 Generates WLS Scripts in /opt/scripts/wls
 -----------------------------------------

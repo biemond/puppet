@@ -28,6 +28,24 @@ module Puppet::Parser::Functions
         end 
         i += 1
       end
+      
+      #check for weblogic >= 12.1.2
+      if lookupvar('ora_inst_products') != :undefined
+        ora = lookupvar('ora_inst_products')
+        if ora.nil?
+          return false
+        else
+          software = args[0].strip
+          os = lookupvar('operatingsystem')
+          if os == "windows"
+            software = software.gsub("/","\\")
+          end 
+          if ora.include? software
+            return true
+          end
+        end
+      end  
+
     end
     return wls_exists
   end

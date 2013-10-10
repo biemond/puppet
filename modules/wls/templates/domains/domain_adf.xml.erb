@@ -1,0 +1,168 @@
+
+WLHOME='<%= @wlHome %>'
+DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
+APP_PATH='<%= @appPath %>/<%= @domain %>'
+
+
+WEBLOGIC_VERSION='<%= @version %>'
+ADF_REPOS_DBURL='<%= @reposDbUrl %>'
+ADF_REPOS_DBUSER_PREFIX='<%= @reposPrefix %>'
+ADF_REPOS_DBPASSWORD='<%= @reposPassword %>'
+
+
+
+ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
+
+print('Start...adf domain with template <%= @template %>')
+readTemplate('<%= @template %>')
+
+create('base_domain','Log')
+cd('/Log/base_domain')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+
+cd('/')
+create('LocalMachine', '<%= @nodeMgrMachine %>')
+
+
+cd('/Servers/AdminServer')
+
+# name of adminserver
+set('Name','<%= @adminServerName %>' )
+
+cd('/Servers/<%= @adminServerName %>')
+set('Machine','LocalMachine')
+
+# address and port
+#set('ListenAddress','<%= @adminListenAdr %>')
+set('ListenPort',<%= @adminListenPort %>)
+
+setOption( "AppDir", APP_PATH )
+
+create('<%= @adminServerName %>','ServerStart')
+cd('ServerStart/<%= @adminServerName %>')
+set('Arguments', ADM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','SSL')
+cd('SSL/<%= @adminServerName %>')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','Log')
+cd('/Server/<%= @adminServerName %>/Log/<%= @adminServerName %>')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+
+
+print('Set password...')
+cd('/')
+cd('Security/base_domain/User/weblogic')
+
+# weblogic user name + password
+set('Name','<%= @wlsUser %>')
+cmo.setPassword('<%= @password %>')
+
+# Set domain save options:
+# - CreateStartMenu: Enable creation of Start Menu shortcut.
+# - ServerStartMode: Set mode to development.
+# - JavaHome: Sets home directory for the JVM used when starting the server.
+# - OverwriteDomain: Overwrites domain, when saving, if one exists.
+
+setOption('ServerStartMode', 'dev')
+setOption('JavaHome', '<%= @JAVA_HOME %>')
+setOption('OverwriteDomain', 'false')
+
+print('write domain...')
+# write path + domain name
+writeDomain('<%= @domainPath %>/<%= @domain %>')
+
+closeTemplate()
+
+readDomain(DOMAIN_PATH)
+setOption( "AppDir", APP_PATH )
+
+print 'Adding JRF Template'
+addTemplate('<%= @templateJRF %>')
+print 'Adding EM Template'
+addTemplate('<%= @templateEM %>')
+
+dumpStack();
+
+
+
+if WEBLOGIC_VERSION == "1212":
+
+    print 'Add advanced JAX-WS Template'
+    addTemplate('<%= @templateJaxWS %>')
+    print 'Add JAX-WS SOAP over JMS Template'
+    addTemplate('<%= @templateSoapJms %>')
+
+    print 'Change datasources'
+    print 'Change datasource opss-data-source'
+    cd('/JDBCSystemResource/opss-data-source/JdbcResource/opss-data-source/JDBCDriverParams/NO_NAME_0')
+    set('URL',ADF_REPOS_DBURL)
+    set('PasswordEncrypted',ADF_REPOS_DBPASSWORD)
+    cd('Properties/NO_NAME_0/Property/user')
+    set('Value',ADF_REPOS_DBUSER_PREFIX+'_OPSS')
+
+    print 'Change datasource opss-audit-viewDS'
+    cd('/JDBCSystemResource/opss-audit-viewDS/JdbcResource/opss-audit-viewDS/JDBCDriverParams/NO_NAME_0')
+    set('URL',ADF_REPOS_DBURL)
+    set('PasswordEncrypted',ADF_REPOS_DBPASSWORD)
+    cd('Properties/NO_NAME_0/Property/user')
+    set('Value',ADF_REPOS_DBUSER_PREFIX+'_IAU_VIEWER')
+
+    print 'Change datasource opss-audit-DBDS'
+    cd('/JDBCSystemResource/opss-audit-DBDS/JdbcResource/opss-audit-DBDS/JDBCDriverParams/NO_NAME_0')
+    set('URL',ADF_REPOS_DBURL)
+    set('PasswordEncrypted',ADF_REPOS_DBPASSWORD)
+    cd('Properties/NO_NAME_0/Property/user')
+    set('Value',ADF_REPOS_DBUSER_PREFIX+'_IAU_APPEND')
+
+    print 'Change datasource LocalScvTblDataSource'
+    cd('/JDBCSystemResource/LocalSvcTblDataSource/JdbcResource/LocalSvcTblDataSource/JDBCDriverParams/NO_NAME_0')
+    set('URL',ADF_REPOS_DBURL)
+    set('PasswordEncrypted',ADF_REPOS_DBPASSWORD)
+    cd('Properties/NO_NAME_0/Property/user')
+    set('Value',ADF_REPOS_DBUSER_PREFIX+'_STB')
+
+    print 'Add WSMPM Template'
+    addTemplate('<%= @templateWSMPM %>')
+    print 'Change datasource mds-owsm'
+    cd('/JDBCSystemResource/mds-owsm/JdbcResource/mds-owsm/JDBCDriverParams/NO_NAME_0')
+    set('URL',ADF_REPOS_DBURL)
+    set('PasswordEncrypted',ADF_REPOS_DBPASSWORD)
+    cd('Properties/NO_NAME_0/Property/user')
+    set('Value',ADF_REPOS_DBUSER_PREFIX+'_MDS')
+
+    print 'Add server groups WSM-CACHE-SVR WSMPM-MAN-SVR JRF-MAN-SVR'
+    serverGroup = ["WSM-CACHE-SVR" , "WSMPM-MAN-SVR" , "JRF-MAN-SVR"]
+    setServerGroups('AdminServer', serverGroup)                      
+
+    print 'end datasources'
+
+dumpStack();
+updateDomain()
+dumpStack();
+
+closeDomain();
+
+#createBootPropertiesFile(DOMAIN_PATH+'/servers/osb_server1/security','<%= @wlsUser %>',<%= @password %>)
+
+print('Exiting...')
+exit()

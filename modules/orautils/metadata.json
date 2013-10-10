@@ -1,0 +1,13 @@
+{
+  "name": "biemond-orautils",
+  "version": "0.1.8",
+  "summary": "Oracle WebLogic and Database linux utilities scripts",
+  "author": "Edwin Biemond",
+  "description": "Oracle WebLogic and Database linux utilities scripts",
+  "dependencies": [],
+  "types": [],
+  "checksums": {},
+  "source": "https://github.com/biemond/puppet/tree/master/modules/oradb",
+  "project_page": "https://github.com/biemond/puppet/tree/master/modules/orautils",
+  "license": "Apache 2.0"
+}

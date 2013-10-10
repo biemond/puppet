@@ -1,0 +1,2 @@
+connect('<%= @wlsUser %>','<%= @password %>','t3://<%= @adminListenAdr %>:<%= @adminListenPort %>')
+nmEnroll(domainDir='<%= @mdwHome %>/user_projects/domains/<%= @domain %>',nmHome='<%= @nodeMgrHome %>')
