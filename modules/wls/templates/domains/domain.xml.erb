@@ -76,24 +76,26 @@ set('Name','<%= @wlsUser %>')
 cmo.setPassword('<%= @password %>')
 
 # Set domain save options:
-# - CreateStartMenu: Enable creation of Start Menu shortcut.
 # - ServerStartMode: Set mode to development.
 # - JavaHome: Sets home directory for the JVM used when starting the server.
-# - OverwriteDomain: Overwrites domain, when saving, if one exists.
 
 setOption('ServerStartMode', 'dev')
 setOption('JavaHome', '<%= @JAVA_HOME %>')
-setOption('OverwriteDomain', 'false')
-
-if WEBLOGIC_VERSION == "1212":
-    print 'Adding WLS Coherence Template'
-    addTemplate('<%= @templateCoherence %>')
 
 print('write domain...')
 # write path + domain name
 writeDomain(DOMAIN_PATH)
 
 closeTemplate()
+
+readDomain(DOMAIN_PATH)
+
+if WEBLOGIC_VERSION == "1212":
+    print 'Adding WLS Coherence Template'
+    addTemplate('<%= @templateCoherence %>')
+
+updateDomain()
+closeDomain();
 
 es = encrypt('<%= @password %>',DOMAIN_PATH)
 

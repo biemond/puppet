@@ -42,8 +42,7 @@ define wls::installwls( $version     = undef,
                       ) {
 
    $wls1212Parameter     = "1212"
-   $wlsFile1212          = "ofm_wls_generic_12.1.2.0.0_disk1_1of1.zip"
-   $wlsFile1212_jar      = "wls_121200.jar"
+   $wlsFile1212          = "wls_121200.jar"
 
    $wls1211Parameter     = "1211"
    $wlsFile1211          = "wls1211_generic.jar"
@@ -188,34 +187,22 @@ if ( $continue ) {
 		     backup  => false,
 		   }
 
-       exec { "extract ${wlsFile}":
-          command => "unzip ${path}/${wlsFile} -d ${path}/wls",
-          require => File ["wls.jar ${version}"],
-          creates => "${path}/wls",
-       }
-
        $command  = "-silent -responseFile ${path}/silent${version}.xml "
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
-
         exec { "install wls ${title}":
-          command     => "java -jar ${path}/wls/${wlsFile1212_jar} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
-          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"],Exec["extract ${wlsFile}"]],
+          command     => "java -jar ${path}/${wlsFile} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
+          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"]],
           timeout     => 0,
         }
-
      }
      Solaris: {
-
-
         exec { "install wls ${title}":
-          command     => "java -jar ${path}/wls/${wlsFile1212_jar} ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs",
-          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"],Exec["extract ${wlsFile}"]],
+          command     => "java -jar ${path}/${wlsFile} ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs",
+          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"]],
           timeout     => 0,
         }
-
-
      }
 
      windows: {
@@ -227,9 +214,9 @@ if ( $continue ) {
         }
 
         exec { "install wls ${title}":
-          command     => "${checkCommand} java -jar ${path}/wls/${wlsFile1212_jar}  ${command} -ignoreSysPrereqs",
+          command     => "${checkCommand} java -jar ${path}/wls/${wlsFile}  ${command} -ignoreSysPrereqs",
           logoutput   => true,
-          require     => [Wls::Utils::Defaultusersfolders['create wls home'],Exec["icacls wls disk ${title}"],File ["silent.xml ${version}"],Exec["extract ${wlsFile}"]],
+          require     => [Wls::Utils::Defaultusersfolders['create wls home'],Exec["icacls wls disk ${title}"],File ["silent.xml ${version}"]],
           timeout     => 0,
         }
 

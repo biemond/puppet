@@ -10,7 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
-- 1.2.1 Timout fixes + OPatch fix    
+- 1.2.1 Timout fixes + OPatch fix, fix for standard domain and wls 12.1.2, WebLogic 12.1.2 now uses these jars wls_121200.jar, fmw_infra_121200.jar instead of the zip files    
 - 1.2.0 Multi node domain support with copydomain class, create Machine, Managed Server & Cluster, less notify output    
 - 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
 - 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom, removed java.security.egd parameter    
@@ -34,6 +34,11 @@ Version updates
 - 0.9.4 add a JCA resource adapter plan for AQ,JMS & DB plus add AQ,JMS,DB resource adapter entries   
 - 0.9.3 added storeUserConfig(WLST), this way don't need to provide username/password for the wlst scripts plus small bug fixes in check_artifacts   
 - 0.9.2 added (FMW & WLS ) log folder location to the domain and nodemanager   
+
+Vagrant and WebLogic
+--------------------
+
+Look at this great blog http://vbatik.wordpress.com/2013/10/11/weblogic-12-1-2-00-with-vagrant/ 
 
 Linux low on entropy or urandom fix 
 -----------------------------------
@@ -133,7 +138,7 @@ Contains WebLogic Facter which displays the following: Middleware homes, Oracle 
 
 ### My WLS module Files folder ( you need to download it yourself and agree to Oracle Licenses )
 WebLogic 11g + patches: wls1036_generic.jar, p13573621_1036_Generic.zip, p14736139_1036_Generic.zip  
-WebLogic 12.1.2: ofm_wls_generic_12.1.2.0.0_disk1_1of1.zip  
+WebLogic 12.1.2: wls_121200.jar, fmw_infra_121200.jar  
 IDE: jdevstudio11117install.jar, soa-jdev-extension_11117.zip, oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip  
 OSB + SOA software: ofm_osb_generic_11.1.1.7.0_disk1_1of1.zip, ofm_soa_generic_11.1.1.7.0_disk1_1of2.zip, ofm_soa_generic_11.1.1.7.0_disk1_2of2.zip    
 Webcenter software: ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip, ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip, ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip  
@@ -243,7 +248,7 @@ WebLogic configuration examples
     }
   
     wls::installadf{'adf12c':
-       adfFile      => 'ofm_wls_jrf_generic_12.1.2.0.0_disk1_1of1.zip',
+       adfFile      => 'fmw_infra_121200.jar',
        createUser   => true,
     } 
     } 

@@ -36,15 +36,19 @@ class os2 {
     ensure  => present,
   }
 
-
   include jdk7
 
   jdk7::install7{ 'jdk1.7.0_25':
-    version     =>  "7u25" , 
-    fullVersion =>  "jdk1.7.0_25", 
-    x64         =>  true,
-    downloadDir =>  "/data/install",
+      version              => "7u25" , 
+      fullVersion          => "jdk1.7.0_25",
+      alternativesPriority => 17000, 
+      x64                  => true,
+      downloadDir          => "/data/install",
+      urandomJavaFix       => false,
+      sourcePath           => "puppet:///modules/jdk7/"
   }
+
+
 
   class { 'limits':
     config => {
@@ -151,15 +155,12 @@ class db12c2 {
                    dbName                  => 'test',
                    require                 => Oradb::Dbactions['start testDb'],
    }
-
-
-
-
 }
 
 
 class wls12_adf2{
 
+  class { 'wls::urandomfix' :}
 
   if $jdkWls12cJDK == undef {
     $jdkWls12cJDK = 'jdk1.7.0_25'
@@ -188,7 +189,7 @@ class wls12_adf2{
   
 
   wls::installadf{'adf12c':
-     adfFile      => 'ofm_wls_jrf_generic_12.1.2.0.0_disk1_1of1.zip',
+     adfFile      => 'fmw_infra_121200.jar',
   } 
 
 } 

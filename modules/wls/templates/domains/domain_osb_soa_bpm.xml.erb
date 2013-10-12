@@ -80,14 +80,11 @@ set('Name','<%= @wlsUser %>')
 cmo.setPassword('<%= @password %>')
 
 # Set domain save options:
-# - CreateStartMenu: Enable creation of Start Menu shortcut.
 # - ServerStartMode: Set mode to development.
 # - JavaHome: Sets home directory for the JVM used when starting the server.
-# - OverwriteDomain: Overwrites domain, when saving, if one exists.
 
 setOption('ServerStartMode', 'dev')
 setOption('JavaHome', '<%= @JAVA_HOME %>')
-setOption('OverwriteDomain', 'false')
 
 print('write domain...')
 # write path + domain name

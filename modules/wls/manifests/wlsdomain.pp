@@ -399,6 +399,7 @@ if ( $continue ) {
           unless      => "/usr/bin/test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
+          timeout     => 0,
         }
 
         case $operatingsystem {
@@ -443,6 +444,7 @@ if ( $continue ) {
                           "JAVA_HOME=${JAVA_HOME}"],
           creates     => "${domainPath}/${domain}",
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
+          timeout     => 0,
         }
 
         exec {"icacls domain ${title}":

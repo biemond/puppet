@@ -34,7 +34,7 @@
 #
 #
 #  wls::installadf{'adfPS6':
-#    adfFile      => 'ofm_appdev_generic_11.1.1.7.0_disk1_1of1.zip',
+#    adfFile      => 'fmw_infra_121200.jar',
 #  }
 #
 ##
@@ -51,7 +51,7 @@ define wls::installadf($mdwHome         = undef,
                     ) {
 
    # 12.1.2 is a full install , 11g is a add-on
-   if $adfFile == 'ofm_wls_jrf_generic_12.1.2.0.0_disk1_1of1.zip' {
+   if $adfFile == 'fmw_infra_121200.jar' {
       $commonOracleHome = $mdwHome
    } else {
       $commonOracleHome = "${mdwHome}/oracle_common"
@@ -130,10 +130,9 @@ define wls::installadf($mdwHome         = undef,
    }
 
    # 12.1.2 is a full install , 11g is a add-on
-   if $adfFile == 'ofm_wls_jrf_generic_12.1.2.0.0_disk1_1of1.zip' {
+   if $adfFile == 'fmw_infra_121200.jar' {
 
       $version          = "1212"
-      $adfFileJar       = "fmw_infra_121200.jar"
       $adfTemplate      =  "wls/silent_1212_adf.xml.erb"
 
       if ( $continue ) {
@@ -179,12 +178,14 @@ if ( $continue ) {
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        if ! defined(Exec["extract ${adfFile}"]) {
-         exec { "extract ${adfFile}":
-          command => "unzip ${path}/${adfFile} -d ${path}/adf",
-          require => File ["${path}/${adfFile}"],
-          creates => "${path}/adf",
-         }
+        if ($version != "1212" ) {        
+          if ! defined(Exec["extract ${adfFile}"]) {
+           exec { "extract ${adfFile}":
+             command => "unzip ${path}/${adfFile} -d ${path}/adf",
+             require => File ["${path}/${adfFile}"],
+             creates => "${path}/adf",
+           }
+          }
         }
 
         file { "${path}/${title}silent_adf.xml":
@@ -196,8 +197,8 @@ if ( $continue ) {
         if ($version == "1212" ) {
 
           exec { "install adf ${title}":
-            command     => "java -jar ${path}/adf/${adfFileJar} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
-            require     => [Wls::Utils::Defaultusersfolders['create adf home'],File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"]],
+            command     => "java -jar ${path}/${adfFile} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
+            require     => [Wls::Utils::Defaultusersfolders['create adf home'],File ["${path}/${title}silent_adf.xml"],File["${path}/${adfFile}"]],
             timeout     => 0,
           }
 
@@ -218,20 +219,21 @@ if ( $continue ) {
      }
      Solaris: {
 
-        if ! defined(Exec["extract ${adfFile}"]) {
-         exec { "extract ${adfFile}":
-          command => "unzip ${path}/${adfFile} -d ${path}/adf",
-          require => File ["${path}/${adfFile}"],
-          creates => "${path}/adf",
-         }
+        if ($version != "1212" ) {        
+          if ! defined(Exec["extract ${adfFile}"]) {
+           exec { "extract ${adfFile}":
+             command => "unzip ${path}/${adfFile} -d ${path}/adf",
+             require => File ["${path}/${adfFile}"],
+             creates => "${path}/adf",
+           }
+          }
         }
-
 
         if ($version == "1212" ) {
 
           exec { "install adf ${title}":
-            command     => "java -jar ${path}/adf/${adfFileJar} ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs",
-            require     => [Wls::Utils::Defaultusersfolders['create adf home'],File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"]],
+            command     => "java -jar ${path}/${adfFile} ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs",
+            require     => [Wls::Utils::Defaultusersfolders['create adf home'],File ["${path}/${title}silent_adf.xml"],File["${path}/${adfFile}"]],
             timeout     => 0,
           }
 
@@ -271,13 +273,15 @@ if ( $continue ) {
 
      windows: {
 
-        if ! defined(Exec["extract ${adfFile}"]) {
-         exec { "extract ${adfFile}":
-          command => "${checkCommand} unzip ${path}/${adfFile} -d ${path}/adf",
-          require => File ["${path}/${adfFile}"],
-          creates => "${path}/adf/Disk1",
-          cwd     => $path,
-         }
+        if ($version != "1212" ) {        
+          if ! defined(Exec["extract ${adfFile}"]) {
+            exec { "extract ${adfFile}":
+              command => "${checkCommand} unzip ${path}/${adfFile} -d ${path}/adf",
+              require => File ["${path}/${adfFile}"],
+              creates => "${path}/adf/Disk1",
+              cwd     => $path,
+            }
+          }
         }
 
         exec {"icacls adf disk ${title}":
@@ -288,8 +292,8 @@ if ( $continue ) {
 
         if ($version == "1212" ) {
           exec { "install adf ${title}":
-            command     => "${checkCommand} java -jar ${path}/adf/${adfFileJar} ${command} -ignoreSysPrereqs",
-            require     => [Exec["icacls adf disk ${title}"],File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"]],
+            command     => "${checkCommand} java -jar ${path}/${adfFileJar} ${command} -ignoreSysPrereqs",
+            require     => [Exec["icacls adf disk ${title}"],File ["${path}/${title}silent_adf.xml"],File["${path}/${adfFile}"]],
             timeout     => 0,
           }
         } else {

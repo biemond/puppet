@@ -6,12 +6,13 @@
 
 node 'xxxx.alfa.local' inherits default {
   
-   include os2, wls12, wls12c_domain, orautils, maintenance
-   Class['os2']  -> Class['wls12'] -> Class['wls12c_domain'] -> Class['maintenance']
+   include os_5, wls12_5, wls12c_domain_5, orautils, maintenance_5
+   Class['os_5']  -> Class['wls12_5'] -> Class['wls12c_domain_5'] -> Class['maintenance_5']
 }
 
+
 # operating settings for Middleware
-class os2 {
+class os_5 {
 
   $remove = [ "java-1.7.0-openjdk.x86_64", "java-1.6.0-openjdk.x86_64" ]
 
@@ -21,13 +22,17 @@ class os2 {
 
   include jdk7
 
-  jdk7::install7{ 'jdk1.7.0_25':
-    version     =>  "7u25" , 
-    fullVersion =>  "jdk1.7.0_25", 
-    x64         =>  true,
-    downloadDir =>  "/data/install",
+  jdk7::install7{ 'jdk1.7.0_40':
+      version              => "7u40" , 
+      fullVersion          => "jdk1.7.0_40",
+      alternativesPriority => 18000, 
+      x64                  => true,
+      downloadDir          => "/data/install",
+      urandomJavaFix       => false,
+      sourcePath           => "puppet:///modules/jdk7/"
   }
-
+  
+  
   class { 'limits':
     config => {
                '*'       => { 'nofile'   => { soft => '2048'   , hard => '8192',   },},
@@ -61,13 +66,13 @@ class os2 {
 
 
 
-class wls12{
+class wls12_5{
 
-  $jdkWls12cJDK = 'jdk1.7.0_25'
+  $jdkWls12cJDK = 'jdk1.7.0_40'
 
-  $osOracleHome    = "/oracle"
-  $osMdwHome       = "/oracle/product/Middleware12c"
-  $osWlHome        = "/oracle/product/Middleware12c/wlserver"
+  $osOracleHome    = "/opt/oracle"
+  $osMdwHome       = "/opt/oracle/Middleware12c"
+  $osWlHome        = "/opt/oracle/Middleware12c/wlserver"
   $user            = "oracle"
   $group           = "dba"
   $downloadDir     = "/data/install"
@@ -78,7 +83,6 @@ class wls12{
   Wls::Installwls {
     version                => '1212',
     mdwHome                => $osMdwHome,
-    wlHome                 => $osWlHome,
     oracleHome             => $osOracleHome,
     fullJDKName            => $jdkWls12cJDK, 
     user                   => $user,
@@ -93,9 +97,9 @@ class wls12{
 } 
 
 
-class wls12c_domain{
+class wls12c_domain_5{
 
-  $jdkWls12gJDK    = 'jdk1.7.0_25'
+  $jdkWls12gJDK    = 'jdk1.7.0_40'
 
   $wlsDomainName   = "Wls12c"
   $osTemplate      = "standard"
@@ -104,9 +108,9 @@ class wls12c_domain{
   $nodemanagerPort = "5556"
   $address         = "localhost"
 
-  $osOracleHome    = "/oracle"
-  $osMdwHome       = "/oracle/product/Middleware12c"
-  $osWlHome        = "/oracle/product/Middleware12c/wlserver"
+  $osOracleHome    = "/opt/oracle"
+  $osMdwHome       = "/opt/oracle/Middleware12c"
+  $osWlHome        = "/opt/oracle/Middleware12c/wlserver"
 
   $user         = "oracle"
   $group        = "dba"
@@ -189,7 +193,7 @@ class wls12c_domain{
 
 }
 
-class maintenance {
+class maintenance_5 {
 
   case $operatingsystem {
     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
@@ -208,7 +212,7 @@ class maintenance {
   }
 	
   cron { 'mdwlogs' :
-	  command => "find /oracle/product/Middleware12c/logs -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
+	  command => "find /opt/oracle/Middleware12c/logs -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
 	  user    => oracle,
 	  hour    => 06,
 	  minute  => 30,
