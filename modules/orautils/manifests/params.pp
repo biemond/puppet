@@ -8,8 +8,9 @@ class orautils::params {
                                     devagent40   => "/opt/oracle/wls",
                                     devagent41   => "/opt/oracle/wls",
                                     wls12        => "/oracle/product",
-                                    "vagrantoel64.example.com" => "/oracle/product",
                                     soabeta2     => "/opt/oracle/wls",
+                                    'vagrantoel64.example.com'    => "/oracle/product",
+                                    'vagrantcentos64.example.com' => "/oracle/product",
                                     default      => "/opt/wls",
                                 }
 
@@ -22,7 +23,8 @@ class orautils::params {
                                     devagent41   => "/opt/oracle/oraInventory",
                                     soabeta2     => "/home/oracle/soabetainv",
                                     wls12        => "/oracle/oraInventory",
-                                    "vagrantoel64.example.com" => "/oracle/oraInventory",
+                                    'vagrantoel64.example.com'    => "/oracle/oraInventory",
+                                    'vagrantcentos64.example.com' => "/oracle/oraInventory",
                                     default      => "/opt/wls/oraInventory",
                                 }
 
@@ -32,10 +34,11 @@ class orautils::params {
                                     devagent30   => "soa",
                                     devagent31   => "admin",
                                     wls12        => "admin",
-                                    "vagrantoel64.example.com" => "admin",
                                     devagent40   => "admin",
                                     devagent41   => "admin",
                                     soabeta2     => "soa",
+                                    "vagrantoel64.example.com"    => "admin",
+                                    "vagrantcentos64.example.com" => "admin",
                                     default      => "web",
                                 }
 
@@ -53,15 +56,17 @@ class orautils::params {
   															         default => "!/bin/sh",
   															       }
 
-  $osMdwHome     = $::hostname ?  { wls12        => "${osOracleHome}/Middleware12c",
-                                    "vagrantoel64.example.com" => "${osOracleHome}/Middleware12c",
+  $osMdwHome     = $::hostname ?  { wls12                         => "${osOracleHome}/Middleware12c",
+                                    "vagrantoel64.example.com"    => "${osOracleHome}/Middleware12c",
+                                    "vagrantcentos64.example.com" => "${osOracleHome}/Middleware12c",
                                     devagent31   => "${osOracleHome}/Middleware12c",
                                     soabeta2     => "${osOracleHome}/Middleware12c",
                                     default      => "${osOracleHome}/Middleware11gR1",
                                   }
 
-  $osWlHome     = $::hostname ?  { wls12        => "${osOracleHome}/Middleware12c/wlserver",
-                                   "vagrantoel64.example.com" => "${osOracleHome}/Middleware12c/wlserver",
+  $osWlHome     = $::hostname ?  { wls12                         => "${osOracleHome}/Middleware12c/wlserver",
+                                   "vagrantoel64.example.com"    => "${osOracleHome}/Middleware12c/wlserver",
+                                   "vagrantcentos64.example.com" => "${osOracleHome}/Middleware12c/wlserver",
                                    devagent31   => "${osOracleHome}/Middleware12c/wlserver",
                                    soabeta2     => "${osOracleHome}/Middleware12c/wlserver",
                                    default      => "${osOracleHome}/Middleware11gR1/wlserver_10.3",
@@ -77,7 +82,8 @@ class orautils::params {
   															       }
 
   $osDomain     = $::hostname ? {   wls12        => "Wls12c",
-                                    "vagrantoel64.example.com" => "Wls12c",
+                                    "vagrantoel64.example.com"    => "Wls12c",
+                                    "vagrantcentos64.example.com" => "Wls12c",
                                     soabeta2     => "soabeta2",
                                     devagent31   => "Wls12c",
                                     devagent40   => "WlsDomain",
@@ -90,8 +96,9 @@ class orautils::params {
                                 }
 
   $nodeMgrPath = $::hostname ? {
-                                    wls12        => "${osMdwHome}/user_projects/domains/${osDomain}/bin",
-                                    "vagrantoel64.example.com" => "${osMdwHome}/user_projects/domains/${osDomain}/bin",
+                                    wls12                         => "${osMdwHome}/user_projects/domains/${osDomain}/bin",
+                                    "vagrantoel64.example.com"    => "${osMdwHome}/user_projects/domains/${osDomain}/bin",
+                                    "vagrantcentos64.example.com" => "${osMdwHome}/user_projects/domains/${osDomain}/bin",
                                     devagent31   => "${osMdwHome}/user_projects/domains/${osDomain}/bin",
                                     soabeta2     => "${osMdwHome}/user_projects/domains/${osDomain}/bin",
                                     default      => "${osWlHome}/server/bin",
