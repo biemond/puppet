@@ -178,7 +178,7 @@ if ( $continue ) {
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        if ($version != "1212" ) {        
+        if ($version != "1212" ) {
           if ! defined(Exec["extract ${adfFile}"]) {
            exec { "extract ${adfFile}":
              command => "unzip ${path}/${adfFile} -d ${path}/adf",
@@ -219,7 +219,7 @@ if ( $continue ) {
      }
      Solaris: {
 
-        if ($version != "1212" ) {        
+        if ($version != "1212" ) {
           if ! defined(Exec["extract ${adfFile}"]) {
            exec { "extract ${adfFile}":
              command => "unzip ${path}/${adfFile} -d ${path}/adf",
@@ -273,7 +273,7 @@ if ( $continue ) {
 
      windows: {
 
-        if ($version != "1212" ) {        
+        if ($version != "1212" ) {
           if ! defined(Exec["extract ${adfFile}"]) {
             exec { "extract ${adfFile}":
               command => "${checkCommand} unzip ${path}/${adfFile} -d ${path}/adf",
@@ -292,7 +292,7 @@ if ( $continue ) {
 
         if ($version == "1212" ) {
           exec { "install adf ${title}":
-            command     => "${checkCommand} java -jar ${path}/${adfFileJar} ${command} -ignoreSysPrereqs",
+            command     => "${checkCommand} java -jar ${path}/${adfFile} ${command} -ignoreSysPrereqs",
             require     => [Exec["icacls adf disk ${title}"],File ["${path}/${title}silent_adf.xml"],File["${path}/${adfFile}"]],
             timeout     => 0,
           }

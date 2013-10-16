@@ -196,7 +196,7 @@ elsif $version == "1111" {
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
-                          "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${wlHome}/server/native/${nativeLib}"],
+                          "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${wlHome}/server/native/${nativeLib}"],
           unless      => "${checkCommand}",
           require     => File ["nodemanager.properties ux ${title}"],
         }
