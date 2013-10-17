@@ -1,0 +1,365 @@
+#
+# one machine setup with weblogic 10.3.6 plus Webcenter portal, content, BPM PS6
+# creates an WC, WCC Domain with BPM portal
+# needs jdk7, wls, orautils, fiddyspence-sysctl, erwbgy-limits puppet modules
+#
+
+node 'xxxx.alfa.local' inherits default {
+  
+   include os_7
+   include wls1036_7
+   include wls1036_domain_7
+   include orautils
+   
+   Class['os_7']  -> 
+     Class['wls1036_7'] -> 
+       Class['wls1036_domain_7']
+
+}
+
+
+# operating settings for Middleware
+class os_7 {
+
+  $remove = [ "java-1.7.0-openjdk.x86_64", "java-1.6.0-openjdk.x86_64" ]
+
+  package { $remove:
+    ensure  => absent,
+  }
+
+  include jdk7
+
+  jdk7::install7{ 'jdk1.7.0_40':
+      version              => "7u40" , 
+      fullVersion          => "jdk1.7.0_40",
+      alternativesPriority => 18000, 
+      x64                  => true,
+      downloadDir          => "/data/install",
+      urandomJavaFix       => false,
+      sourcePath           => "puppet:///modules/jdk7/"
+  }
+  
+  
+  class { 'limits':
+    config => {
+               '*'       => { 'nofile'   => { soft => '2048'   , hard => '8192',   },},
+               'oracle'  => {  'nofile'  => { soft => '65536'  , hard => '65536',  },
+                               'nproc'   => { soft => '2048'   , hard => '16384',   },
+                               'memlock' => { soft => '1048576', hard => '1048576',},
+                               'stack'   => { soft => '10240'  ,},},
+               },
+    use_hiera => false,
+  }
+
+  sysctl { 'kernel.msgmnb':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.msgmax':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.shmmax':                 ensure => 'present', permanent => 'yes', value => '2588483584',}
+  sysctl { 'kernel.shmall':                 ensure => 'present', permanent => 'yes', value => '2097152',}
+  sysctl { 'fs.file-max':                   ensure => 'present', permanent => 'yes', value => '6815744',}
+  sysctl { 'net.ipv4.tcp_keepalive_time':   ensure => 'present', permanent => 'yes', value => '1800',}
+  sysctl { 'net.ipv4.tcp_keepalive_intvl':  ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'net.ipv4.tcp_keepalive_probes': ensure => 'present', permanent => 'yes', value => '5',}
+  sysctl { 'net.ipv4.tcp_fin_timeout':      ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'kernel.shmmni':                 ensure => 'present', permanent => 'yes', value => '4096', }
+  sysctl { 'fs.aio-max-nr':                 ensure => 'present', permanent => 'yes', value => '1048576',}
+  sysctl { 'kernel.sem':                    ensure => 'present', permanent => 'yes', value => '250 32000 100 128',}
+  sysctl { 'net.ipv4.ip_local_port_range':  ensure => 'present', permanent => 'yes', value => '9000 65500',}
+  sysctl { 'net.core.rmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.rmem_max':             ensure => 'present', permanent => 'yes', value => '4194304', }
+  sysctl { 'net.core.wmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.wmem_max':             ensure => 'present', permanent => 'yes', value => '1048576',}
+
+}
+
+
+
+class wls1036_7{
+
+  class { 'wls::urandomfix' :}
+
+  $jdkWls11gJDK = 'jdk1.7.0_40'
+
+  $wls11gVersion = "1036"
+                       
+  #$puppetDownloadMntPoint = "puppet:///middleware/"
+  $puppetDownloadMntPoint = "puppet:///modules/wls/"                       
+ 
+   $osOracleHome = "/opt/oracle/wls"
+   $osMdwHome    = "/opt/oracle/wls/Middleware11gR1"
+   $osWlHome     = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+   $user         = "oracle"
+   $group        = "dba"
+   $downloadDir  = "/data/install"
+   $logsDir      = "/data/logs"       
+
+
+  # set the defaults
+  Wls::Installwls {
+    version                => $wls11gVersion,
+    fullJDKName            => $jdkWls11gJDK,
+    oracleHome             => $osOracleHome,
+    mdwHome                => $osMdwHome,
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint,
+  }
+  
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,	
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+    downloadDir  => $downloadDir, 
+  }
+
+  Wls::Bsupatch {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    fullJDKName            => $jdkWls11gJDK,
+    user                   => $user,
+    group                  => $group,
+    downloadDir            => $downloadDir, 
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+  Wls::Installwc {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    oracleHome             => $osOracleHome,
+    fullJDKName            => $jdkWls11gJDK,	
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+  Wls::Installwcc {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    oracleHome             => $osOracleHome,
+    fullJDKName            => $jdkWls11gJDK,	
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+
+  Wls::Installsoa {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    oracleHome             => $osOracleHome,
+    fullJDKName            => $jdkWls11gJDK,	
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+
+
+  # install
+  wls::installwls{'11gPS5':
+  	 createUser   => true, 
+  }
+
+	# weblogic patch
+  wls::bsupatch{'p14736139':
+     patchId      => 'HYKC',    
+     patchFile    => 'p14736139_1036_Generic.zip',  
+     require      => Wls::Installwls['11gPS5'],
+  }
+
+  # webcenter  
+  wls::installwc{'wcPS6':
+     wcFile      => 'ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip',
+     require     => Wls::Bsupatch['p14736139'],
+  }
+
+  # webcenter content
+  wls::installwcc{'wccPS6':
+    wccFile1    => 'ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip',
+    wccFile2    => 'ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip',
+    require     => Wls::Installwc['wcPS6'],
+  }
+
+  wls::installsoa{'soaPS6':
+     soaFile1      => 'ofm_soa_generic_11.1.1.7.0_disk1_1of2.zip',
+     soaFile2      => 'ofm_soa_generic_11.1.1.7.0_disk1_2of2.zip',
+     require       =>  Wls::Installwcc['wccPS6'],
+  }
+
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager11g':
+    listenPort  => '5556',
+    logDir      => $logsDir,
+    require     => Wls::Installsoa['soaPS6'],
+  }
+
+}
+
+class wls1036_domain_7{
+
+
+  $jdkWls11gJDK = 'jdk1.7.0_40'
+
+  $wlsDomainName   = "wcWccBpmDomain"
+  
+  #$osTemplate      = "wc"
+  $osTemplate      = "wc_wcc_bpm"
+
+
+  $adminListenPort = "7001"
+  $nodemanagerPort = "5556"
+  $address         = "localhost"
+
+  case $operatingsystem {
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+       $userConfigDir = '/home/oracle'
+     }
+     Solaris: { 
+       $userConfigDir = '/export/home/oracle'
+     }
+     windows: { 
+       $userConfigDir = "c:/oracle"
+     }
+  }
+
+ 
+  # rcu wc wcc bpm repository
+  $reposUrl        = "jdbc:oracle:thin:@dbagent2.alfa.local:1521/test.oracle.com"
+
+  $reposPrefix     = "DEV2"
+  # rcu wc repository schema password
+  $reposPassword   = hiera('database_test_rcu_dev_password')
+
+
+ 
+ 
+   $osOracleHome  = "/opt/oracle/wls"
+   $osMdwHome     = "/opt/oracle/wls/Middleware11gR1"
+   $osWlHome      = "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
+   $user          = "oracle"
+   $group         = "dba"
+   $downloadDir   = "/data/install"
+   $logDir        = "/data/logs"
+
+
+  # install WC WCC BPM domain
+  wls::wlsdomain{'wcWccBpmDomain':
+    wlHome          => $osWlHome,
+    mdwHome         => $osMdwHome,
+    fullJDKName     => $jdkWls11gJDK, 
+    wlsTemplate     => $osTemplate,
+    domain          => $wlsDomainName,
+    adminServerName => "AdminServer",
+    adminListenAdr  => "localhost",
+    adminListenPort => $adminListenPort,
+    nodemanagerPort => $nodemanagerPort,
+    wlsUser         => "weblogic",
+    password        => hiera('weblogic_password_default'),
+    user            => $user,
+    group           => $group,    
+    logDir          => $logDir,
+    downloadDir     => $downloadDir, 
+    reposDbUrl      => $reposUrl,
+    reposPrefix     => $reposPrefix,
+    reposPassword   => $reposPassword,
+  }
+
+  # default parameters for the wlst scripts
+  Wls::Wlstexec {
+    wlsDomain    => $wlsDomainName,
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,  
+    user         => $user,
+    group        => $group,
+    address      => $address,
+    downloadDir  => $downloadDir, 
+  }
+  
+  # start AdminServers for configuration of WLS Domain
+  wls::wlstexec { 
+    'startWCAdminServer':
+     wlsUser     => "weblogic",
+     password    => hiera('weblogic_password_default'),
+     script      => 'startWlsServer.py',
+     port        => $nodemanagerPort,
+     params      =>  ["domain     = '${wlsDomainName}'",
+                      "domainPath = '${osMdwHome}/user_projects/domains/${wlsDomainName}'",
+                      "wlsServer  = 'AdminServer'"],
+     require     => Wls::Wlsdomain['wcWccBpmDomain'];
+  }
+
+  # create keystores for automatic WLST login
+  wls::storeuserconfig{
+   'wcDomain_keys':
+    wlHome        => $osWlHome,
+    fullJDKName   => $jdkWls11gJDK,
+    domain        => $wlsDomainName, 
+    address       => $address,
+    wlsUser       => "weblogic",
+    password      => hiera('weblogic_password_default'),
+    port          => $adminListenPort,
+    user          => $user,
+    group         => $group,
+    userConfigDir => $userConfigDir, 
+    downloadDir   => $downloadDir, 
+    require       => Wls::Wlstexec['startWCAdminServer'],
+  }
+
+  # set the defaults
+  Wls::Changefmwlogdir {
+    mdwHome        => $osMdwHome,
+    user           => $user,
+    group          => $group,
+    address        => $address,
+    port           => $adminListenPort,
+    userConfigFile => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicConfig.properties",
+    userKeyFile    => "${userConfigDir}/${user}-${wlsDomainName}-WebLogicKey.properties",
+    downloadDir    => $downloadDir, 
+  }
+
+  # change the FMW logfiles
+  wls::changefmwlogdir{
+   'AdminServer':
+    wlsServer    => "AdminServer",
+    logDir       => $logDir,
+    require      => Wls::Storeuserconfig['wcDomain_keys'],
+  }
+
+
+  wls::changefmwlogdir{
+   'WC_Collaboration':
+    wlsServer    => "WC_Collaboration",
+    logDir       => $logDir,
+    require      => Wls::Changefmwlogdir['AdminServer'],
+  }
+
+
+  wls::changefmwlogdir{
+   'WC_Portlet':
+    wlsServer    => "WC_Portlet",
+    logDir       => $logDir,
+    require      => Wls::Changefmwlogdir['WC_Collaboration'],
+  }
+
+  wls::changefmwlogdir{
+   'WC_Spaces':
+    wlsServer    => "WC_Spaces",
+    logDir       => $logDir,
+    require      => Wls::Changefmwlogdir['WC_Portlet'],
+  }
+
+  wls::changefmwlogdir{
+   'UCM_server1':
+    wlsServer    => "UCM_server1",
+    logDir       => $logDir,
+    require      => Wls::Changefmwlogdir['WC_Spaces'],
+  }
+
+
+}

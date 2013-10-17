@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.2.2 Small bug fixes for ADF 12.1.2 install + weblogic configuration examples  
 - 1.2.1 Timout fixes + OPatch fix, fix for standard domain and wls 12.1.2, WebLogic 12.1.2 now uses these jars wls_121200.jar, fmw_infra_121200.jar instead of the zip files    
 - 1.2.0 Multi node domain support with copydomain class, create Machine, Managed Server & Cluster, less notify output    
 - 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
@@ -77,13 +78,26 @@ When having a Domain on multiple servers you can use the copydomain class, this 
 for sshpass you need to install epel yum repository, do this by installing "puppet module install stahnma/epel"  
 for a complete multinode cluster example see example_conf_2_multi_node_domain_with_cluster.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls   
 
-Everything on 1 machine ( WebLogic 12.1.2 & Database 12c)
----------------------------------------------------------
+Everything on 1 machine ( WebLogic 12.1.2 (ADF + Coherence )& Database 12c)
+---------------------------------------------------------------------------
 When you want a FMW WebLogic Domain and a Database with a RCU on 1 machine you can look at the following example see example_conf_1_server_with_wls12.1.2_ora_db12c.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls   
+
+Standard WebLogic 10.3.6 cluster on 2 nodes
+-------------------------------------------
+see example_conf_2_multi_node_domain_with_cluster.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
 
 Standard WebLogic 12.1.2 server with a domain ( no ADF or FMW )
 ------------------------------------------------------------------------
 see example_conf_3_server_wls12.1.2_standard.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
+
+Standard WebLogic 10.3.6 server + BSU Patch with 11g PS6 of OSB /SOA Suite / BAM & BPM domain
+---------------------------------------------------------------------------------------------
+see example_conf_4_weblogic_10.3.6_osb_soa_ps6.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls  
+also creates JDBC datasources, Resource adapters, A Cluster with Managed Server, JMS server with a JMS module plus Queues & Topics  
+
+Standard WebLogic 10.3.6 server + BSU Patch with 11g PS6 of Webcenter portal & content domain ( also BPM portal)
+----------------------------------------------------------------------------------------------------------------
+see example_conf_5_weblogic_10.3.6_webcenter_portal_content_ps6.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls  
 
 
 WLS WebLogic Features
