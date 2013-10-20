@@ -106,13 +106,26 @@ if ( $continue ) {
 
      $template             = "${wlHome}/common/templates/domains/wls.jar"
      $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
-     # should be also be in wlhome
      $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
 
      $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
      $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
      $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
      $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
+
+   } elsif $version == "1121" {
+
+     $template             = "${wlHome}/common/templates/domains/wls.jar"
+     $templateWS           = "${wlHome}/common/templates/applications/wls_webservice.jar"
+     $templateJaxWS        = "${mdwHome}/oracle_common/common/templates/applications/wls_webservice_jaxws.jar"
+
+     $templateEM           = "${mdwHome}/oracle_common/common/templates/applications/oracle.em_11_1_1_0_0_template.jar"
+     $templateJRF          = "${mdwHome}/oracle_common/common/templates/applications/jrf_template_11.1.1.jar"
+     $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.11.1.1_template.jar"
+     $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/applications/oracle.wsmpm_template_11.1.1.jar"
+
+     $templateOIM          = "${mdwHome}/Oracle_IDM1/common/templates/applications/oracle.oim_11.1.2.0.0_template.jar"
+     $templateOAM          = "${mdwHome}/Oracle_IDM1/common/templates/applications/oracle.oam_ds_11.1.2.0.0_template.jar"
 
    } elsif $version == "1212" {
 
@@ -126,7 +139,6 @@ if ( $continue ) {
      $templateJRF          = "${mdwHome}/oracle_common/common/templates/wls/oracle.jrf_template_12.1.2.jar"
      $templateApplCore     = "${mdwHome}/oracle_common/common/templates/applications/oracle.applcore.model.stub.12.1.3_template.jar"
      $templateWSMPM        = "${mdwHome}/oracle_common/common/templates/wls/oracle.wsmpm_template_12.1.2.jar"
-
 
 
    } else {
@@ -150,6 +162,8 @@ if ( $continue ) {
    $templateBPM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bpm_template_11.1.1.jar"
    $templateBAM          = "${mdwHome}/Oracle_SOA1/common/templates/applications/oracle.bam_template_11.1.1.jar"
 
+
+
    $templateSpaces       = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.wc_spaces_template_11.1.1.jar"
    $templateBPMSpaces    = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.bpm.spaces_template_11.1.1.jar"
    $templatePortlets     = "${mdwHome}/Oracle_WC1/common/templates/applications/oracle.producer_apps_template_11.1.1.jar"
@@ -162,6 +176,11 @@ if ( $continue ) {
    if $wlsTemplate == 'standard' {
       $templateFile  = "wls/domains/domain.xml.erb"
       $wlstPath      = "${wlHome}/common/bin"
+
+   } elsif $wlsTemplate == 'oim' {
+      $templateFile  = "wls/domains/domain_oim.xml.erb"
+      $wlstPath      = "${mdwHome}/Oracle_IDM1/common/bin"
+      $oracleHome    = "${mdwHome}/Oracle_IDM1"
 
    } elsif $wlsTemplate == 'osb' {
       $templateFile  = "wls/domains/domain_osb.xml.erb"
@@ -268,6 +287,9 @@ if ( $continue ) {
       $soaNodeMgrLogDir               = "${domainPath}/${domain}/servers/soa_server1/logs"
       $bamNodeMgrLogDir               = "${domainPath}/${domain}/servers/bam_server1/logs"
 
+      $oimNodeMgrLogDir               = "${domainPath}/${domain}/servers/oim_server1/logs"
+      $oamNodeMgrLogDir               = "${domainPath}/${domain}/servers/oam_server1/logs"
+
       $wcCollaborationNodeMgrLogDir   = "${domainPath}/${domain}/servers/WC_Collaboration/logs"
       $wcPortletNodeMgrLogDir         = "${domainPath}/${domain}/servers/WC_Portlet/logs"
       $wcSpacesNodeMgrLogDir          = "${domainPath}/${domain}/servers/WC_Spaces/logs"
@@ -281,6 +303,10 @@ if ( $continue ) {
       $osbNodeMgrLogDir   = "${logDir}"
       $soaNodeMgrLogDir   = "${logDir}"
       $bamNodeMgrLogDir   = "${logDir}"
+
+      $oimNodeMgrLogDir   = "${logDir}"
+      $oamNodeMgrLogDir   = "${logDir}"
+
 
       $wcCollaborationNodeMgrLogDir   = "${logDir}"
       $wcPortletNodeMgrLogDir         = "${logDir}"
@@ -401,6 +427,24 @@ if ( $continue ) {
           require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
           timeout     => 0,
         }
+
+        if ($wlsTemplate == 'oim') {
+
+          exec { "execwlst create OPSS store ${domain} ${title}":
+            command     => "${wlstPath}/wlst.sh ${mdwHome}/Oracle_IDM1/common/tools/configureSecurityStore.py -d ${domainPath}/${domain} -m create -c IAM -p ${reposPassword}",
+            environment => ["JAVA_HOME=${JAVA_HOME}"],
+            require     => Exec["execwlst ${domain} ${title}"],
+            timeout     => 0,
+          }
+
+          exec { "execwlst validate OPSS store ${domain} ${title}":
+            command     => "${wlstPath}/wlst.sh ${mdwHome}/Oracle_IDM1/common/tools/configureSecurityStore.py -d ${domainPath}/${domain} -m validate",
+            environment => ["JAVA_HOME=${JAVA_HOME}"],
+            require     => [Exec["execwlst ${domain} ${title}"],Exec["execwlst create OPSS store ${domain} ${title}"]],
+            timeout     => 0,
+          }
+          
+        } 
 
         case $operatingsystem {
            CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {

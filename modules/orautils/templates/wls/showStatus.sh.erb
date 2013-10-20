@@ -15,7 +15,11 @@ fi
 AdminStatus=`${checkStmt} | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`
 SoaServer1Status=`${checkStmt} | /bin/grep -i soa_server1 | /bin/grep -v grep | awk '{print $1}'`
 OsbServer1Status=`${checkStmt} | /bin/grep -i osb_server1 | /bin/grep -v grep | awk '{print $1}'`
+BamServer1Status=`${checkStmt} | /bin/grep -i bam_server1 | /bin/grep -v grep | awk '{print $1}'`
 WebServer1Status=`${checkStmt} | /bin/grep -i web_server1 | /bin/grep -v grep | awk '{print $1}'`
+OimServer1Status=`${checkStmt} | /bin/grep -i oim_server1 | /bin/grep -v grep | awk '{print $1}'`
+OamServer1Status=`${checkStmt} | /bin/grep -i oam_server1 | /bin/grep -v grep | awk '{print $1}'`
+
 NodeManagerStatus=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`
  
 if [ ${AdminStatus} ]
@@ -44,6 +48,34 @@ else
   OsbServer1Status='---'
   OsbServer1Pid="---"
 fi
+
+if [ ${BamServer1Status} ]
+then
+  BamServer1Pid=$BamServer1Status
+  BamServer1Status="Online"
+else
+  BamServer1Status='---'
+  BamServer1Pid="---"
+fi
+
+if [ ${OimServer1Status} ]
+then
+  OimServer1Pid=$OimServer1Status
+  OimServer1Status="Online"
+else
+  OimServer1Status='---'
+  OimServer1Pid="---"
+fi
+
+if [ ${OamServer1Status} ]
+then
+  OamServer1Pid=$OamServer1Status
+  OamServer1Status="Online"
+else
+  OamServer1Status='---'
+  OamServer1Pid="---"
+fi
+
  
 if [ ${WebServer1Status} ]
 then
@@ -75,6 +107,10 @@ printf "|%18s|%8s|%6s|\n" "AdminServer " $AdminStatus $AdminPid
 if [[ "$domainType" == 'soa' ]]; then
   printf "|%18s|%8s|%6s|\n" soa_server1 $SoaServer1Status $SoaServer1Pid
   printf "|%18s|%8s|%6s|\n" osb_server1 $OsbServer1Status $OsbServer1Pid
+elif [[ "$domainType" == 'oim' ]]; then
+  printf "|%18s|%8s|%6s|\n" soa_server1 $SoaServer1Status $SoaServer1Pid
+  printf "|%18s|%8s|%6s|\n" oim_server1 $OimServer1Status $OimServer1Pid
+  printf "|%18s|%8s|%6s|\n" oam_server1 $OamServer1Status $OamServer1Pid
 elif [[ "$domainType" == 'web' ]]; then
  printf "|%18s|%8s|%6s|\n" web_server1 $WebServer1Status $WebServer1Pid
 fi

@@ -11,6 +11,7 @@ class orautils::params {
                                     soabeta2        => "/opt/oracle/wls",
                                     vagrantoel64    => "/oracle/product",
                                     vagrantcentos64 => "/oracle/product",
+                                    oimapp          => "/opt/oracle",
                                     default         => "/opt/wls",
                                 }
 
@@ -25,6 +26,7 @@ class orautils::params {
                                     wls12           => "/oracle/oraInventory",
                                     vagrantoel64    => "/oracle/oraInventory",
                                     vagrantcentos64 => "/oracle/oraInventory",
+                                    oimapp          => "/opt/oracle/oraInventory",
                                     default         => "/opt/wls/oraInventory",
                                 }
 
@@ -39,6 +41,7 @@ class orautils::params {
                                     soabeta2        => "soa",
                                     vagrantoel64    => "admin",
                                     vagrantcentos64 => "admin",
+                                    oimapp          => "oim",
                                     default         => "web",
                                 }
 
@@ -88,6 +91,7 @@ class orautils::params {
                                     devagent31      => "Wls12c",
                                     devagent40      => "WlsDomain",
                                     devagent41      => "WlsDomain",
+                                    oimapp          => "oimDomain",
                                     default         => "osbSoaDomain",
                                 }
 

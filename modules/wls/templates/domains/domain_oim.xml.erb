@@ -1,0 +1,336 @@
+
+WLHOME='<%= @wlHome %>'
+DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
+APP_PATH='<%= @appPath %>/<%= @domain %>'
+
+WEBLOGIC_VERSION='<%= @version %>'
+
+ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
+OAM_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @oamNodeMgrLogDir %>/oam_server1.out -Dweblogic.Stderr=<%= @oamNodeMgrLogDir %>/oam_server1_err.out'
+SOA_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @soaNodeMgrLogDir %>/soa_server1.out -Dweblogic.Stderr=<%= @soaNodeMgrLogDir %>/soa_server1_err.out'
+OIM_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @oimNodeMgrLogDir %>/oim_server1.out -Dweblogic.Stderr=<%= @oimNodeMgrLogDir %>/oim_server1_err.out'
+
+
+OIM_REPOS_DBURL='<%= @reposDbUrl %>'
+OIM_REPOS_DBUSER_PREFIX='<%= @reposPrefix %>'
+OIM_REPOS_DBPASSWORD='<%= @reposPassword %>'
+
+print('Start...wls domain with template <%= @template %>')
+readTemplate('<%= @template %>')
+
+print('Set nodemanager password and crossdomain')
+create('base_domain','SecurityConfiguration')
+cd('/SecurityConfiguration/base_domain')
+set('CrossDomainSecurityEnabled',true)
+set('NodeManagerPasswordEncrypted','<%= @password %>' )
+set('NodeManagerUsername','<%= @wlsUser %>' )
+
+cd('/')
+print('Set domain log')
+create('base_domain','Log')
+cd('/Log/base_domain')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+cd('/Servers/AdminServer')
+# name of adminserver
+set('Name','<%= @adminServerName %>' )
+
+cd('/Servers/<%= @adminServerName %>')
+
+# address and port
+#set('ListenAddress','<%= @adminListenAdr %>')
+set('ListenPort',<%= @adminListenPort %>)
+
+
+setOption( "AppDir", APP_PATH )
+
+create('<%= @adminServerName %>','ServerStart')
+cd('ServerStart/<%= @adminServerName %>')
+set('Arguments', ADM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','SSL')
+cd('SSL/<%= @adminServerName %>')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+cd('/Server/<%= @adminServerName %>')
+create('<%= @adminServerName %>','Log')
+cd('/Server/<%= @adminServerName %>/Log/<%= @adminServerName %>')
+set('FileName','<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+print('Set password...')
+cd('/')
+cd('Security/base_domain/User/weblogic')
+
+# weblogic user name + password
+set('Name','<%= @wlsUser %>')
+cmo.setPassword('<%= @password %>')
+
+# Set domain save options:
+# - ServerStartMode: Set mode to development.
+# - JavaHome: Sets home directory for the JVM used when starting the server.
+
+setOption('ServerStartMode', 'dev')
+setOption('JavaHome', '<%= @JAVA_HOME %>')
+
+print('write domain...')
+# write path + domain name
+writeDomain('<%= @domainPath %>/<%= @domain %>')
+closeTemplate()
+
+es = encrypt('<%= @password %>',DOMAIN_PATH)
+
+readDomain(DOMAIN_PATH)
+
+print('set domain password...') 
+cd('/SecurityConfiguration/<%= @domain %>')
+set('CredentialEncrypted',es)
+cd('/')
+
+setOption( "AppDir", APP_PATH )
+
+print 'Adding SOA Template'
+addTemplate('<%= @templateApplCore %>')
+addTemplate('<%= @templateJRF %>')
+addTemplate('<%= @templateWSMPM %>')
+addTemplate('<%= @templateSOA %>')
+
+print 'Adding EM Template'
+addTemplate('<%= @templateEM %>')
+
+
+print 'Adding OIM Template'
+addTemplate('<%= @templateOIM %>')
+
+print 'Adding OAM Template'
+addTemplate('<%= @templateOAM %>')
+
+
+
+dumpStack();
+
+print 'Change datasources'
+print 'Change EDNDataSource'
+cd('/JDBCSystemResource/EDNDataSource/JdbcResource/EDNDataSource/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_SOAINFRA')
+
+print 'Change EDNLocalTxDataSource'
+cd('/JDBCSystemResource/EDNLocalTxDataSource/JdbcResource/EDNLocalTxDataSource/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_SOAINFRA')
+
+print 'Change OraSDPMDataSource'
+cd('/JDBCSystemResource/OraSDPMDataSource/JdbcResource/OraSDPMDataSource/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_ORASDPM')
+
+print 'Change SOADataSource'
+cd('/JDBCSystemResource/SOADataSource/JdbcResource/SOADataSource/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_SOAINFRA')
+
+print 'Change SOALocalTxDataSource'
+cd('/JDBCSystemResource/SOALocalTxDataSource/JdbcResource/SOALocalTxDataSource/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_SOAINFRA')
+
+print 'Change mds-owsm'
+cd('/JDBCSystemResource/mds-owsm/JdbcResource/mds-owsm/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_MDS')
+
+print 'Change mds-soa'
+cd('/JDBCSystemResource/mds-soa/JdbcResource/mds-soa/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_MDS')
+
+print 'Change oamDS'
+cd('/JDBCSystemResource/oamDS/JdbcResource/oamDS/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_OAM')
+
+print 'Change opss-DBDS	'
+cd('/JDBCSystemResource/opss-DBDS/JdbcResource/opss-DBDS/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_OPSS')
+
+print 'Change mds-oim'
+cd('/JDBCSystemResource/mds-oim/JdbcResource/mds-oim/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_MDS')
+
+print 'Change oimJMSStoreDS'
+cd('/JDBCSystemResource/oimJMSStoreDS/JdbcResource/oimJMSStoreDS/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_OIM')
+
+print 'Change ApplicationDB'
+cd('/JDBCSystemResource/ApplicationDB/JdbcResource/ApplicationDB/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_OIM')
+
+print 'Change oimOperationsDB'
+cd('/JDBCSystemResource/oimOperationsDB/JdbcResource/oimOperationsDB/JDBCDriverParams/NO_NAME_0')
+set('URL',OIM_REPOS_DBURL)
+set('PasswordEncrypted',OIM_REPOS_DBPASSWORD)
+cd('Properties/NO_NAME_0/Property/user')
+set('Value',OIM_REPOS_DBUSER_PREFIX+'_OIM')
+
+
+updateDomain()
+closeDomain();
+
+
+readDomain(DOMAIN_PATH)
+
+print 'Change soa_server1'
+setOption( "AppDir", APP_PATH )
+cd('/Servers/soa_server1')
+set('Machine','LocalMachine')
+
+create('soa_server1','ServerStart')
+cd('ServerStart/soa_server1')
+set('Arguments', SOA_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/soa_server1')
+create('soa_server1','SSL')
+cd('SSL/soa_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/soa_server1')
+create('soa_server1','Log')
+cd('/Server/soa_server1/Log/soa_server1')
+set('FileName','<%= @soaNodeMgrLogDir %>/soa_server1.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+print 'Change oam_server1'
+cd('/Servers/oam_server1')
+set('Machine','LocalMachine')
+
+create('oam_server1','ServerStart')
+cd('ServerStart/oam_server1')
+set('Arguments', OAM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/oam_server1')
+create('oam_server1','SSL')
+cd('SSL/oam_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/oam_server1')
+create('oam_server1','Log')
+cd('/Server/oam_server1/Log/oam_server1')
+set('FileName','<%= @oamNodeMgrLogDir %>/oam_server1.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+print 'Change oim_server1'
+cd('/Servers/oim_server1')
+set('Machine','LocalMachine')
+
+create('oim_server1','ServerStart')
+cd('ServerStart/oim_server1')
+set('Arguments', OIM_JAVA_ARGUMENTS)
+set('JavaVendor','Sun')
+set('JavaHome', '<%= @JAVA_HOME %>')
+
+cd('/Server/oim_server1')
+create('oim_server1','SSL')
+cd('SSL/oim_server1')
+set('Enabled', 'False')
+set('HostNameVerificationIgnored', 'True')
+
+
+cd('/Server/oim_server1')
+create('oim_server1','Log')
+cd('/Server/oim_server1/Log/oim_server1')
+set('FileName','<%= @oamNodeMgrLogDir %>/oim_server1.log')
+set('FileCount',10)
+set('FileMinSize',5000)
+set('RotationType','byTime')
+set('FileTimeSpan',24)
+
+
+
+
+dumpStack();
+updateDomain()
+closeDomain()
+# end check
+
+readDomain(DOMAIN_PATH)
+
+
+setOption( "AppDir", APP_PATH )
+
+cd('/Servers/AdminServer')
+set('Machine','LocalMachine')
+
+cd('/Servers/oam_server1')
+set('Machine','LocalMachine')
+
+cd('/Servers/oim_server1')
+set('Machine','LocalMachine')
+
+cd('/Servers/soa_server1')
+set('Machine','LocalMachine')
+
+
+dumpStack();
+updateDomain()
+closeDomain()
+
+print('Exiting...')
+exit()
