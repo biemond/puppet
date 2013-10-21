@@ -1,0 +1,13 @@
+# python script wls:wlscontrol
+
+wlsUser    = '<%= @wlsUser %>'
+password   = sys.argv[1] 
+machine    = '<%= @address %>'
+portNumber = '<%= @port %>'
+
+wlsServer  = '<%= @wlsServer %>'
+
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+
+#start the WlsServer
+start(wlsServer,'Server')
