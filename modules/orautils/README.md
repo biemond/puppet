@@ -3,6 +3,7 @@ Oracle WebLogic orautils puppet module
 
 changes
 
+- 0.2.0 new way to overide the params , use params.pp or use the variables  
 - 0.1.8 updated license to Apache 2.0
 - 0.1.7 BugFixes for nodemanager startup & showStatus       
 - 0.1.6 Autostart of the Nodemanager ( chkconfig )     
@@ -11,24 +12,66 @@ changes
 - 0.1.3 bug fixes  
 - 0.1.1 support for Solaris  
 
-Generates WLS Scripts in /opt/scripts/wls
------------------------------------------
+
+usage:
+
+change the params.pp class so the defaults match with your environment or add extra values based on the hostname
+
+use:
+
+
+    include orautils
+
+or override the defaults which does not match with your environment and call the class orautils with the necessary parameters
+
+use:
+
+
+    class{'orautils':
+        osOracleHomeParam      => "/opt/oracle",
+        oraInventoryParam      => "/opt/oracle/oraInventory",
+        osDomainTypeParam      => "soa" or admin , web, oim
+        osLogFolderParam       => "/data/logs",
+        osDownloadFolderParam  => "/data/install",
+        osMdwHomeParam         => "/opt/oracle/wls/Middleware11gR1",
+        osWlHomeParam          => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3",
+        oraUserParam           => "oracle",
+        osDomainParam          => "osbSoaDomain",
+        osDomainPathParam      => "/opt/oracle/wls/Middleware11gR1/user_projects/domains/osbSoaDomain",
+        nodeMgrPathParam       => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3/server/bin",
+        nodeMgrPortParam       => 5556,
+        wlsUserParam           => "weblogic",
+        wlsPasswordParam       => "weblogic1",
+        wlsAdminServerParam    => "AdminServer",
+    } 
+
 
 install auto start script for the nodemanager of WebLogic ( 10.3, 11g, 12.1.1 ) or 12.1.2  
 
-	   orautils::nodemanagerautostart{"autostart ${wlsDomainName}":
-	      version     => "1212",
-	      wlHome      => $osWlHome, 
-	      user        => $user,
-	      domain      => $wlsDomainName,
-	      logDir      => $logDir,
-	   }
+only for WebLogic 12.1.2 and higher
 
-	   orautils::nodemanagerautostart{"autostart weblogic 11g":
-	      version     => "1111",
-	      wlHome      => $osWlHome, 
-	      user        => $user,
-	   }
+
+     orautils::nodemanagerautostart{"autostart ${wlsDomainName}":
+        version     => "1212",
+        wlHome      => $osWlHome, 
+        user        => $user,
+        domain      => $wlsDomainName,
+        logDir      => $logDir,
+     }
+
+
+only for WebLogic 10 or 11g
+
+
+     orautils::nodemanagerautostart{"autostart weblogic 11g":
+        version     => "1111",
+        wlHome      => $osWlHome, 
+        user        => $user,
+     }
+
+
+Generates WLS Scripts in /opt/scripts/wls
+-----------------------------------------
 
 
 **cleanOracleEnvironment.sh**  
@@ -61,83 +104,4 @@ Stops the nodemanager
 1. Checks first if the nodemanager is running  
 2. Check if the AdminServer is running  
 3. Stops the WebLogic Adminserver from the nodemanager  
-
-change the params.pp class so the defaults match with your environment or add extra changes based on the hostname  
-
-
-     class utils::params {
      
-		  $osOracleHome = $::hostname ? { 
-		                                    xxxxxx     => "/data/wls",
-		                                    devagent1  => "/opt/oracle/wls",
-		                                    devagent10 => "/opt/oracle/wls",
-		                                    devagent30 => "/opt/oracle/wls",
-		                                    wls12      => "/oracle/product",
-		                                    default    => "/opt/wls", 
-		                                }
-		
-		  $osDomainType = $::hostname ? {
-		                                    devagent30 => "web",
-		                                    devagent31 => "soa",
-		                                    wls12      => "admin",
-		                                    default    => "web", 
-		                                }
-		
-		
-		  $osDownloadFolder = $::hostname ? {
-		  	                                  devagent1  => "/data/install/oracle", 
-		                                      default    => "/data/install", 
-		                                     }
-		
-			$shell        = $::operatingsystem ? { Solaris => "!/usr/bin/ksh",
-		  															         default => "!/bin/sh",
-		  															       }   
-		
-		  $osMdwHome     = $::hostname ?  { wls12    => "${osOracleHome}/Middleware12c",
-		                                    default  => "${osOracleHome}/Middleware11gR1",
-		                                  }   
-		
-		  $osWlHome     = $::hostname ?  { wls12    => "${osOracleHome}/Middleware12c/wlserver",
-		                                   default  => "${osOracleHome}/Middleware11gR1/wlserver_10.3",
-		                                 }   
-		
-		  $oraUser      = $::hostname ? { default => "oracle", }
-		
-		  $userHome     = $::operatingsystem ? { Solaris => "/export/home",
-		  															         default => "/home", 
-		  															       }
-		  $oraInstHome  = $::operatingsystem ? { Solaris => "/var/opt",
-		  															         default => "/etc", 
-		  															       }
-		
-		  $osDomain     = $::hostname ? {   wls12      => "Wls12c",
-		                                    default    => "osbSoaDomain", 
-		                                }
-		                                
-		  $osDomainPath = $::hostname ? { 
-		                                    default    => "${osMdwHome}/user_projects/domains/${osDomain}", 
-		                                }
-		
-		  $nodeMgrPath = $::hostname ? { 
-		                                    wls12      => "${osMdwHome}/user_projects/domains/${osDomain}/bin", 
-		                                    default    => "${osMdwHome}/server/bin", 
-		                                }
-		
-		
-		  $nodeMgrPort = $::hostname ?  { 
-		                                    default    => "5556", 
-		                                }                                 
-		
-		  $wlsUser     = $::hostname ?  { 
-		                                    default    => "weblogic", 
-		                                }                                 
-		
-		  $wlsPassword = $::hostname ?  { 
-		                                    default    => "weblogic1", 
-		                                }       
-		
-		  $wlsAdminServer = $::hostname ?  { 
-		                                    default    => "AdminServer", 
-		                                }       
-
-     }         
