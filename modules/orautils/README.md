@@ -24,13 +24,15 @@ use:
 
 or override the defaults which does not match with your environment and call the class orautils with the necessary parameters
 
+osDomainTypeParam => soa|admin|web|oim
+
 use:
 
 
     class{'orautils':
         osOracleHomeParam      => "/opt/oracle",
         oraInventoryParam      => "/opt/oracle/oraInventory",
-        osDomainTypeParam      => "soa" or admin , web, oim
+        osDomainTypeParam      => "soa",
         osLogFolderParam       => "/data/logs",
         osDownloadFolderParam  => "/data/install",
         osMdwHomeParam         => "/opt/oracle/wls/Middleware11gR1",
