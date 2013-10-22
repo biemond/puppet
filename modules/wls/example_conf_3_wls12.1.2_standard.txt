@@ -6,8 +6,26 @@
 
 node 'xxxx.alfa.local' inherits default {
   
-   include os_5, wls12_5, wls12c_domain_5, orautils, maintenance_5
+   include os_5, wls12_5, wls12c_domain_5, maintenance_5
    Class['os_5']  -> Class['wls12_5'] -> Class['wls12c_domain_5'] -> Class['maintenance_5']
+
+   class{'orautils':
+        osOracleHomeParam      => "/opt/oracle",
+        oraInventoryParam      => "/opt/oracle/oraInventory",
+        osDomainTypeParam      => "admin",
+        osLogFolderParam       => "/data/logs",
+        osDownloadFolderParam  => "/data/install",
+        osMdwHomeParam         => "/opt/oracle/Middleware12c",
+        osWlHomeParam          => "/opt/oracle/Middleware12c/wlserver",
+        oraUserParam           => "oracle",
+        osDomainParam          => "Wls12c",
+        osDomainPathParam      => "/opt/oracle/Middleware12c/user_projects/domains/Wls12c",
+        nodeMgrPathParam       => "/opt/oracle/Middleware12c/user_projects/domains/Wls12c/bin",
+        nodeMgrPortParam       => 5556,
+        wlsUserParam           => "weblogic",
+        wlsPasswordParam       => "weblogic1",
+        wlsAdminServerParam    => "AdminServer",
+    } 
 }
 
 

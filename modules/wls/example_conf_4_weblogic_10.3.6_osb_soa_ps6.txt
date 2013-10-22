@@ -9,7 +9,6 @@ node 'xxxx.alfa.local' inherits default {
    include os_6
    include wls1036_6
    include wls1036_domain_6
-   include orautils
    include wls_application_Cluster_6
    include wls_application_JDBC_6
    include wls_application_JMS_6
@@ -20,6 +19,26 @@ node 'xxxx.alfa.local' inherits default {
          Class['wls_application_Cluster_6'] -> 
            Class['wls_application_JDBC_6'] -> 
              Class['wls_application_JMS_6']
+
+  class{'orautils':
+        osOracleHomeParam      => "/opt/oracle",
+        oraInventoryParam      => "/opt/oracle/oraInventory",
+        osDomainTypeParam      => "soa",
+        osLogFolderParam       => "/data/logs",
+        osDownloadFolderParam  => "/data/install",
+        osMdwHomeParam         => "/opt/oracle/wls/Middleware11gR1",
+        osWlHomeParam          => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3",
+        oraUserParam           => "oracle",
+        osDomainParam          => "osbSoaDomain",
+        osDomainPathParam      => "/opt/oracle/wls/Middleware11gR1/user_projects/domains/osbSoaDomain",
+        nodeMgrPathParam       => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3/server/bin",
+        nodeMgrPortParam       => 5556,
+        wlsUserParam           => "weblogic",
+        wlsPasswordParam       => "weblogic1",
+        wlsAdminServerParam    => "AdminServer",
+  } 
+
+
 }
 
 

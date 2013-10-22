@@ -195,18 +195,15 @@ WebLogic configuration examples
     }
     class application_osb_soa {
        include wls1036osb_soa, wls_osb_soa_domain, wls_OSB_application_JDBC, wls_OSB_application_JMS
-       include orautils
        Class['wls1036osb_soa'] -> Class['wls_osb_soa_domain'] -> Class['wls_OSB_application_JDBC'] -> Class['wls_OSB_application_JMS']
     }
     class application_wc {
   
      include wls1036_wc, wls_wc_wcc_bpm_domain
-     include orautils
      Class['wls1036_wc'] -> Class['wls_wc_wcc_bpm_domain']
     }
     class application_osb {
        include wls1036osb, wls_osb_domain, wls_OSB_application_JDBC
-       include orautils
        Class['wls1036osb'] -> Class['wls_osb_domain'] -> Class['wls_OSB_application_JDBC']
     }
     class application_wc {

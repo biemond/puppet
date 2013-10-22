@@ -9,11 +9,28 @@ node 'xxxx.alfa.local' inherits default {
    include os_7
    include wls1036_7
    include wls1036_domain_7
-   include orautils
    
    Class['os_7']  -> 
      Class['wls1036_7'] -> 
        Class['wls1036_domain_7']
+
+  class{'orautils':
+        osOracleHomeParam      => "/opt/oracle/wls",
+        oraInventoryParam      => "/opt/oracle/wls/oraInventory",
+        osDomainTypeParam      => "soa",
+        osLogFolderParam       => "/data/logs",
+        osDownloadFolderParam  => "/data/install",
+        osMdwHomeParam         => "/opt/oracle/wls/Middleware11gR1",
+        osWlHomeParam          => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3",
+        oraUserParam           => "oracle",
+        osDomainParam          => "wcWccBpmDomain",
+        osDomainPathParam      => "/opt/oracle/wls/Middleware11gR1/user_projects/domains/wcWccBpmDomain",
+        nodeMgrPathParam       => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3/server/bin",
+        nodeMgrPortParam       => 5556,
+        wlsUserParam           => "weblogic",
+        wlsPasswordParam       => "weblogic1",
+        wlsAdminServerParam    => "AdminServer",
+  } 
 
 }
 
