@@ -112,7 +112,7 @@ define wls::installoim($mdwHome                 = undef,
      }
    }
 
-     # check if the wcc already exists
+     # check if the oim already exists
      $found = oracle_exists( $oimOracleHome )
      if $found == undef {
        $continue = true

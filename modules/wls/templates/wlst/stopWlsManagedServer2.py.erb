@@ -6,8 +6,9 @@ machine    = '<%= @address %>'
 portNumber = '<%= @port %>'
 
 wlsServer  = '<%= @wlsServer %>'
+wlsTarget  = '<%= @wlsTarget %>'
 
 connect(wlsUser,password,'t3://'+machine+':'+portNumber)
 
 #start the WlsServer
-shutdown(wlsServer,'Server',force='true')
+shutdown(wlsServer,wlsTarget,force='true')

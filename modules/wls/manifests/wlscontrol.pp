@@ -2,7 +2,9 @@
 #
 # Weblogic Server control, starts or stops a managed server
 #
-#  action = start|stop
+#  action        = start|stop
+#  wlsServerType = admin|managed
+#  wlsTarget     = Server|Cluster
 #
 define wls::wlscontrol
 ( $wlHome         = undef,
@@ -10,6 +12,7 @@ define wls::wlscontrol
   $wlsDomain      = undef,
   $wlsDomainPath  = undef,
   $wlsServerType  = 'admin',
+  $wlsTarget      = 'Server',
   $wlsServer      = 'AdminServer',
   $address        = 'localhost',
   $port           = '7001',

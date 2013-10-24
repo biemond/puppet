@@ -6,7 +6,7 @@ Response File Version=1.0.0.0.0
 [GENERIC]
 
 #Provide the complete path of the Oracle Home. The Oracle Home directory name may only contain alphanumeric , hyphen (-) , dot (.) and underscore (_) characters, and it must begin with an alphanumeric character.
-ORACLE_HOME=/opt/oracle/Middleware11gR1/Oracle_IDM1
+ORACLE_HOME=<%= @oimHome %>
 
 #Provide the service name for Remote Manager under which this Remote Manager will be registered. It is used along with Registry URL to build fully qualified service name. For e.g. rmi://host:RMI Registry Port/service name.
 RM_SERVICE_NAME=RManager
@@ -18,10 +18,10 @@ REMOTEMANAGER_RMI_REGISTRY_PORT=12345
 REMOTEMANAGER_LISTEN_PORT=12346
 
 #Provide the KeyStore Password. Valid passwords are 6 to 30 characters long, must begin with an alphabetic character, use only alphanumeric, underscore (_), dollar ($) or pound (#) characters and include at least one number.
-KEYSTORE_PASSWORD=<SECURE VALUE>
+KEYSTORE_PASSWORD=<%= @keystorePassword %>
 
 #Confirm the KeyStore Password.
-KEYSTORE_CONFIRM_PASSWORD=<SECURE VALUE>
+KEYSTORE_CONFIRM_PASSWORD=<%= @keystorePassword %>
 
 
 [SYSTEM]
