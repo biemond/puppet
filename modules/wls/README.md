@@ -105,7 +105,7 @@ see example_conf_5_weblogic_10.3.6_webcenter_portal_content_ps6.txt located in y
 WLS WebLogic Features
 ---------------------------
 
-- low on entropy fix ( urandom ) by rngd or rng-tools service  
+- low on entropy fix ( urandom ) by RNGD or RNG-Tools service  
 - installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
 - apply bsu patch ( WebLogic Patch )
 - installs Oracle ADF 11g & 12c ( 12.1.2)
@@ -124,9 +124,9 @@ WLS WebLogic Features
 - Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
 - create machines, managed servers, clusters, server templates, dynamic clusters,coherence clusters ( all 12.1.2 )
 - create File or JDBC Persistence Store
-- create JMS Server, Module, subdeployment, connection factory, JMS (distributed) queue or topic,Foreign Servers + entries  
+- create JMS Server, Module, subdeployment, Quota, Connection Factory, JMS (distributed) queue or topic,Foreign Servers + entries  
 - create SAF agents, Remote Destinations, imported Destinations, SAF objects
-- run every wlst script with the flexible WLST define
+- run every WLST script with the flexible WLST define manifest
 
 Domain creation options
 -----------------------
