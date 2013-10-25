@@ -240,7 +240,8 @@ if ( $continue ) {
         } else {
 
 		        exec { "add -d64 oraparam.ini osb":
-		          command => "sed -e's/\[Oracle\]/\[Oracle\]\\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/adf/Disk1/install/${adfInstallDir}/oraparam.ini > /tmp/adf.tmp && mv /tmp/adf.tmp ${path}/adf/Disk1/install/${adfInstallDir}/oraparam.ini",
+              command => "sed -e's/\\[Oracle\\]/\\[Oracle\\]\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/adf/Disk1/install/${adfInstallDir}/oraparam.ini > /tmp/adf.tmp && mv /tmp/adf.tmp ${path}/adf/Disk1/install/${adfInstallDir}/oraparam.ini",
+#		          command => "sed -e's/\[Oracle\]/\[Oracle\]\\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/adf/Disk1/install/${adfInstallDir}/oraparam.ini > /tmp/adf.tmp && mv /tmp/adf.tmp ${path}/adf/Disk1/install/${adfInstallDir}/oraparam.ini",
 		          require => Exec["extract ${adfFile}"],
 		        }
 

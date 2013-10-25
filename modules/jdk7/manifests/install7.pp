@@ -90,7 +90,7 @@ define jdk7::install7 (
 
   if ($urandomJavaFix == true) {
     exec { "set urandom ${fullVersion}":
-      command => "sed -i -e's/securerandom.source=file:\/dev\/urandom/securerandom.source=file:\/dev\/.\/urandom/g' /usr/java/${fullVersion}/jre/lib/security/java.security",
+      command => "sed -i -e's/securerandom.source=file:\\/dev\\/urandom/securerandom.source=file:\\/dev\\/.\\/urandom/g' /usr/java/${fullVersion}/jre/lib/security/java.security",
       unless  => "grep '^securerandom.source=file:/dev/./urandom' /usr/java/${fullVersion}/jre/lib/security/java.security",
       require => Javaexec["jdkexec ${title} ${version}"],
     }

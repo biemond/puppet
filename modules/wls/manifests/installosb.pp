@@ -195,7 +195,8 @@ if ( $continue ) {
         }
 
         exec { "add -d64 oraparam.ini osb":
-          command => "sed -e's/\[Oracle\]/\[Oracle\]\\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini > /tmp/osb.tmp && mv /tmp/osb.tmp ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini",
+          command => "sed -e's/\\[Oracle\\]/\\[Oracle\\]\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini > /tmp/osb.tmp && mv /tmp/osb.tmp ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini",
+        # command => "sed -e's/\[Oracle\]/\[Oracle\]\\\nJRE_MEMORY_OPTIONS=\"-d64\"/g'    ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini > /tmp/osb.tmp && mv /tmp/osb.tmp ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini",
           require => Exec["extract ${osbFile}"],
         }
 

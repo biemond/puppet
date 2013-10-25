@@ -31,7 +31,7 @@ class jdk7::urandomfix () {
   case $osfamily {
     RedHat       : {
       exec { "set urandom /etc/sysconfig/rngd":
-        command => "sed -i -e's/EXTRAOPTIONS=\"\"/EXTRAOPTIONS=\"-r \/dev\/urandom -o \/dev\/random -b\"/g' /etc/sysconfig/rngd",
+        command => "sed -i -e's/EXTRAOPTIONS=\"\"/EXTRAOPTIONS=\"-r \\/dev\\/urandom -o \\/dev\\/random -b\"/g' /etc/sysconfig/rngd",
         unless  => "/bin/grep '^EXTRAOPTIONS=\"-r /dev/urandom -o /dev/random -b\"' /etc/sysconfig/rngd",
         require => Package["rng-tools"],
       }
@@ -52,7 +52,7 @@ class jdk7::urandomfix () {
     }
     Debian, Suse : {
       exec { "set urandom /etc/default/rng-tools":
-        command => "sed -i -e's/#HRNGDEVICE=\/dev\/null/HRNGDEVICE=\/dev\/urandom/g' /etc/default/rng-tools",
+        command => "sed -i -e's/#HRNGDEVICE=\\/dev\\/null/HRNGDEVICE=\\/dev\\/urandom/g' /etc/default/rng-tools",
         unless  => "/bin/grep '^HRNGDEVICE=/dev/urandom' /etc/default/rng-tools",
         require => Package["rng-tools"],
       }
