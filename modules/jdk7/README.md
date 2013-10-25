@@ -8,6 +8,7 @@ Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 Version updates
 ---------------
 
+- 0.3.5 ruby escaped char warnings resolved
 - 0.3.4 bugfix on install folder, conflicts with others modules
 - 0.3.3 updated license to Apache 2.0
 - 0.3.2 sourceParam, alternativesPriority in install7 plus formatting

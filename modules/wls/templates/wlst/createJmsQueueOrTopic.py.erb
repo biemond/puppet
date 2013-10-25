@@ -3,8 +3,10 @@ wlsUser    = '<%= @wlsUser %>'
 password   = '<%= @password %>' 
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
+                     
+jmsQuota   = ""                     
                                 
-#subDeploymentName, jmsModuleName, jmsName,jmsJNDIName,jmsType,distributed,balancingPolicy,useRedirect,limit,policy,errorObject
+#subDeploymentName, jmsModuleName, jmsName,jmsJNDIName,jmsType,distributed,balancingPolicy,useRedirect,limit,policy,errorObject,jmsQuota
 <% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
@@ -58,6 +60,10 @@ try:
       cmo.setRedeliveryLimit( int(limit) )
       cmo.setExpirationPolicy(policy)
       cmo.setErrorDestination(getMBean('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+jmsWlsType+errorObject))
+
+    if jmsQuota:
+      cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+jmsWlsType+jmsName)
+      cmo.setQuota(getMBean('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+'/Quotas/'+jmsQuota ))
 
     save()
     activate()          

@@ -634,10 +634,25 @@ def get_domain(name,i,wlsversion)
           end
         end
 
+
+
         subfile = File.read( name+'/user_projects/domains/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
         subdoc = REXML::Document.new subfile
 
         jmsroot = subdoc.root
+
+        jmsmoduleQuotaStr = "" 
+        jmsroot.elements.each("quota") do |qu| 
+          jmsmoduleQuotaStr +=  qu.attributes["name"] + ";"
+        end
+
+        Facter.add("#{prefix}_domain_#{n}_jmsmodule_#{k}_quotas") do
+          setcode do
+            jmsmoduleQuotaStr
+          end
+        end
+
+
         jmsroot.elements.each("connection-factory") do |cfs| 
           jmsstr +=  cfs.attributes["name"] + ";"
         end

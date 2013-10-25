@@ -273,6 +273,7 @@ module Puppet::Parser::Functions
                         if wlsObject.include? jmsmodule
                           unless jmssubobjects.nil?
                             pattern = "\/(.*)"
+                            #sub_string = ""
                             sub_string =wlsObject.match pattern
                             if jmssubobjects.include? sub_string[1]
                               return true
@@ -280,6 +281,37 @@ module Puppet::Parser::Functions
                           end
                         end
 
+                        l += 1
+                      end
+  
+                    end
+                  end 
+
+                elsif type == 'jmsquota'
+                  if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_cnt') != :undefined
+                    jms_count2 =  lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_cnt')
+                    unless jms_count2.nil?
+
+                      l = 0
+                      while ( l < jms_count2.to_i )
+                        jmssubobjects2 =  ""
+                        jmsmodule2     =  ""
+                        if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_quotas') != :undefined
+                          jmssubobjects2 = lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_quotas')
+                        end
+                        if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_name')  != :undefined
+                          jmsmodule2     = lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_jmsmodule_'+l.to_s+'_name')
+                        end
+                        if wlsObject.include? jmsmodule2
+                          unless jmssubobjects2.nil?
+                            pattern2 = "\/(.*)"
+                            #sub_string = ""
+                            sub_string2 =wlsObject.match pattern2
+                            if jmssubobjects2.include? sub_string2[1]
+                              return true
+                            end
+                          end
+                        end
                         l += 1
                       end
   

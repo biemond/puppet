@@ -10,7 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
-- 1.2.4 JDBC Datasource now support extra JDBC properties, fixed ruby warning with not escaped chars + arrays in erb files 
+- 1.2.4 JMS Quota creation, Datasource now supports extra JDBC properties, fixed ruby warning with not escaped chars + arrays in erb files 
 - 1.2.3 Wlscontrol support starting of managed servers  
 - 1.2.2 Small bug fixes for ADF 12.1.2 install + weblogic configuration examples  
 - 1.2.1 Timout fixes + OPatch fix, fix for standard domain and wls 12.1.2, WebLogic 12.1.2 now uses these jars wls_121200.jar, fmw_infra_121200.jar instead of the zip files    
@@ -1819,6 +1819,38 @@ WebLogic configuration examples
                            ],
          require       => Wls::Wlstexec['createJmsServerOSBServer'];
       }
+
+      # create jms Quota for osb_server1 jms module
+      wls::wlstexec { 
+        'createJmsModuleQuotaHigh':
+         wlstype       => "jmsquota",
+         wlsObjectName => "jmsModule/QuotaHigh",
+         script        => 'createJmsQuota.py',
+         params        =>  ["jmsQuotaName    = 'QuotaHigh'",
+                            "jmsModuleName   = 'jmsModule'",
+                            "policy          = 'FIFO'",
+                            "bytesMaximum    = 9223372036854775807",
+                            "messagesMaximum = 9223372036854775807",
+                            "shared          = false",
+                           ],
+         require       => Wls::Wlstexec['createJmsModuleOSBServer'];
+      }
+    
+      # create jms Quota for osb_server1 jms module
+      wls::wlstexec { 
+        'createJmsModuleQuotaLow':
+         wlstype       => "jmsquota",
+         wlsObjectName => "jmsModule/QuotaLow",
+         script        => 'createJmsQuota.py',
+         params        =>  ["jmsQuotaName    = 'QuotaLow'",
+                            "jmsModuleName   = 'jmsModule'",
+                            "policy          = 'PREEMPTIVE'",
+                            "bytesMaximum    = 1000000000000",
+                            "messagesMaximum = 1000000000000",
+                            "shared          = true",
+                           ],
+         require       => Wls::Wlstexec['createJmsModuleQuotaHigh'];
+      }
     
       # create jms subdeployment for jms module 
       wls::wlstexec { 
@@ -1829,9 +1861,9 @@ WebLogic configuration examples
          params        => ["target         = 'osb_server1'",
                            "jmsModuleName  = 'jmsModule'",
                            "subName        = 'wlsServer'",
-                           "targetType     = 'Server'"
+                           "targetType     = 'Server'",
                           ],
-         require       => Wls::Wlstexec['createJmsModuleOSBServer'];
+         require       => Wls::Wlstexec['createJmsModuleQuotaLow'];
       }
     
       # create jms subdeployment for jms module 
@@ -1843,7 +1875,7 @@ WebLogic configuration examples
          params        => ["target         = 'jmsServer'",
                            "jmsModuleName  = 'jmsModule'",
                            "subName        = 'JmsServer'",
-                           "targetType     = 'JMSServer'"
+                           "targetType     = 'JMSServer'",
                           ],
          require     => Wls::Wlstexec['createJmsSubDeploymentWLSforJmsModule'];
       }
@@ -1860,7 +1892,7 @@ WebLogic configuration examples
                           "cfName            = 'cf'",
                           "cfJNDIName        = 'jms/cf'",
                           "transacted        = 'false'",
-                          "timeout           = 'xxxx'"
+                          "timeout           = 'xxxx'",
                           ],
          require     => Wls::Wlstexec['createJmsSubDeploymentWLSforJmsModule2'];
       }
@@ -1906,7 +1938,8 @@ WebLogic configuration examples
                           "useRedirect       = 'false'",
                           "limit             = 'xxxxx'",
                           "policy            = 'xxxxx'",
-                          "errorObject       = 'xxxxx'"
+                          "errorObject       = 'xxxxx'",
+                          "jmsQuota          = 'QuotaLow'",
                           ],
          require     => Wls::Resourceadapter['JmsAdapter_hr'];
       }
