@@ -10,6 +10,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.2.4 JDBC Datasource now support extra JDBC properties, fixed ruby warning with not escaped chars + arrays in erb files 
 - 1.2.3 Wlscontrol support starting of managed servers  
 - 1.2.2 Small bug fixes for ADF 12.1.2 install + weblogic configuration examples  
 - 1.2.1 Timout fixes + OPatch fix, fix for standard domain and wls 12.1.2, WebLogic 12.1.2 now uses these jars wls_121200.jar, fmw_infra_121200.jar instead of the zip files    
@@ -1684,6 +1685,8 @@ WebLogic configuration examples
                           "dsPassword                  = 'hr'",
                           "datasourceTargetType        = 'Server'",
                           "globalTransactionsProtocol  = 'xxxx'"
+                          "extraProperties             = 'oracle.net.CONNECT_TIMEOUT,SendStreamAsBlob'",
+                          "extraPropertiesValues       = '10000,true'",
                           ],
       }
     

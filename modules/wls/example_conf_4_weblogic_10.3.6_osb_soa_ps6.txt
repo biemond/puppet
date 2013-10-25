@@ -598,6 +598,8 @@ class wls_application_JDBC_6{
                       "dsPassword                  = 'hr'",
                       "datasourceTargetType        = 'Server'",
                       "globalTransactionsProtocol  = 'xxxx'"
+                      "extraProperties             = 'oracle.net.CONNECT_TIMEOUT,SendStreamAsBlob'",
+                      "extraPropertiesValues       = '10000,true'",
                       ],
   }
 
