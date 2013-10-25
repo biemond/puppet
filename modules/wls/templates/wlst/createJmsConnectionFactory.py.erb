@@ -5,7 +5,7 @@ machine    = '<%= @address %>'
 portNumber = '<%= @port %>'     
                                 
 #subDeploymentName, jmsModuleName, cfName,cfJNDIName,transacted,timeout
-<% params.each do |param| -%>   
+<% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
 

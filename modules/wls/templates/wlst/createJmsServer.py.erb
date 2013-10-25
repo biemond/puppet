@@ -7,7 +7,7 @@ machine    = '<%= @address %>'
 portNumber = '<%= @port %>'     
                                 
 #storeName, serverTarget, jmsServerName ,storeType
-<% params.each do |param| -%>   
+<% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
 

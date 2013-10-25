@@ -5,7 +5,7 @@ machine    = '<%= @address %>'
 portNumber = '<%= @port %>'     
 
 # clusterName, clusterNodes
-<% params.each do |param| -%>   
+<% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
 

@@ -6,7 +6,7 @@ machine    = '<%= @address %>'
 portNumber = '<%= @port %>'     
 
 # coherence_cluster_name,target,targetType,storage_enabled,unicast_address,unicast_port,multicast_address,multicast_port,machines
-<% params.each do |param| -%>   
+<% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
 

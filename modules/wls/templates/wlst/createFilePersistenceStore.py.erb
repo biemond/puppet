@@ -6,7 +6,7 @@ machine    = '<%= @address %>'
 portNumber = '<%= @port %>'     
                                 
 #fileStoreName, serverTarget  
-<% params.each do |param| -%>   
+<% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
 

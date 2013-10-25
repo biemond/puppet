@@ -6,7 +6,7 @@ portNumber = '<%= @port %>'
 
        
 #jmsModuleName, subDeployment, JNDIInitialContextFactory,JNDIpropertyName,JNDIpropertyValue,name
-<% params.each do |param| -%>   
+<% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
 
