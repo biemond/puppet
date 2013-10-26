@@ -92,7 +92,6 @@ Standard WebLogic 10.3.6 server + BSU Patch with 11g PS6 of Webcenter portal & c
 ----------------------------------------------------------------------------------------------------------------
 see example_conf_5_weblogic_10.3.6_webcenter_portal_content_ps6.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls  
 
-
 WLS WebLogic Features
 ---------------------------
 - installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
@@ -115,8 +114,8 @@ WLS WebLogic Features
 - create SAF agents, SAF Remote Destinations, SAF Imported Destinations, SAF objects
 - basically can run every WLST script with the flexible WLST define manifest
 
-
-
+Other options
+-------------
 - low on entropy fix ( urandom ) by RNGD or RNG-Tools service
 - Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
 
