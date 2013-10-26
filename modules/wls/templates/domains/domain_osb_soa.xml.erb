@@ -1,9 +1,18 @@
 
 WLHOME='<%= @wlHome %>'
 DOMAIN_PATH='<%= @domainPath %>/<%= @domain %>'
+DOMAIN='<%= @domain %>'
 APP_PATH='<%= @appPath %>/<%= @domain %>'
 
+DEVELOPMENT_MODE=<%= @developmentMode %>
+
 WEBLOGIC_VERSION='<%= @version %>'
+
+ADMIN_SERVER='<%= @adminServerName %>'
+ADMIN_USER='<%= @wlsUser %>'
+ADMIN_PASSWORD='<%= @password %>'
+
+JAVA_HOME='<%= @JAVA_HOME %>'
 
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
 OSB_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @osbNodeMgrLogDir %>/osb_server1.out -Dweblogic.Stderr=<%= @osbNodeMgrLogDir %>/osb_server1_err.out'
@@ -15,21 +24,31 @@ SOA_REPOS_DBURL='<%= @reposDbUrl %>'
 SOA_REPOS_DBUSER_PREFIX='<%= @reposPrefix %>'
 SOA_REPOS_DBPASSWORD='<%= @reposPassword %>'
 
+def createBootPropertiesFile(directoryPath,fileName, username, password):
+  adminserverDir = File(directoryPath)
+  bool = adminserverDir.mkdirs()
+  fileNew=open(directoryPath + '/'+fileName, 'w')
+  fileNew.write('username=%s\n' % username)
+  fileNew.write('password=%s\n' % password)
+  fileNew.flush()
+  fileNew.close()
+
+
+
 print('Start...wls domain with template <%= @template %>')
 readTemplate('<%= @template %>')
 
-print('Set nodemanager password and crossdomain')
+print('Set crossdomain')
 create('base_domain','SecurityConfiguration')
 cd('/SecurityConfiguration/base_domain')
 set('CrossDomainSecurityEnabled',true)
-set('NodeManagerPasswordEncrypted','<%= @password %>' )
-set('NodeManagerUsername','<%= @wlsUser %>' )
+
 
 cd('/')
 print('Set domain log')
 create('base_domain','Log')
 cd('/Log/base_domain')
-set('FileName','<%= @adminNodeMgrLogDir %>/<%= @domain %>.log')
+set('FileName','<%= @adminNodeMgrLogDir %>/'+DOMAIN+'.log')
 set('FileCount',10)
 set('FileMinSize',5000)
 set('RotationType','byTime')
@@ -38,9 +57,9 @@ set('FileTimeSpan',24)
 
 cd('/Servers/AdminServer')
 # name of adminserver
-set('Name','<%= @adminServerName %>' )
+set('Name',ADMIN_SERVER )
 
-cd('/Servers/<%= @adminServerName %>')
+cd('/Servers/'+ADMIN_SERVER)
 
 # address and port
 #set('ListenAddress','<%= @adminListenAdr %>')
@@ -49,22 +68,22 @@ set('ListenPort',<%= @adminListenPort %>)
 
 setOption( "AppDir", APP_PATH )
 
-create('<%= @adminServerName %>','ServerStart')
-cd('ServerStart/<%= @adminServerName %>')
+create(ADMIN_SERVER,'ServerStart')
+cd('ServerStart/'+ADMIN_SERVER)
 set('Arguments', ADM_JAVA_ARGUMENTS)
 set('JavaVendor','Sun')
-set('JavaHome', '<%= @JAVA_HOME %>')
+set('JavaHome', JAVA_HOME)
 
-cd('/Server/<%= @adminServerName %>')
-create('<%= @adminServerName %>','SSL')
-cd('SSL/<%= @adminServerName %>')
+cd('/Server/'+ADMIN_SERVER)
+create(ADMIN_SERVER,'SSL')
+cd('SSL/'+ADMIN_SERVER)
 set('Enabled', 'False')
 set('HostNameVerificationIgnored', 'True')
 
-cd('/Server/<%= @adminServerName %>')
-create('<%= @adminServerName %>','Log')
-cd('/Server/<%= @adminServerName %>/Log/<%= @adminServerName %>')
-set('FileName','<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.log')
+cd('/Server/'+ADMIN_SERVER)
+create(ADMIN_SERVER,'Log')
+cd('/Server/'+ADMIN_SERVER+'/Log/'+ADMIN_SERVER)
+set('FileName','<%= @adminNodeMgrLogDir %>/'+ADMIN_SERVER+'.log')
 set('FileCount',10)
 set('FileMinSize',5000)
 set('RotationType','byTime')
@@ -76,28 +95,39 @@ cd('/')
 cd('Security/base_domain/User/weblogic')
 
 # weblogic user name + password
-set('Name','<%= @wlsUser %>')
-cmo.setPassword('<%= @password %>')
+set('Name',ADMIN_USER)
+cmo.setPassword(ADMIN_PASSWORD)
 
 # Set domain save options:
 # - ServerStartMode: Set mode to development.
 # - JavaHome: Sets home directory for the JVM used when starting the server.
 
-setOption('ServerStartMode', 'dev')
-setOption('JavaHome', '<%= @JAVA_HOME %>')
+if DEVELOPMENT_MODE == true:
+  setOption('ServerStartMode', 'dev')
+else:
+  setOption('ServerStartMode', 'prod')
+
+setOption('JavaHome', JAVA_HOME)
 
 print('write domain...')
 # write path + domain name
-writeDomain('<%= @domainPath %>/<%= @domain %>')
+writeDomain(DOMAIN_PATH)
 closeTemplate()
 
-es = encrypt('<%= @password %>',DOMAIN_PATH)
+createBootPropertiesFile(DOMAIN_PATH+'/servers/'+ADMIN_SERVER+'/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
+createBootPropertiesFile(DOMAIN_PATH+'/config/nodemanager','nm_password.properties',ADMIN_USER,ADMIN_PASSWORD)
+
+es = encrypt(ADMIN_PASSWORD,DOMAIN_PATH)
 
 readDomain(DOMAIN_PATH)
 
 print('set domain password...') 
-cd('/SecurityConfiguration/<%= @domain %>')
+cd('/SecurityConfiguration/'+DOMAIN)
 set('CredentialEncrypted',es)
+print('Set nodemanager password')
+set('NodeManagerUsername',ADMIN_USER )
+set('NodeManagerPasswordEncrypted',es )
+
 cd('/')
 
 setOption( "AppDir", APP_PATH )
@@ -178,7 +208,7 @@ create('soa_server1','ServerStart')
 cd('ServerStart/soa_server1')
 set('Arguments', SOA_JAVA_ARGUMENTS)
 set('JavaVendor','Sun')
-set('JavaHome', '<%= @JAVA_HOME %>')
+set('JavaHome', JAVA_HOME)
 
 cd('/Server/soa_server1')
 create('soa_server1','SSL')
@@ -205,7 +235,7 @@ create('bam_server1','ServerStart')
 cd('ServerStart/bam_server1')
 set('Arguments', BAM_JAVA_ARGUMENTS)
 set('JavaVendor','Sun')
-set('JavaHome', '<%= @JAVA_HOME %>')
+set('JavaHome', JAVA_HOME)
 
 cd('/Server/bam_server1')
 create('bam_server1','SSL')
@@ -229,6 +259,9 @@ dumpStack();
 updateDomain()
 closeDomain()
 # end check
+
+createBootPropertiesFile(DOMAIN_PATH+'/servers/soa_server1/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
+createBootPropertiesFile(DOMAIN_PATH+'/servers/bam_server1/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
 
 
 readDomain(DOMAIN_PATH)
@@ -257,7 +290,7 @@ create('osb_server1','ServerStart')
 cd('ServerStart/osb_server1')
 set('Arguments', OSB_JAVA_ARGUMENTS)
 set('JavaVendor','Sun')
-set('JavaHome', '<%= @JAVA_HOME %>')
+set('JavaHome', JAVA_HOME)
 
 cd('/Server/osb_server1')
 create('osb_server1','SSL')
@@ -286,6 +319,9 @@ set('Value',SOA_REPOS_DBUSER_PREFIX+'_SOAINFRA')
 dumpStack();
 updateDomain()
 closeDomain()
+
+createBootPropertiesFile(DOMAIN_PATH+'/servers/osb_server1/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
+
 
 print('Exiting...')
 exit()

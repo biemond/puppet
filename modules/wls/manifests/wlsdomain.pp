@@ -66,6 +66,7 @@ define wls::wlsdomain ($version         = '1111',
                        $fullJDKName     = undef,
                        $wlsTemplate     = "standard",
                        $domain          = undef,
+                       $developmentMode = true,
                        $adminServerName = "AdminServer",
                        $adminListenAdr  = "localhost",
                        $adminListenPort = '7001',
@@ -443,8 +444,8 @@ if ( $continue ) {
             require     => [Exec["execwlst ${domain} ${title}"],Exec["execwlst create OPSS store ${domain} ${title}"]],
             timeout     => 0,
           }
-          
-        } 
+
+        }
 
         case $operatingsystem {
            CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
