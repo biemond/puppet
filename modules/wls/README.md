@@ -71,8 +71,8 @@ When having a Domain on multiple servers you can use the copydomain class, this 
 for sshpass you need to install epel yum repository, do this by installing "puppet module install stahnma/epel"  
 for a complete multinode cluster example see example_conf_2_multi_node_domain_with_cluster.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls   
 
-Everything on 1 machine ( WebLogic 12.1.2 (ADF + Coherence )& Database 12c)
----------------------------------------------------------------------------
+Everything on 1 machine WebLogic 12.1.2 (ADF + Coherence)& Database 12c
+-----------------------------------------------------------------------
 When you want a FMW WebLogic Domain and a Database with a RCU on 1 machine you can look at the following example see example_conf_1_server_with_wls12.1.2_ora_db12c.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls   
 
 Standard WebLogic 10.3.6 cluster on 2 nodes
@@ -111,12 +111,13 @@ WLS WebLogic Features
 - add JCA resource adapter plan + Entries
 - create Machines, Managed Servers, Clusters, Server templates, Dynamic Clusters, Coherence clusters ( all 12.1.2 )
 - create File or JDBC Persistence Store
-- create JMS Server, Module, SubDeployment, Quota, Connection Factory, JMS (distributed) Queue or Topic,Foreign Servers + entries  
+- create JMS Server, Module, SubDeployment, Quota, Connection Factory, JMS (distributed) Queue or Topic,Foreign Servers + entries
 - create SAF agents, SAF Remote Destinations, SAF Imported Destinations, SAF objects
 - basically can run every WLST script with the flexible WLST define manifest
 
 
-- low on entropy fix ( urandom ) by RNGD or RNG-Tools service  
+
+- low on entropy fix ( urandom ) by RNGD or RNG-Tools service
 - Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
 
 Domain creation options (Dev or Prod mode)
@@ -142,7 +143,7 @@ Contains WebLogic Facter which displays the following: Middleware homes, Oracle 
 
 ![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/facts.png)
 
-### My WLS module Files folder ( you need to download it yourself and agree to Oracle Licenses )
+### My WLS module Files folder, you need to download it yourself and agree to the Oracle (Developer) License
 WebLogic 11g + patches: wls1036_generic.jar, p13573621_1036_Generic.zip, p14736139_1036_Generic.zip  
 WebLogic 12.1.2: wls_121200.jar, fmw_infra_121200.jar  
 IDE: jdevstudio11117install.jar, soa-jdev-extension_11117.zip, oepe-indigo-all-in-one-11.1.1.8.0.201110211138-linux-gtk-x86_64.zip  
