@@ -11,6 +11,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 
 Version updates
 ---------------
+- 1.2.6 Webtier installation and associate domain with the Oracle HTTP server. 
 - 1.2.5 WebLogic domains also supports Prod mode, set Nodemanager security. 
 - 1.2.4 JMS Quota creation, Datasource now supports extra JDBC properties, fixed ruby warning with not escaped chars + arrays in erb files 
 - 1.2.3 Wlscontrol support starting of managed servers  
@@ -101,6 +102,7 @@ WLS WebLogic Features
 - installs Oracle Soa Suite 11g
 - installs Oracle Webcenter 11g
 - installs Oracle Webcenter Content 11g
+- installs Oracle Webtier and associate domain
 - apply Oracle patch ( OPatch for Oracle products )
 - installs Oracle JDeveloper 11g / 12.1.2 + SOA Suite plugin
 - configures and starts nodemanager
