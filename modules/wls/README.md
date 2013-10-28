@@ -278,7 +278,7 @@ WebLogic configuration examples
            $user         = "oracle"
            $group        = "dba"
            $downloadDir  = "/data/install/"
-           $logsDir      = "/data/logs"   
+           $logDir      = "/data/logs"   
          }
          windows: { 
            $osOracleHome = "c:/oracle"
@@ -288,7 +288,7 @@ WebLogic configuration examples
            $group        = "Administrators"
            $serviceName  = "C_oracle_wls11g_wlserver_10.3"
            $downloadDir  = "c:/temp"
-           $logsDir      = "c:/oracle/logs" 
+           $logDir      = "c:/oracle/logs" 
          }
       }
 
@@ -412,7 +412,7 @@ WebLogic configuration examples
        #nodemanager configuration and starting
        wls::nodemanager{'nodemanager11g':
          listenPort  => '5556',
-         logDir      => $logsDir,
+         logDir      => $logDir,
          require     =>  Wls::Installsoa['soaPS6'],
        }
     
@@ -439,7 +439,7 @@ WebLogic configuration examples
          $user         = "oracle"
          $group        = "dba"
          $downloadDir  = "/data/install"
-         $logsDir      = "/data/logs"       
+         $logDir       = "/data/logs"       
        }
        windows: { 
          $osOracleHome = "c:/oracle/middleware"
@@ -449,7 +449,7 @@ WebLogic configuration examples
          $group        = "Administrators"
          $serviceName  = "C_oracle_middleware_wls11g_wlserver_10.3"
          $downloadDir  = "c:/temp"
-         $logsDir      = "c:/oracle/logs" 
+         $logDir       = "c:/oracle/logs" 
        }
     }
   
@@ -549,7 +549,7 @@ WebLogic configuration examples
     #nodemanager configuration and starting
     wls::nodemanager{'nodemanager11g':
       listenPort  => '5556',
-      logDir      => $logsDir,
+      logDir      => $logDir,
       require     => Wls::Installsoa['soaPS6'],
     }
     }

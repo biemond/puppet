@@ -119,7 +119,7 @@ class wls2{
        $user         = "oracle"
        $group        = "dba"
        $downloadDir  = "/data/install"
-       $logsDir      = "/data/logs"       
+       $logDir      = "/data/logs"       
      }
      windows: { 
        $osOracleHome = "c:/oracle/middleware"
@@ -129,7 +129,7 @@ class wls2{
        $group        = "Administrators"
        $serviceName  = "C_oracle_middleware_wls11g_wlserver_10.3"
        $downloadDir  = "c:/temp"
-       $logsDir      = "c:/oracle/logs" 
+       $logDir      = "c:/oracle/logs" 
      }
   }
 
@@ -206,16 +206,16 @@ class wls2{
   #nodemanager configuration and starting
   wls::nodemanager{'nodemanager11g':
      listenPort  => '5556',
-     logDir      => $logsDir,
+     logDir      => $logDir,
      require     => Wls::Bsupatch['p16619891'],
   }
 
-	orautils::nodemanagerautostart{"autostart weblogic 11g":
-	   version     => "1111",
-	   wlHome      => $osWlHome, 
-	   user        => $user,
+  orautils::nodemanagerautostart{"autostart weblogic 11g":
+	 version     => "1111",
+	 wlHome      => $osWlHome, 
+	 user        => $user,
      require     => Wls::Nodemanager['nodemanager11g'],
-	}
+  }
 
 }
 

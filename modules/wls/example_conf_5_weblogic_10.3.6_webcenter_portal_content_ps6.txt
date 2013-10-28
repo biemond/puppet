@@ -107,7 +107,7 @@ class wls1036_7{
    $user         = "oracle"
    $group        = "dba"
    $downloadDir  = "/data/install"
-   $logsDir      = "/data/logs"       
+   $logDir       = "/data/logs"       
 
 
   # set the defaults
@@ -212,7 +212,7 @@ class wls1036_7{
   #nodemanager configuration and starting
   wls::nodemanager{'nodemanager11g':
     listenPort  => '5556',
-    logDir      => $logsDir,
+    logDir      => $logDir,
     require     => Wls::Installsoa['soaPS6'],
   }
 

@@ -69,7 +69,7 @@ STATICPORT INI FILE LOCATION=
 [SYSTEM]
 
 #Set true to configure Oracle HTTP Server, else skip Oracle HTTP Server configuration
-CONFIGURE_OHS=false
+CONFIGURE_OHS=<%= @configureHTTP %>
 
 #Set true to configure Oracle Web Cache, else skip Oracle Web Cache configuration
 CONFIGURE_WEBCACHE=false
@@ -84,18 +84,18 @@ OHS_COMPONENT_NAME=ohs1
 [RELATIONSHIPS]
 
 #If set to true, the instance and components will be registered with an existing weblogic server
-ASSOCIATE_WEBTIER_WITH_DOMAIN=false
+ASSOCIATE_WEBTIER_WITH_DOMAIN=<%= @associateWebtier %>
 
 #Provide an existing domain host name. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_HOST_NAME=
+DOMAIN_HOST_NAME=<%= @wlsAdminUrl %>
 
 #Provide the existing domain port number. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_PORT_NO=
+DOMAIN_PORT_NO=<%= @wlsAdminPort %>
 
 #Provide the domain user name. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_USER_NAME=
+DOMAIN_USER_NAME=<%= @wlsUser %>
 
 #The domain user password. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_USER_PASSWORD=
+DOMAIN_USER_PASSWORD=<%= @password %>
 
 
