@@ -15,10 +15,10 @@ SKIP_SOFTWARE_UPDATES=true
 SOFTWARE_UPDATES_DOWNLOAD_LOCATION=
 
 #Set this to true if installation and configuration need to be done, all other required variables need to be provided. Variable "INSTALL AND CONFIGURE LATER TYPE" must be set to false if this is set to true as the variables are mutually exclusive
-INSTALL AND CONFIGURE TYPE=false
+INSTALL AND CONFIGURE TYPE=true
 
 #Set this to true if only Software only installation need to be done. If this is set to true then variable "INSTALL AND CONFIGURE TYPE" must be set to false, since the variables are mutually exclusive.
-INSTALL AND CONFIGURE LATER TYPE=true
+INSTALL AND CONFIGURE LATER TYPE=false
 
 #Provide the Oracle Home location. The location has to be the immediate child under the specified Middleware Home location. The Oracle Home directory name may only contain alphanumeric , hyphen (-) , dot (.) and underscore (_) characters, and it must begin with an alphanumeric character. The total length has to be less than or equal to 128 characters. The location has to be an empty directory or a valid SOA Oracle Home.
 ORACLE_HOME=<%= @webtierOracleHome %>
@@ -69,7 +69,7 @@ STATICPORT INI FILE LOCATION=
 [SYSTEM]
 
 #Set true to configure Oracle HTTP Server, else skip Oracle HTTP Server configuration
-CONFIGURE_OHS=false
+CONFIGURE_OHS=<%= @configureHTTP %>
 
 #Set true to configure Oracle Web Cache, else skip Oracle Web Cache configuration
 CONFIGURE_WEBCACHE=false
@@ -84,18 +84,18 @@ OHS_COMPONENT_NAME=ohs1
 [RELATIONSHIPS]
 
 #If set to true, the instance and components will be registered with an existing weblogic server
-ASSOCIATE_WEBTIER_WITH_DOMAIN=false
+ASSOCIATE_WEBTIER_WITH_DOMAIN=<%= @associateWebtier %>
 
 #Provide an existing domain host name. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_HOST_NAME=
+DOMAIN_HOST_NAME=<%= @wlsAdminUrl %>
 
 #Provide the existing domain port number. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_PORT_NO=
+DOMAIN_PORT_NO=<%= @wlsAdminPort %>
 
 #Provide the domain user name. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_USER_NAME=
+DOMAIN_USER_NAME=<%= @wlsUser %>
 
 #The domain user password. Required only if ASSOCIATE_WEBTIER_WITH_DOMAIN is set to true
-DOMAIN_USER_PASSWORD=
+DOMAIN_USER_PASSWORD=<%= @password %>
 
 

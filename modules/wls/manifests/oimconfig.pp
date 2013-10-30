@@ -64,45 +64,52 @@ define wls::oimconfig ($oimHome                 = undef,
      }
    }
  
-   if ( $serverConfig ) {
+#   if ( $serverConfig ) {
 
         file { "${path}/${title}config_oim_server.rsp":
           ensure  => present,
           content => template("wls/oim/oim_server.rsp.erb"),
+          
         }
         exec { "config oim server ${title}":
-          command     => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_server.rsp",
-          timeout     => 0,
+          command => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_server.rsp",
+          timeout => 0,
           require => File["${path}/${title}config_oim_server.rsp"],
+          onlyif  => "${serverConfig} == true",    
         }  
 
-   }
-   if ( $remoteConfig ) {
+#   }
+#   if ( $remoteConfig ) {
 
         file { "${path}/${title}config_oim_remote.rsp":
           ensure  => present,
           content => template("wls/oim/oim_remote.rsp.erb"),
         }
         exec { "config oim remote ${title}":
-          command     => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_remote.rsp",
-          timeout     => 0,
-          require => File["${path}/${title}config_oim_remote.rsp"],
+          command => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_remote.rsp",
+          timeout => 0,
+          onlyif  => "${remoteConfig} == true",    
+          require => [File["${path}/${title}config_oim_remote.rsp"],Exec["config oim server ${title}"]],
         }  
  
-   }
-   if ( $designConfig ) {
+#   }
+#   if ( $designConfig ) {
 
         file { "${path}/${title}config_oim_design.rsp":
           ensure  => present,
           content => template("wls/oim/oim_design.rsp.erb"),
         }
         exec { "config oim design ${title}":
-          command     => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_design.rsp",
-          timeout     => 0,
-          require => File["${path}/${title}config_oim_design.rsp"],
+          command => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_design.rsp",
+          timeout => 0,
+          onlyif  => "${designConfig} == true",    
+          require => [File["${path}/${title}config_oim_design.rsp"],Exec["config oim design ${title}"],Exec["config oim server ${title}"]],
         }  
 
-   }
+#   }
+
+
+
 }  
 
 
