@@ -45,9 +45,8 @@ define javaexec (
   }
 
   # set permissions
-  file { "/usr/java/${fullVersion}":
-    ensure  => directory,
-    recurse => true,
+  exec { "chown -R root:root /usr/java/${fullVersion}":
+    unless  => "ls -al /usr/java/${fullVersion}/bin/java | awk ' { print \$3 }' |  grep  root",
     require => Exec["extract java ${fullVersion}"],
   }
 

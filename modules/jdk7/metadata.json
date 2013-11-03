@@ -1,6 +1,6 @@
 {
   "name": "biemond-jdk7",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "summary": "Oracle JDK7 puppet module optimized for weblogic urandom rngd entropy",
   "author": "Edwin Biemond",
   "description": "Oracle JDK7 puppet module with low on entropy fix, you can use the rngd or rng-tools service or set urandom in Java",

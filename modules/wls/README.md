@@ -156,10 +156,10 @@ Webcenter software: ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip, ofm_wcc_generic_11
 WebLogic settings for ulimits and kernel parameters
 ---------------------------------------------------
 
-install the following module to set the database kernel parameters  
+install the following module to set the kernel parameters  
 puppet module install fiddyspence-sysctl  
 
-install the following module to set the database user limits parameters  
+install the following module to set the user limits parameters  
 puppet module install erwbgy-limits  
 
      sysctl { 'kernel.msgmnb': ensure => 'present', permanent => 'yes', value => '65536',}
