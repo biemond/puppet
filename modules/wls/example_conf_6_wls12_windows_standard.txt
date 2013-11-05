@@ -1,3 +1,5 @@
+#
+# * backup c:\program files\oracle\orainventory\contents , this will have all the middleware entries
 # 
 # required puppet modules
 # * puppetlabs/registry  ( http://forge.puppetlabs.com/puppetlabs/registry ) 
@@ -12,6 +14,7 @@
 # 
 # uninstall  
 # * remove registry oracle  "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"
+# * restore backup c:\program files\oracle\orainventory\contents
 # * stop windows nodemanager service 
 # * remove middleware home
 # * remove c:\bea
@@ -19,10 +22,10 @@
 #
 # masterless puppet 
 # * download weblogic 12.1.2 basic and put wls_121200.jar in c:\temp
+# or
 # * download weblogic 12.1.2 FMW infra and put fmw_infra_121200.jar in c:\temp
-# * place puppetlabs/registry and biemond/wls in wls
-#
-#
+# 
+# * place puppetlabs/registry and biemond/wls in the module folder
 #
 #
 
