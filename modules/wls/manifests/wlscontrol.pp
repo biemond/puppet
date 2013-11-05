@@ -112,8 +112,6 @@ define wls::wlscontrol
                           "JAVA_HOME=${JAVA_HOME}"],
           require     => File["${path}/${title}${script}"],
           path        => $execPath,
-          user        => $user,
-          group       => $group,
           logoutput   => $logOutput,
           timeout     => 0,
         }

@@ -273,25 +273,14 @@ if ( $continue ) {
      }
 
      windows: {
-
-        if ($version != "1212" ) {
-          if ! defined(Exec["extract ${adfFile}"]) {
-            exec { "extract ${adfFile}":
-              command => "${checkCommand} unzip ${path}/${adfFile} -d ${path}/adf",
-              require => File ["${path}/${adfFile}"],
-              creates => "${path}/adf/Disk1",
-              cwd     => $path,
-            }
-          }
-        }
-
-        exec {"icacls adf disk ${title}":
-           command    => "${checkCommand} icacls ${path}\\adf\\* /T /C /grant Administrator:F Administrators:F",
-           logoutput  => false,
-           require    => Exec["extract ${adfFile}"],
-        }
-
+ 
         if ($version == "1212" ) {
+          exec {"icacls adf disk ${title}":
+            command    => "${checkCommand} icacls ${path}\\${adfFile} /T /C /grant Administrator:F Administrators:F",
+            logoutput  => false,
+            require    => Exec["extract ${adfFile}"],
+          }
+
           exec { "install adf ${title}":
             command     => "${checkCommand} java -jar ${path}/${adfFile} ${command} -ignoreSysPrereqs",
             require     => [Exec["icacls adf disk ${title}"],File ["${path}/${title}silent_adf.xml"],File["${path}/${adfFile}"]],
@@ -299,15 +288,26 @@ if ( $continue ) {
           }
         } else {
 
+            if ! defined(Exec["extract ${adfFile}"]) {
+              exec { "extract ${adfFile}":
+                command => "${checkCommand} unzip ${path}/${adfFile} -d ${path}/adf",
+                require => File ["${path}/${adfFile}"],
+                creates => "${path}/adf/Disk1",
+                cwd     => $path,
+              }
+            }
+            exec {"icacls adf disk ${title}":
+              command    => "${checkCommand} icacls ${path}\\adf\\* /T /C /grant Administrator:F Administrators:F",
+              logoutput  => false,
+              require    => Exec["extract ${adfFile}"],
+            }
 		        exec { "install adf ${title}":
 		          command     => "${path}\\adf\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
 		          logoutput   => true,
 		          require     => [Wls::Utils::Defaultusersfolders['create adf home'],Exec["icacls adf disk ${title}"],File ["${path}/${title}silent_adf.xml"],Exec["extract ${adfFile}"]],
 		          creates     => $commonOracleHome,
 		        }
-
         }
-
      }
    }
 }

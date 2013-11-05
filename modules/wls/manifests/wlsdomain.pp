@@ -517,7 +517,7 @@ if ( $continue ) {
    # set our 12.1.2 nodemanager properties
    if ( $version == "1212" ){
        case $operatingsystem {
-          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris, windows: {
+          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
             file { "nodemanager.properties ux 1212 ${title}":
                 path    => "${nodeMgrHome}/nodemanager.properties",
                 ensure  => present,
@@ -526,6 +526,33 @@ if ( $continue ) {
                 require => Exec["execwlst ${domain} ${title}"],
             }
           }
+         windows: {
+            file { "nodemanager.properties ux 1212 ${title}":
+                path    => "${nodeMgrHome}/nodemanager.properties",
+                ensure  => present,
+                replace => 'yes',
+                content => template("wls/nodemgr/nodemanager.properties_1212.erb"),
+                require => Exec["execwlst ${domain} ${title}"],
+            }
+            exec {"icacls win nodemanager bin ${title}":
+               command    => "${checkCommand} icacls ${wlHome}\\server\\bin\\* /T /C /grant Administrator:F Administrators:F",
+               logoutput  => false,
+            }
+            exec {"icacls win nodemanager native ${title}":
+               command    => "${checkCommand} icacls ${wlHome}\\server\\native\\* /T /C /grant Administrator:F Administrators:F",
+               logoutput  => false,
+            }
+            exec { "execwlst win nodemanager ${title}":
+              command     => "${domainPath}/${domain}/bin/installNodeMgrSvc.cmd",
+              environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
+                              "JAVA_HOME=${JAVA_HOME}"],
+              cwd         => "${domainPath}/${domain}/bin",
+              require     => [Exec ["icacls win nodemanager bin ${title}"],
+                              Exec ["icacls win nodemanager native ${title}"],
+                              File["nodemanager.properties ux 1212 ${title}"]],
+              logoutput   => true,
+            }
+         } 
        }
      }
 }

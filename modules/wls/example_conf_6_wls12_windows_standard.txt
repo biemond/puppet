@@ -1,0 +1,156 @@
+# 
+# required puppet modules
+# * puppetlabs/registry  ( http://forge.puppetlabs.com/puppetlabs/registry ) 
+# * biemond/wls          ( http://forge.puppetlabs.com/biemond/wls )
+#
+# requirements 
+# * For windows puppet agents it is necessary to install unxutils tools ( http://unxutils.sourceforge.net/  ) and extract this on the c drive C:\unxutils   
+# * For windows and JDK, you need copy the jdk to c:/oracle ( unpossible with the space in c:\program files folder).  
+#
+# one machine setup with weblogic 12.1.2
+#   creates an WLS Domain with JAX-WS (advanced , soap)
+# 
+# uninstall  
+# * remove registry oracle  "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"
+# * stop windows nodemanager service 
+# * remove middleware home
+# * remove c:\bea
+# * remove menu from all programs
+#
+# masterless puppet 
+# * download weblogic 12.1.2 basic and put wls_121200.jar in c:\temp
+# * download weblogic 12.1.2 FMW infra and put fmw_infra_121200.jar in c:\temp
+# * place puppetlabs/registry and biemond/wls in wls
+#
+#
+#
+#
+
+node 'win7user.localdomain' inherits default {
+  
+   include wls12_win, wls12c_win_domain
+   Class['wls12_win']  -> Class['wls12c_win_domain']
+}
+
+
+class wls12_win{
+
+  $jdkWls12cJDK = 'jdk1.7.0_25'
+
+  $osOracleHome = "c:/oracle"
+  $osMdwHome    = "c:/oracle/Middleware12c"
+  $osWlHome     = "c:/oracle/Middleware12c/wlserver"
+  $user         = "Administrator"
+  $group        = "Administrators"
+  $serviceName  = "C_oracle_middleware12c_wlserver"
+  $downloadDir  = "c:/temp"
+
+  $puppetDownloadMntPoint = "puppet:///middleware/"
+
+  # set the wls defaults
+  wls::installwls{'wls12c':
+    version                => '1212',
+    mdwHome                => $osMdwHome,
+    oracleHome             => $osOracleHome,
+    fullJDKName            => $jdkWls12cJDK, 
+    user                   => $user,
+    group                  => $group,   
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+
+#  # set the adf defaults
+#  Wls::Installadf {
+#    mdwHome                => $osMdwHome,
+#    wlHome                 => $osWlHome,
+#    oracleHome             => $osOracleHome,
+#    fullJDKName            => $jdkWls12cJDK, 
+#    user                   => $user,
+#    group                  => $group,   
+#    downloadDir            => $downloadDir,
+#    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+#  }
+#  
+
+#  wls::installadf{'adf12c':
+#     adfFile      => 'fmw_infra_121200.jar',
+#  } 
+
+} 
+
+
+class wls12c_win_domain{
+
+  $jdkWls12gJDK    = 'jdk1.7.0_25'
+
+  $wlsDomainName   = "Wls12c"
+  $osTemplate      = "standard"
+
+  $adminListenPort = "7001"
+  $nodemanagerPort = "5556"
+  $address         = "localhost"
+
+
+  $osOracleHome = "c:/oracle"
+  $osMdwHome    = "c:/oracle/Middleware12c"
+  $osWlHome     = "c:/oracle/Middleware12c/wlserver"
+  $user         = "Administrator"
+  $group        = "Administrators"
+  $serviceName  = "c_oracle_MIDDLE~1_wlserver"
+  $downloadDir  = "c:/temp"
+  $logDir       = "c:/oracle/logs"
+
+  # install domain
+  wls::wlsdomain{
+   'wlsDomain12c':
+    version         => "1212",
+    wlHome          => $osWlHome,
+    mdwHome         => $osMdwHome,
+    fullJDKName     => $jdkWls12gJDK,  
+    user            => $user,
+    group           => $group,    
+    downloadDir     => $downloadDir, 
+    wlsTemplate     => $osTemplate,
+    domain          => $wlsDomainName,
+    adminListenPort => $adminListenPort,
+    nodemanagerPort => $nodemanagerPort,
+    wlsUser         => "weblogic",
+    password        => "weblogic1",
+    logDir          => $logDir,
+  }
+
+  #nodemanager starting 
+  # in 12c start it after domain creation
+  wls::nodemanager{'nodemanager12c':
+     version      => "1212",
+     listenPort   => $nodemanagerPort,
+     domain       => $wlsDomainName,   	 
+     wlHome       => $osWlHome,
+     fullJDKName  => $jdkWls12gJDK,	
+     user         => $user,
+     group        => $group,
+     serviceName  => $serviceName,
+     require      => Wls::Wlsdomain['wlsDomain12c'],
+  }  
+
+  # start AdminServers for configuration
+  wls::wlscontrol{'startWLSAdminServer12c':
+      wlsDomain     => $wlsDomainName,
+      wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+      wlsServer     => "AdminServer",
+      action        => 'start',
+      wlHome        => $osWlHome,
+      fullJDKName   => $jdkWls12gJDK,  
+      wlsUser       => "weblogic",
+      password      => "weblogic1",
+      address       => $address,
+      port          => $nodemanagerPort,
+      user          => $user,
+      group         => $group,
+      downloadDir   => $downloadDir,
+      logOutput     => true, 
+      require       => Wls::Nodemanager['nodemanager12c'],
+  }
+
+}

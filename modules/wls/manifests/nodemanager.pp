@@ -142,7 +142,11 @@ if $version == "1212" {
 
          }
          windows: {
-
+		        service { "window nodemanager initial start ${title}":
+		                name       => "Oracle Weblogic ${domain} NodeManager (${serviceName})",
+		                enable     => true,
+		                ensure     => true,
+		        }
          }
       }
 }

@@ -161,6 +161,16 @@ if ( $continue ) {
             downloadDir     => $path,
    }
 
+   # put weblogic generic jar
+   file { "wls.jar ${version}":
+     path    => "${path}/${wlsFile}",
+     ensure  => file,
+     source  => "${mountPoint}/${wlsFile}",
+     require => Wls::Utils::Defaultusersfolders['create wls home'],
+     replace => false,
+     backup  => false,
+   }
+
     if $version == $wls1212Parameter  {
 
        wls::utils::orainst{'create wls oraInst':
@@ -177,51 +187,41 @@ if ( $continue ) {
 		     require => [ Wls::Utils::Orainst ['create wls oraInst']],
 		   }
 
-		   # put weblogic generic jar
-		   file { "wls.jar ${version}":
-		     path    => "${path}/${wlsFile}",
-		     ensure  => file,
-		     source  => "${mountPoint}/${wlsFile}",
-		     require => Wls::Utils::Defaultusersfolders['create wls home'],
-		     replace => false,
-		     backup  => false,
-		   }
-
        $command  = "-silent -responseFile ${path}/silent${version}.xml "
 
-   case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
-        exec { "install wls ${title}":
-          command     => "java -jar ${path}/${wlsFile} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
-          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"]],
-          timeout     => 0,
-        }
-     }
-     Solaris: {
-        exec { "install wls ${title}":
-          command     => "java -jar ${path}/${wlsFile} ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs",
-          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"]],
-          timeout     => 0,
-        }
-     }
-
-     windows: {
-
-        exec {"icacls wls disk ${title}":
-           command    => "${checkCommand} icacls ${path}\\wls\\* /T /C /grant Administrator:F Administrators:F",
-           logoutput  => false,
-           require    => Exec["extract ${wlsFile}"],
-        }
-
-        exec { "install wls ${title}":
-          command     => "${checkCommand} java -jar ${path}/wls/${wlsFile}  ${command} -ignoreSysPrereqs",
-          logoutput   => true,
-          require     => [Wls::Utils::Defaultusersfolders['create wls home'],Exec["icacls wls disk ${title}"],File ["silent.xml ${version}"]],
-          timeout     => 0,
-        }
-
-     }
-   }
+		   case $operatingsystem {
+		     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
+		        exec { "install wls ${title}":
+		          command     => "java -jar ${path}/${wlsFile} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
+		          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"]],
+		          timeout     => 0,
+		        }
+		     }
+		     Solaris: {
+		        exec { "install wls ${title}":
+		          command     => "java -jar ${path}/${wlsFile} ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs",
+		          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["silent.xml ${version}"]],
+		          timeout     => 0,
+		        }
+		     }
+		
+		     windows: {
+		
+		        exec {"icacls wls disk ${title}":
+		           command    => "${checkCommand} icacls ${path}\\${wlsFile} /T /C /grant Administrator:F Administrators:F",
+		           logoutput  => false,
+		           require    => File["wls.jar ${version}"],
+		        }
+		
+		        exec { "install wls ${title}":
+		          command     => "${checkCommand} java -jar ${path}/${wlsFile}  ${command} -ignoreSysPrereqs",
+		          logoutput   => true,
+		          require     => [Wls::Utils::Defaultusersfolders['create wls home'],Exec["icacls wls disk ${title}"],File ["silent.xml ${version}"]],
+		          timeout     => 0,
+		        }
+		
+		     }
+		   }
 
     }
     else {
@@ -235,16 +235,6 @@ if ( $continue ) {
          require => Wls::Utils::Defaultusersfolders['create wls home'],
        }
 
-
-		   # put weblogic generic jar
-		   file { "wls.jar ${version}":
-		     path    => "${path}/${wlsFile}",
-		     ensure  => file,
-		     source  => "${mountPoint}/${wlsFile}",
-		     require => Wls::Utils::Defaultusersfolders['create wls home'],
-		     replace => false,
-		     backup  => false,
-		   }
 
        $javaCommand     = "java -Xmx1024m -jar"
 

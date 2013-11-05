@@ -11,6 +11,8 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 
 Version updates
 ---------------
+
+- 1.2.7 Windows fixes. 
 - 1.2.6 Webtier installation and associate domain with the Oracle HTTP server. 
 - 1.2.5 WebLogic domains also supports Prod mode, set Nodemanager security. 
 - 1.2.4 JMS Quota creation, Datasource now supports extra JDBC properties, fixed ruby warning with not escaped chars + arrays in erb files 
@@ -93,6 +95,12 @@ Standard WebLogic 10.3.6 server + BSU Patch with 11g PS6 of Webcenter portal & c
 ----------------------------------------------------------------------------------------------------------------
 see example_conf_5_weblogic_10.3.6_webcenter_portal_content_ps6.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls  
 
+Standard WebLogic 12.1.2 windows server with a domain ( no ADF or FMW )
+------------------------------------------------------------------------
+see example_conf_6_server_wls12.1.2_windows_standard.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
+
+
+
 WLS WebLogic Features
 ---------------------------
 - installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
@@ -156,10 +164,10 @@ Webcenter software: ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip, ofm_wcc_generic_11
 WebLogic settings for ulimits and kernel parameters
 ---------------------------------------------------
 
-install the following module to set the kernel parameters  
+install the following module to set the database kernel parameters  
 puppet module install fiddyspence-sysctl  
 
-install the following module to set the user limits parameters  
+install the following module to set the database user limits parameters  
 puppet module install erwbgy-limits  
 
      sysctl { 'kernel.msgmnb': ensure => 'present', permanent => 'yes', value => '65536',}

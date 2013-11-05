@@ -40,55 +40,55 @@ define wls::utils::defaultusersfolders(
 		        Exec { path      => $execPath,
 		             }
 		        File { ensure  => present,
-		               mode    => 0555,
+		               mode    => 0777,
 		             }
 		     }
 		   }
 
        if ( $createUser ) {
-		   # for linux , create a oracle user plus a dba group
-		   case $operatingsystem {
-		      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
-		        if ! defined(Group[$group]) {
-		          group { $group :
-		                  ensure => present,
-		          }
-		        }
-		        if ! defined(User[$user]) {
-		          # http://raftaman.net/?p=1311 for generating password
-		          user { $user :
-		              ensure     => present,
-		              groups     => $group,
-		              shell      => '/bin/bash',
-		              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',
-		              home       => "/home/${user}",
-		              comment    => 'created by Puppet',
-		              require    => Group[$group],
-		              managehome => true,
-		          }
-		        }
-		     }
-		      Solaris: {
-		        if ! defined(Group[$group]) {
-		          group { $group :
-		                  ensure => present,
-		          }
-		        }
-		        if ! defined(User[$user]) {
-		          # http://raftaman.net/?p=1311 for generating password
-		          user { $user :
-		              ensure     => present,
-		              groups     => $group,
-		              shell      => '/bin/bash',
-		              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',
-		              home       => "/export/home/${user}",
-		              comment    => 'created by Puppet',
-		              require    => Group[$group],
-		              managehome => true,
-		          }
-		        }
-		     }
-		   }
+			   # for linux , create a oracle user plus a dba group
+			   case $operatingsystem {
+			      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
+			        if ! defined(Group[$group]) {
+			          group { $group :
+			                  ensure => present,
+			          }
+			        }
+			        if ! defined(User[$user]) {
+			          # http://raftaman.net/?p=1311 for generating password
+			          user { $user :
+			              ensure     => present,
+			              groups     => $group,
+			              shell      => '/bin/bash',
+			              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',
+			              home       => "/home/${user}",
+			              comment    => 'created by Puppet',
+			              require    => Group[$group],
+			              managehome => true,
+			          }
+			        }
+			     }
+			      Solaris: {
+			        if ! defined(Group[$group]) {
+			          group { $group :
+			                  ensure => present,
+			          }
+			        }
+			        if ! defined(User[$user]) {
+			          # http://raftaman.net/?p=1311 for generating password
+			          user { $user :
+			              ensure     => present,
+			              groups     => $group,
+			              shell      => '/bin/bash',
+			              password   => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',
+			              home       => "/export/home/${user}",
+			              comment    => 'created by Puppet',
+			              require    => Group[$group],
+			              managehome => true,
+			          }
+			        }
+			     }
+			   }
 		   }
 	   # create all folders
 	   case $operatingsystem {
@@ -109,9 +109,9 @@ define wls::utils::defaultusersfolders(
           }
 	      }
 	      windows: {
-	          # make dir folder suitable for unxtools
-	          $oracleHomeWin  = slash_replace( $oracleHome )
-	          $downloadDirWin = slash_replace( $downloadDir )
+	        # make dir folder suitable for unxtools
+	        $oracleHomeWin  = slash_replace( $oracleHome )
+	        $downloadDirWin = slash_replace( $downloadDir )
           if ! defined(Exec ["create ${oracleHome} directory"]) {
 	          exec { "create ${oracleHome} directory":
 	                  command => "${checkCommand} mkdir ${oracleHomeWin}",
@@ -130,79 +130,75 @@ define wls::utils::defaultusersfolders(
 	        }
 	     }
 
-		   if ( $createUser ) {
-		   # also set permissions on downloadDir
-		   if ! defined(File[$downloadDir]) {
-		      # check oracle install folder
-		      file { $downloadDir :
-		        ensure  => directory,
-		        recurse => false,
-		        replace => false,
-		        require => [User[$user],Exec["create ${downloadDir} home directory"]],
-		      }
-		   }
-
-		   # also set permissions on oracleHome
-		   if ! defined(File[$oracleHome]) {
-		     file { $oracleHome:
-		       ensure  => directory,
-		       recurse => false,
-		       replace => false,
-		       require => [User[$user],Exec["create ${oracleHome} directory"]],
-		     }
-		   }
-
-       if (  $oraInventory != undef ) {
-         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
-             # also set permissions on oraInventory
-             if ! defined(File[$oraInventory]) {
-               file { $oraInventory:
-                 ensure  => directory,
-                 recurse => false,
-                 replace => false,
-                 require => [User[$user],Exec["create ${oracleHome} directory"]],
-               }
-             }
-          }
-         }
-       }
+		   if ( $createUser == true and $operatingsystem != "windows" ) {
+				   # also set permissions on downloadDir
+				   if ! defined(File[$downloadDir]) {
+				      # check oracle install folder
+				      file { $downloadDir :
+				        ensure  => directory,
+				        recurse => false,
+				        replace => false,
+				        require => [User[$user],Exec["create ${downloadDir} home directory"]],
+				      }
+				   }
+		
+				   # also set permissions on oracleHome
+				   if ! defined(File[$oracleHome]) {
+				     file { $oracleHome:
+				       ensure  => directory,
+				       recurse => false,
+				       replace => false,
+				       require => [User[$user],Exec["create ${oracleHome} directory"]],
+				     }
+				   }
+		
+		       if (  $oraInventory != undef ) {
+		          # also set permissions on oraInventory
+		          if ! defined(File[$oraInventory]) {
+		            file { $oraInventory:
+		              ensure  => directory,
+		              recurse => false,
+		              replace => false,
+		              require => [User[$user],Exec["create ${oracleHome} directory"]],
+		            }
+		          }
+		       }
 		   } else {
-       # also set permissions on downloadDir
-       if ! defined(File[$downloadDir]) {
-          # check oracle install folder
-          file { $downloadDir :
-            ensure  => directory,
-            recurse => false,
-            replace => false,
-            require => Exec["create ${downloadDir} home directory"],
-          }
-       }
-
-       # also set permissions on oracleHome
-       if ! defined(File[$oracleHome]) {
-         file { $oracleHome:
-           ensure  => directory,
-           recurse => false,
-           replace => false,
-           require => Exec["create ${oracleHome} directory"],
-         }
-       }
-
-       if (  $oraInventory != undef ) {
-         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
-             # also set permissions on oraInventory
-             if ! defined(File[$oraInventory]) {
-               file { $oraInventory:
-                 ensure  => directory,
-                 recurse => false,
-                 replace => false,
-                 require => Exec["create ${oracleHome} directory"],
-               }
-             }
-          }
-         }
-       }
+		       # also set permissions on downloadDir
+		       if ! defined(File[$downloadDir]) {
+		          # check oracle install folder
+		          file { $downloadDir :
+		            ensure  => directory,
+		            recurse => false,
+		            replace => false,
+		            require => Exec["create ${downloadDir} home directory"],
+		          }
+		       }
+		
+		       # also set permissions on oracleHome
+		       if ! defined(File[$oracleHome]) {
+		         file { $oracleHome:
+		           ensure  => directory,
+		           recurse => false,
+		           replace => false,
+		           require => Exec["create ${oracleHome} directory"],
+		         }
+		       }
+		
+		       if (  $oraInventory != undef ) {
+		         case $operatingsystem {
+		           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
+		             # also set permissions on oraInventory
+		             if ! defined(File[$oraInventory]) {
+		               file { $oraInventory:
+		                 ensure  => directory,
+		                 recurse => false,
+		                 replace => false,
+		                 require => Exec["create ${oracleHome} directory"],
+		               }
+		             }
+		          }
+		         }
+		       }
 		   }
 }

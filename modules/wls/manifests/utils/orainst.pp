@@ -16,7 +16,7 @@ define wls::utils::orainst( $oraInventory    = undef,
         $oraInstPath        = "/var/opt"
      }
      windows: {
-        $oraInventory       = "C:\\Program Files\\Oracle\\Inventory"
+        $oraInstPath       = "C:\\Program Files\\Oracle\\Inventory"
      }
    }
    
@@ -39,7 +39,7 @@ define wls::utils::orainst( $oraInventory    = undef,
         if ! defined(Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]) {
           registry_value { "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc":
             type    => string,
-            data    => $oraInventory,
+            data    => $oraInstPath,
             require => Registry_Key["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle"],
           }
         }
