@@ -42,14 +42,14 @@ define wls::bsupatch($mdwHome         = undef,
                      $patchFile       = undef,
                      $user            = 'oracle',
                      $group           = 'dba',
-                     $downloadDir     = '/install/',
+                     $downloadDir     = '/install',
                      $puppetDownloadMntPoint  = undef,
                     ) {
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin'
+        $execPath        = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin"
         $path            = $downloadDir
 
         Exec { path      => $execPath,
