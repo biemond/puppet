@@ -68,10 +68,11 @@ define wls::wlscontrol
       path    => "${path}/${title}${script}",
       content => template("wls/wlst/${script}.erb"),
       ensure  => present,
-      replace => 'yes',
+      replace => true,
       mode    => 0775,
       owner   => $user,
       group   => $group,
+      backup  => false,
    }
 
    case $operatingsystem {

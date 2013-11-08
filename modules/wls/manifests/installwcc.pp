@@ -72,6 +72,7 @@ define wls::installwcc($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -94,6 +95,7 @@ define wls::installwcc($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      windows: {
@@ -107,6 +109,7 @@ define wls::installwcc($mdwHome         = undef,
              }
         File { ensure  => present,
                mode    => 0777,
+               backup  => false,
              }
      }
    }

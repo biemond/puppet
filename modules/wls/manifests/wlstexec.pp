@@ -122,10 +122,11 @@ if ( $continue ) {
              }
         File {
                ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0555,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -141,10 +142,11 @@ if ( $continue ) {
              }
         File {
                ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
 
      }
@@ -159,8 +161,9 @@ if ( $continue ) {
                logoutput => $logOutput,
              }
         File { ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0777,
+               backup  => false,
              }
      }
    }

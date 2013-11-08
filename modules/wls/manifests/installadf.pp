@@ -91,6 +91,7 @@ define wls::installadf($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -112,6 +113,7 @@ define wls::installadf($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      windows: {
@@ -125,6 +127,7 @@ define wls::installadf($mdwHome         = undef,
              }
         File { ensure  => present,
                mode    => 0555,
+               backup  => false,
              }
      }
    }
@@ -273,7 +276,7 @@ if ( $continue ) {
      }
 
      windows: {
- 
+
         if ($version == "1212" ) {
           exec {"icacls adf disk ${title}":
             command    => "${checkCommand} icacls ${path}\\${adfFile} /T /C /grant Administrator:F Administrators:F",

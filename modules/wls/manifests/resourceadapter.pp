@@ -108,6 +108,7 @@ define wls::resourceadapter( $version        = '1111',
                mode    => 0744,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -128,6 +129,7 @@ define wls::resourceadapter( $version        = '1111',
                mode    => 0744,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
 
      }
@@ -143,6 +145,7 @@ define wls::resourceadapter( $version        = '1111',
              }
         File { ensure  => present,
                mode    => 0744,
+               backup  => false,
              }
      }
    }

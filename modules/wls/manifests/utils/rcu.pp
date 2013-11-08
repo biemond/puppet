@@ -22,7 +22,7 @@ define wls::utils::rcu(  $product                 = 'adf',
                          $group                   = 'dba',
                          $downloadDir             = '/install',
                          $action                  = 'create',
-                         $dbUrl                   = undef,  
+                         $dbUrl                   = undef,
                          $sysPassword             = undef,
                          $schemaPrefix            = undef,
                          $reposPassword           = undef,
@@ -30,11 +30,11 @@ define wls::utils::rcu(  $product                 = 'adf',
 
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
         $execPath        = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path            = $downloadDir
-        
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -45,23 +45,25 @@ define wls::utils::rcu(  $product                 = 'adf',
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }        
+               backup  => false,
+             }
      }
-     windows: { 
+     windows: {
 
         $execPath         = "C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
-        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c" 
-        $path             = $downloadDir 
+        $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c"
+        $path             = $downloadDir
 
-        
+
         Exec { path      => $execPath,
              }
         File { ensure  => present,
                mode    => 0777,
-             }   
+               backup  => false,
+             }
      }
-     default: { 
-        fail("Unrecognized operating system") 
+     default: {
+        fail("Unrecognized operating system")
      }
    }
 
@@ -69,7 +71,7 @@ define wls::utils::rcu(  $product                 = 'adf',
       $components = '-component MDS -component IAU -component IAU_APPEND -component IAU_VIEWER -component OPSS -component WLS -component UCSCC  '
       $componentsPasswords = [$reposPassword, $reposPassword, $reposPassword,$reposPassword,$reposPassword,$reposPassword,$reposPassword]
    } else {
-      fail("Unrecognized FMW product") 
+      fail("Unrecognized FMW product")
    }
 
    file { "${path}/rcu_passwords_${product}_${action}.txt":
@@ -78,17 +80,17 @@ define wls::utils::rcu(  $product                 = 'adf',
    }
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
        $script   = "${oracleHome}/bin/rcu"
        $javaHome = "/usr/java/${fullJDKName}"
 
      }
      Solaris: {
-       $javaHome = "/usr/jdk/${fullJDKName}"       
+       $javaHome = "/usr/jdk/${fullJDKName}"
      }
-     windows: { 
+     windows: {
        $script = "${checkCommand} ${oracleHome}/bin/rcu.bat"
-       $javaHome = "C:\\oracle\\${fullJDKName}"  
+       $javaHome = "C:\\oracle\\${fullJDKName}"
      }
    }
 
@@ -105,6 +107,6 @@ define wls::utils::rcu(  $product                 = 'adf',
             require     => File["${path}/rcu_passwords_${product}_${action}.txt"],
             environment => ["JAVA_HOME=${javaHome}"],
      }
-   } 
-  
-}    
+   }
+
+}

@@ -90,10 +90,11 @@ define wls::wlsdeploy ($wlHome        = undef,
              }
         File {
                ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0555,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      windows: {
@@ -119,8 +120,9 @@ define wls::wlsdeploy ($wlHome        = undef,
                logoutput => true,
              }
         File { ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0777,
+               backup  => false,
              }
      }
    }

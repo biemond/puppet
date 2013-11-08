@@ -84,6 +84,7 @@ define wls::nodemanager($version         = "1111",
         File{
             owner   => $user,
             group   => $group,
+            backup  => false,
 #            mode    => 0775,
         }
      }
@@ -104,6 +105,7 @@ define wls::nodemanager($version         = "1111",
         File{
             owner   => $user,
             group   => $group,
+            backup  => false,
 #            mode    => 0775,
         }
      }
@@ -120,6 +122,7 @@ define wls::nodemanager($version         = "1111",
         File{
             owner   => $user,
             group   => $group,
+            backup  => false,
 #            mode    => 0775,
         }
      }

@@ -57,6 +57,7 @@ define wls::opatch(  $oracleProductHome = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -76,6 +77,7 @@ define wls::opatch(  $oracleProductHome = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
 
@@ -92,6 +94,7 @@ define wls::opatch(  $oracleProductHome = undef,
              }
         File { ensure  => present,
                mode    => 0555,
+               backup  => false,
              }
      }
    }

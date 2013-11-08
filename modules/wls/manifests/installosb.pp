@@ -73,6 +73,7 @@ define wls::installosb($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -95,6 +96,7 @@ define wls::installosb($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      windows: {
@@ -108,6 +110,7 @@ define wls::installosb($mdwHome         = undef,
              }
         File { ensure  => present,
                mode    => 0555,
+               backup  => false,
              }
      }
    }

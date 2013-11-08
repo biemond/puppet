@@ -1,12 +1,12 @@
 # == Define: wls::installjdev
 #
-# Downloads from file folder and install jdeveloper with a silent install on linux and windows servers 
+# Downloads from file folder and install jdeveloper with a silent install on linux and windows servers
 #
 #
-# 
+#
 
 define wls::installjdev( $version                 = "1111",
-                         $jdevFile                = undef, 
+                         $jdevFile                = undef,
                          $fullJDKName             = undef,
                          $oracleHome              = undef,
                          $mdwHome                 = undef,
@@ -16,24 +16,24 @@ define wls::installjdev( $version                 = "1111",
                          $user                    = 'oracle',
                          $group                   = 'dba',
                          $downloadDir             = '/install',
-                         $puppetDownloadMntPoint  = undef,   
+                         $puppetDownloadMntPoint  = undef,
                       ) {
 
    if $puppetDownloadMntPoint == undef {
-     $mountPoint =  "puppet:///modules/wls/"    	
+     $mountPoint =  "puppet:///modules/wls/"
    } else {
      $mountPoint =	$puppetDownloadMntPoint
    }
 
    case $operatingsystem {
-      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
         $path            = $downloadDir
         $wlHome          = "${mdwHome}/wlserver_10.3"
         $execPath        = "/usr/java/${fullJDKName}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $javaHome        = "/usr/java/${fullJDKName}"
 
         $oraInventory    = "${oracleHome}/oraInventory"
-        
+
         Exec { path      => $execPath,
                user      => $user,
                group     => $group,
@@ -44,11 +44,12 @@ define wls::installjdev( $version                 = "1111",
                mode    => 0775,
                owner   => $user,
                group   => $group,
-             }   
+               backup  => false,
+             }
 
      }
-     default: { 
-        fail("Unrecognized operating system") 
+     default: {
+        fail("Unrecognized operating system")
      }
    }
 
@@ -61,7 +62,7 @@ define wls::installjdev( $version                 = "1111",
             downloadDir     => $path,
    }
 
-   
+
    # put jdeveloper full jar
    file { "${jdevFile}":
      path    => "${path}/${jdevFile}",
@@ -82,7 +83,7 @@ define wls::installjdev( $version                 = "1111",
 	     content => template("wls/silent_jdeveloper.xml.erb"),
 	     require => [ Wls::Utils::Defaultusersfolders['create jdev home']],
 	   }
-	
+
 	   # install jdeveloper 11g
 	   exec { "installjdev ${jdevFile}":
 	          command     => "java -jar ${path}/${jdevFile} -mode=silent -silent_xml=${path}/silent_jdeveloper_${title}.xml -log=${path}/installJdev_${title}.log",
@@ -93,7 +94,7 @@ define wls::installjdev( $version                 = "1111",
    } elsif $version == "1212" {
 
        wls::utils::orainst{'create jdev oraInst':
-            oraInventory    => $oraInventory, 
+            oraInventory    => $oraInventory,
             group           => $group,
        }
 
@@ -107,16 +108,16 @@ define wls::installjdev( $version                 = "1111",
        }
 
        $command  = "-silent -responseFile ${path}/silent${version}.xml "
-       
+
        exec { "installjdev ${jdevFile}":
           command     => "java -jar ${path}/${jdevFile} ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs",
           require     => [ Wls::Utils::Defaultusersfolders['create jdev home'], File["${jdevFile}"],File["silent_jdeveloper.xml ${title}"]],
           timeout     => 0,
-         }    
-             
-   }    
+         }
 
-   if ( $soaAddon == true ) { 
+   }
+
+   if ( $soaAddon == true ) {
      # de xml used by the wls installer
      file { "jdeveloper soa addon ${title}":
        path    => "${path}/${soaAddonFile}",
@@ -139,4 +140,4 @@ define wls::installjdev( $version                 = "1111",
    }
 
 }
-   
+

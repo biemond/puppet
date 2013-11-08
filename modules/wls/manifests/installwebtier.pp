@@ -7,9 +7,9 @@
 #    mdwHome                => "/opt/oracle/Middleware11gR1",
 #    wlHome                 => "/opt/oracle/Middleware11gR1/wlserver_10.3",
 #    oracleHome             => "/opt/oracle",
-#    fullJDKName            => 'jdk1.7.0_40',  
+#    fullJDKName            => 'jdk1.7.0_40',
 #    user                   => "oracle",
-#    group                  => "dba",    
+#    group                  => "dba",
 #    downloadDir            => "/data/install",
 #    webtierFile            => 'ofm_webtier_linux_11.1.1.7.0_64_disk1_1of1.zip',
 #    configureHTTP          => false,
@@ -62,6 +62,7 @@ define wls::installwebtier(
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -84,6 +85,7 @@ define wls::installwebtier(
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      windows: {
@@ -97,6 +99,7 @@ define wls::installwebtier(
              }
         File { ensure  => present,
                mode    => 0555,
+               backup  => false,
              }
      }
    }

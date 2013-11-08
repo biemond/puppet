@@ -55,10 +55,11 @@ define wls::storeuserconfig( $wlHome        = undef,
              }
         File {
                ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0555,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -75,10 +76,11 @@ define wls::storeuserconfig( $wlHome        = undef,
              }
         File {
                ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0555,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
 
      }
@@ -93,8 +95,9 @@ define wls::storeuserconfig( $wlHome        = undef,
                logoutput => $logOutput,
              }
         File { ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0777,
+               backup  => false,
              }
      }
    }

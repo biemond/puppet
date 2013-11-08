@@ -49,6 +49,7 @@ define wls::oimconfig ($oimHome                 = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -69,6 +70,7 @@ define wls::oimconfig ($oimHome                 = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
    }
@@ -82,9 +84,9 @@ define wls::oimconfig ($oimHome                 = undef,
      exec { "config oim remote ${title}":
        command => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_remote.rsp",
        timeout => 0,
-       onlyif  => "${remoteConfig} == true",    
+       onlyif  => "${remoteConfig} == true",
        require => File["${path}/${title}config_oim_remote.rsp"],
-     }  
+     }
    }
 
    if ( $designConfig == true  ) {
@@ -98,7 +100,7 @@ define wls::oimconfig ($oimHome                 = undef,
        command => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_design.rsp",
        timeout => 0,
        require => File["${path}/${title}config_oim_design.rsp"],
-     }  
+     }
    }
 
 
@@ -111,27 +113,27 @@ define wls::oimconfig ($oimHome                 = undef,
      } else {
        fail("wlsDomain parameter is empty ")
      }
-   
+
 	   if ( $oimValue == "false" ) {
-	 
-	 
+
+
 	     file { "${path}/${title}config_oim_server.rsp":
 	       ensure  => present,
 	       content => template("wls/oim/oim_server.rsp.erb"),
 	     }
-	
+
 	     exec { "config oim server ${title}":
 	       command     => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_server.rsp",
 	       timeout     => 0,
 	       require     => File["${path}/${title}config_oim_server.rsp"],
-	       creates     => "${mdwHome}/user_projects/domains/${wlsDomain}/soa/autodeploy",    
-	     }  
-	
+	       creates     => "${mdwHome}/user_projects/domains/${wlsDomain}/soa/autodeploy",
+	     }
+
 	     Wls::Wlscontrol{
 	       wlsDomain     => $wlsDomain,
 	       wlsDomainPath => "${mdwHome}/user_projects/domains/${wlsDomain}",
 	       wlHome        => $wlHome,
-	       fullJDKName   => $fullJDKName,  
+	       fullJDKName   => $fullJDKName,
 	       wlsUser       => $wlsUser,
 	       password      => $password,
 	       address       => $adminServerAddress,
@@ -140,7 +142,7 @@ define wls::oimconfig ($oimHome                 = undef,
 	       downloadDir   => $downloadDir,
 	       logOutput     => true,
 	     }
-	
+
 	     # stop Oim server for configuration
 	     wls::wlscontrol{'stopOIMOimServer1AfterConfig':
 		     wlsServerType => 'managed',
@@ -148,7 +150,7 @@ define wls::oimconfig ($oimHome                 = undef,
 		     action        => 'stop',
 	       port          => $adminServerport,
 	       require       => Exec["config oim server ${title}"],
-	     } 
+	     }
 	     # stop Oim server for configuration
 	     wls::wlscontrol{'stopOIMSoaServer1AfterConfig':
 	       wlsServerType => 'managed',
@@ -156,7 +158,7 @@ define wls::oimconfig ($oimHome                 = undef,
 	       action        => 'stop',
 	       port          => $adminServerport,
 	       require       => [Wls::Wlscontrol['stopOIMOimServer1AfterConfig'],Exec["config oim server ${title}"]],
-	     } 
+	     }
 	     # stop AdminServer for configuration
 	     wls::wlscontrol{'stopOIMAdminServerAfterConfig':
 	       wlsServerType => 'admin',
@@ -164,7 +166,7 @@ define wls::oimconfig ($oimHome                 = undef,
 	       action        => 'stop',
 	       port          => $nodemanagerPort,
 	       require       => [Wls::Wlscontrol['stopOIMOimServer1AfterConfig'],Wls::Wlscontrol['stopOIMSoaServer1AfterConfig'],Exec["config oim server ${title}"]],
-	     } 
+	     }
 	     # start AdminServer for configuration
 	     wls::wlscontrol{'startOIMAdminServerAfterConfig':
 	       wlsServerType => 'admin',
@@ -173,8 +175,8 @@ define wls::oimconfig ($oimHome                 = undef,
 	       port          => $nodemanagerPort,
 	       require       => [Wls::Wlscontrol['stopOIMOimServer1AfterConfig'],Wls::Wlscontrol['stopOIMAdminServerAfterConfig'],Wls::Wlscontrol['stopOIMSoaServer1AfterConfig'],Exec["config oim server ${title}"]],
 	     }
-	    } 
+	    }
   }
-}  
+}
 
 

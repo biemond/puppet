@@ -71,6 +71,7 @@ define wls::installwls( $version     = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
       }
       Solaris: {
@@ -91,6 +92,7 @@ define wls::installwls( $version     = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
 
       }
@@ -105,6 +107,7 @@ define wls::installwls( $version     = undef,
              }
         File { ensure  => present,
                mode    => 0555,
+               backup  => false,
              }
       }
       default: {
@@ -204,22 +207,22 @@ if ( $continue ) {
 		          timeout     => 0,
 		        }
 		     }
-		
+
 		     windows: {
-		
+
 		        exec {"icacls wls disk ${title}":
 		           command    => "${checkCommand} icacls ${path}\\${wlsFile} /T /C /grant Administrator:F Administrators:F",
 		           logoutput  => false,
 		           require    => File["wls.jar ${version}"],
 		        }
-		
+
 		        exec { "install wls ${title}":
 		          command     => "${checkCommand} java -jar ${path}/${wlsFile}  ${command} -ignoreSysPrereqs",
 		          logoutput   => true,
 		          require     => [Wls::Utils::Defaultusersfolders['create wls home'],Exec["icacls wls disk ${title}"],File ["silent.xml ${version}"]],
 		          timeout     => 0,
 		        }
-		
+
 		     }
 		   }
 

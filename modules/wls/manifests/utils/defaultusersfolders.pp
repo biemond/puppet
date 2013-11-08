@@ -29,6 +29,7 @@ define wls::utils::defaultusersfolders(
 		               mode    => 0775,
 		               owner   => $user,
 		               group   => $group,
+                   backup  => false,
 		             }
 		     }
 
@@ -41,6 +42,7 @@ define wls::utils::defaultusersfolders(
 		             }
 		        File { ensure  => present,
 		               mode    => 0777,
+                   backup  => false,
 		             }
 		     }
 		   }
@@ -141,7 +143,7 @@ define wls::utils::defaultusersfolders(
 				        require => [User[$user],Exec["create ${downloadDir} home directory"]],
 				      }
 				   }
-		
+
 				   # also set permissions on oracleHome
 				   if ! defined(File[$oracleHome]) {
 				     file { $oracleHome:
@@ -151,7 +153,7 @@ define wls::utils::defaultusersfolders(
 				       require => [User[$user],Exec["create ${oracleHome} directory"]],
 				     }
 				   }
-		
+
 		       if (  $oraInventory != undef ) {
 		          # also set permissions on oraInventory
 		          if ! defined(File[$oraInventory]) {
@@ -174,7 +176,7 @@ define wls::utils::defaultusersfolders(
 		            require => Exec["create ${downloadDir} home directory"],
 		          }
 		       }
-		
+
 		       # also set permissions on oracleHome
 		       if ! defined(File[$oracleHome]) {
 		         file { $oracleHome:
@@ -184,7 +186,7 @@ define wls::utils::defaultusersfolders(
 		           require => Exec["create ${oracleHome} directory"],
 		         }
 		       }
-		
+
 		       if (  $oraInventory != undef ) {
 		         case $operatingsystem {
 		           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
