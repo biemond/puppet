@@ -19,15 +19,16 @@ else:
 
 print "subName: ", subName, "target: ", target, " targetType: ",targetType, " jmsModule: ", jmsModuleName
 
-edit()
-startEdit()
-
 try:
     cd('/')
     cd('/SystemResources/'+jmsModuleName)
     cmo.createSubDeployment(subName)
     cd('/SystemResources/'+jmsModuleName+'/SubDeployments/'+subName)
-    set('Targets',jarray.array([ObjectName('com.bea:Name='+target+',Type='+targetType)], ObjectName))
+
+    targetList = []
+    for jmsTarget in targets:
+       targetList.append( ObjectName('com.bea:Name=' + jmsTarget + ',Type='+targetType) )       
+       set('Targets',jarray.array(targetList, ObjectName))
 
     save()
     activate()          

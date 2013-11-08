@@ -23,7 +23,7 @@ try:
     cd('/')
     cmo.createUnixMachine(machineName)
 
-    cd('/Machines/RemoteMachine/NodeManager/RemoteMachine')
+    cd('/Machines/'+machineName+'/NodeManager/'+machineName)
     cmo.setListenAddress(machineDnsName)
 
     save()

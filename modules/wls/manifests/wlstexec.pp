@@ -79,7 +79,7 @@ define wls::wlstexec ($version        = '1111',
                       ) {
 
    # if these params are empty always continue
-   if $wlsDomain == undef or $wlstype == undef or wlsObjectName == undef {
+   if $wlsDomain == undef or $wlstype == undef or $wlsObjectName == undef {
      $continue = true
    } else {
      # check if the object already exists on the weblogic domain

@@ -34,7 +34,7 @@ define wls::storeuserconfig( $wlHome        = undef,
                              $user          = 'oracle',
                              $group         = 'dba',
                              $userConfigDir = '/home/oracle',
-                             $downloadDir   = '/install/',
+                             $downloadDir   = '/install',
                              $logOutput     = false,
                             ) {
 

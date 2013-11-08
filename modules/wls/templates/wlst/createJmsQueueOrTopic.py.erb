@@ -49,7 +49,7 @@ try:
     cmo.setSubDeploymentName(subDeploymentName)
 
     print "distributed: ",distributed
-    if distributed == "true":
+    if distributed == "true" and jmsType == "queue":
       print "distributed"
       cmo.setLoadBalancingPolicy(balancingPolicy)
 
@@ -59,7 +59,7 @@ try:
       cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+jmsWlsType+jmsName+'/DeliveryFailureParams/'+jmsName)
       cmo.setRedeliveryLimit( int(limit) )
       cmo.setExpirationPolicy(policy)
-      cmo.setErrorDestination(getMBean('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+jmsWlsType+errorObject))
+      cmo.setErrorDestination(getMBean('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+'/UniformDistributedQueues/'+errorObject))
 
     if jmsQuota:
       cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+jmsWlsType+jmsName)

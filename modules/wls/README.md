@@ -12,7 +12,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
-- 1.2.8 BSU / nodemanager fixes. 
+- 1.2.8 BSU / nodemanager / WLST scripts fixes. 
 - 1.2.7 Windows fixes. 
 - 1.2.6 Webtier installation and associate domain with the Oracle HTTP server. 
 - 1.2.5 WebLogic domains also supports Prod mode, set Nodemanager security. 
