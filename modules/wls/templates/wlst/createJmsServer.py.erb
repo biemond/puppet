@@ -11,6 +11,9 @@ portNumber = '<%= @port %>'
 <%= param %>                    
 <% end -%>                      
 
+storeType = "xxx"
+
+
 useStoreConfig = '<%= @useStoreConfig %>'
 
 if useStoreConfig != "true":
@@ -27,10 +30,14 @@ try:
     cd('/')
     cmo.createJMSServer(jmsServerName)
     cd('/Deployments/'+jmsServerName)
+
+
     if storeType == "file":
         cmo.setPersistentStore(getMBean('/FileStores/'+storeName))
-    else:
+    elif storeType == "jdbc":
         cmo.setPersistentStore(getMBean('/JDBCStores/'+storeName))
+    else:
+        print "default persistence"  
 
     set('Targets', jarray.array([ObjectName('com.bea:Name='+serverTarget+',Type=Server')], ObjectName))
 
