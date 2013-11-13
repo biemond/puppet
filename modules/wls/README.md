@@ -12,7 +12,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
-- 1.2.9 Optimizations. 
+- 1.2.9 Optimizations, Weblogic install timeout to 0, WLST fixes and seperate domain pack ( no auto pack in wlsdomain )
 - 1.2.8 BSU / nodemanager / WLST scripts fixes. 
 - 1.2.7 Windows fixes. 
 - 1.2.6 Webtier installation and associate domain with the Oracle HTTP server. 
@@ -116,7 +116,8 @@ WLS WebLogic Features
 - apply Oracle patch ( OPatch for Oracle products )
 - installs Oracle JDeveloper 11g / 12.1.2 + SOA Suite plugin
 - configures and starts nodemanager
-- Start or stop a WebLogic server
+- start or stop a WebLogic server
+- pack a WebLogic domain
 - storeUserConfig for storing WebLogic Credentials and using in WLST
 - set the log folder of the WebLogic Domain, Managed servers and FMW   
 - add JCA resource adapter plan + Entries
@@ -133,7 +134,7 @@ Other options
 
 Domain creation options (Dev or Prod mode)
 ------------------------------------------
-all templates creates a WebLogic domain, logs the domain creation output and do a domain pack in the defined download folder  
+all templates creates a WebLogic domain, logs the domain creation output  
 
 - domain 'standard'    -> a default WebLogic    
 - domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   

@@ -452,6 +452,18 @@ class wls_cluster2 {
                         ],
       require        => Wls::Wlstexec['createManagerServerWlsServer2'],
     }
+
+    wls::packdomain{'packWlsDomain':
+      wlHome          => $osWlHome,
+      mdwHome         => $osMdwHome,
+      fullJDKName     => $jdkWls11gJDK,  
+      user            => $user,
+      group           => $group,    
+      downloadDir     => $downloadDir, 
+      domain          => $wlsDomainName,
+      require         => Wls::Wlstexec['createClusterWeb'],
+  }
+
 }
 
 

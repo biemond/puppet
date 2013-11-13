@@ -211,9 +211,10 @@ if ( $continue ) {
 		     windows: {
 
 		        exec {"icacls wls disk ${title}":
-		           command    => "${checkCommand} icacls ${path}\\${wlsFile} /T /C /grant Administrator:F Administrators:F",
-		           logoutput  => false,
-		           require    => File["wls.jar ${version}"],
+		          command    => "${checkCommand} icacls ${path}\\${wlsFile} /T /C /grant Administrator:F Administrators:F",
+              timeout     => 0,
+		          logoutput  => false,
+		          require    => File["wls.jar ${version}"],
 		        }
 
 		        exec { "install wls ${title}":
@@ -249,12 +250,14 @@ if ( $continue ) {
 		          environment => ["JAVA_VENDOR=Sun",
 		                          "JAVA_HOME=/usr/java/${fullJDKName}"],
 		          logoutput   => true,
+              timeout     => 0,
 		          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["wls.jar ${version}"],File ["silent.xml ${version}"]],
 		        }
 		     }
 		     Solaris: {
 		        exec { "installwls ${path}/${wlsFile}":
 		          command     => "${javaCommand} ${path}/${wlsFile} -mode=silent -silent_xml=${path}/silent${version}.xml",
+              timeout     => 0,
 		          environment => ["JAVA_VENDOR=Sun",
 		                          "JAVA_HOME=/usr/jdk/${fullJDKName}"],
 		          require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["wls.jar ${version}"],File ["silent.xml ${version}"]],
@@ -263,6 +266,7 @@ if ( $continue ) {
 		     windows: {
 		        exec { "installwls  ${path}/${wlsFile}":
 		          command     => "${checkCommand} /c ${javaCommand} ${path}/${wlsFile} -mode=silent -silent_xml=${path}/silent${version}.xml",
+              timeout     => 0,
 		          environment => ["JAVA_VENDOR=Sun",
 		                          "JAVA_HOME=C:\\oracle\\${fullJDKName}"],
               require     => [Wls::Utils::Defaultusersfolders['create wls home'],File ["wls.jar ${version}"],File ["silent.xml ${version}"]],
