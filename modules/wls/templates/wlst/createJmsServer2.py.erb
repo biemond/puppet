@@ -37,17 +37,6 @@ try:
 
     set('Targets', jarray.array([ObjectName('com.bea:Name='+target+',Type='+targetType)], ObjectName))
 
-    ## Threshold (values are default)
-    # cmo.setBytesThresholdHigh(-1)
-    # cmo.setBytesThresholdLow(-1)
-    # cmo.setMessagesThresholdHigh(-1)
-    # cmo.setMessagesThresholdLow(-1)
-    ## Quotas (values are default, except MaxMsgSize set to 10MB)
-    # cmo.setBytesMaximum(-1)
-    # cmo.setMessagesMaximum(-1)
-    # cmo.setBlockingSendPolicy('FIFO')
-    cmo.setMaximumMessageSize(10000000)
-
     save()
     activate()          
 except:
