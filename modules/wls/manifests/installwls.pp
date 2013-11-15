@@ -240,7 +240,7 @@ if ( $continue ) {
        }
 
 
-       $javaCommand     = "java -Xmx1024m -jar"
+       $javaCommand     = "java -Xmx512m -jar"
 
 		   # install weblogic
 		   case $operatingsystem {
