@@ -458,7 +458,7 @@ if ( $continue ) {
                 require => Exec["execwlst ${domain} ${title}"],
               }
               exec { "domain.py ${domain} ${title}":
-                command     => "rm -I ${path}/domain_${domain}.py",
+                command     => "rm ${path}/domain_${domain}.py",
                 require     => Exec["execwlst ${domain} ${title}"],
               }
            }

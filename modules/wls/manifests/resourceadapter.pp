@@ -258,19 +258,7 @@ if ( $continueEntry ) {
         }
 
         case $operatingsystem {
-           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
-
-		        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
-		           command => "rm -I ${path}/${title}createResourceAdapterEntry.py",
-		           require  => Exec["exec create resource adapter entry ${title}"],
-		        }
-
-		        exec { "rm ${path}/${title}redeployResourceAdapter.py":
-		           command => "rm -I ${path}/${title}redeployResourceAdapter.py",
-		           require => Exec["exec redeploy adapter plan ${title}"],
-		        }
-        }
-          Solaris: {
+           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
 		        exec { "rm ${path}/${title}createResourceAdapterEntry.py":
 		           command => "rm ${path}/${title}createResourceAdapterEntry.py",
@@ -281,9 +269,8 @@ if ( $continueEntry ) {
 		           command => "rm ${path}/${title}redeployResourceAdapter.py",
 		           require => Exec["exec redeploy adapter plan ${title}"],
 		        }
-
-          }
         }
+      }
 
 
      }

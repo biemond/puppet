@@ -145,7 +145,7 @@ define wls::wlsdeploy ($wlHome        = undef,
         }
 
         exec { "rm ${path}/${title}importOSB.py":
-           command => "rm -I ${path}/${title}importOSB.py",
+           command => "rm ${path}/${title}importOSB.py",
            require => Exec["execwlst ${title}importOSB.py"],
         }
 

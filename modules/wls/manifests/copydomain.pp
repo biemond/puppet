@@ -151,17 +151,11 @@ define wls::copydomain ($version         = '1111',
 	        }
 
 	        case $operatingsystem {
-	           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
+	           CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 	              exec { "domain.py ${domain} ${title}":
-	                command     => "rm -I ${path}/enroll_domain_${domain}.py",
-	                require     => Exec["execwlst ${domain} ${title}"],
-	              }
-	           }
-	           Solaris: {
-	             exec { "domain.py ${domain} ${title}":
 	                command     => "rm ${path}/enroll_domain_${domain}.py",
 	                require     => Exec["execwlst ${domain} ${title}"],
-	             }
+	              }
 	           }
 	        }
 	     }
