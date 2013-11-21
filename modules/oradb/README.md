@@ -52,13 +52,14 @@ else you can use $puppetDownloadMntPoint => "/mnt" or "puppet:///modules/xxxx/"
 
 Files
 -----
-For 11.2.0.3 Download oracle database linux software from http://support.oracle.com
-Patch 10404530: 11.2.0.3.0 PATCH SET FOR ORACLE DATABASE SERVER
-and upload this to the files folder of the oradb puppet module
+- 11.2.0.1 Download oracle database linux software from http://otn.oracle.com
+- 11.2.0.3 Download oracle database linux software from http://support.oracle.com
+- Patch 10404530: 11.2.0.3.0 PATCH SET FOR ORACLE DATABASE SERVER
+- 11.2.0.4 Download oracle database linux software from http://support.oracle.com
+- 12.1.0.1 Download oracle database linux software from http://otn.oracle.com
 
-For 11.2.0.1 Download oracle database linux software from http://otn.oracle.com
+upload these files to the files folder of the oradb puppet module
 
-For 12.1.0.1 Download oracle database linux software from http://otn.oracle.com
 
 # database files of linux 12.1.0.1 ( otn.oracle.com )
 - 1361028723 Jun 27 23:38 linuxamd64_12c_database_1of2.zip
