@@ -120,12 +120,13 @@ templates.pp
 ------------
 
 The databaseType value should contain only one of these choices.
+
 - EE     : Enterprise Edition
 - SE     : Standard Edition
 - SEONE  : Standard Edition One
 
 
-    $puppetDownloadMntPoint = "puppet:///modules/oradb/
+    $puppetDownloadMntPoint = "puppet:///modules/oradb/"
     
     oradb::installdb{ '12.1.0.1_Linux-x86-64':
             version                => '12.1.0.1',
