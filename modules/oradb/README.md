@@ -120,11 +120,11 @@ templates.pp
 ------------
 
 The databaseType value should contain only one of these choices.
+- EE Enterprise Edition
+- SE Standard Edition
+- SEONE Standard Edition One
 
-- EE     : Enterprise Edition
-- SE     : Standard Edition
-- SEONE  : Standard Edition One
-
+norma install
 
     $puppetDownloadMntPoint = "puppet:///modules/oradb/"
     
