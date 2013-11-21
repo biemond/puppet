@@ -348,7 +348,12 @@ other
       }
     }
 
-Oracle SOA Suite Repository Creation Utility (RCU), product = soasuite|webcenter|all
+Oracle SOA Suite Repository Creation Utility (RCU)  
+product
+- soasuite
+- webcenter
+- all
+
 
     oradb::rcu{     'DEV_PS6':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.7.0_32_disk1_1of1.zip',
