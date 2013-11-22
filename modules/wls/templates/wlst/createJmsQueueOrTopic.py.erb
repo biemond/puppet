@@ -6,6 +6,7 @@ portNumber = '<%= @port %>'
                      
 jmsQuota   = ""                     
 subDeploymentName   = ""                     
+timeToLive          = ""
 
                                 
 #subDeploymentName, jmsModuleName, jmsName,jmsJNDIName,jmsType,distributed,balancingPolicy,useRedirect,limit,policy,errorObject,jmsQuota
@@ -64,6 +65,10 @@ try:
       cmo.setRedeliveryLimit( int(limit) )
       cmo.setExpirationPolicy(policy)
       cmo.setErrorDestination(getMBean('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+'/UniformDistributedQueues/'+errorObject))
+
+    if timeToLive:
+      cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+jmsWlsType+jmsName+'/DeliveryParamsOverrides/'+jmsName)
+      cmo.setTimeToLive(timeToLive)                                
 
     if jmsQuota:
       cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+jmsWlsType+jmsName)
