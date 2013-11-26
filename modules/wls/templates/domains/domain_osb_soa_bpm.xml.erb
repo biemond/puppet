@@ -23,6 +23,8 @@ SOA_REPOS_DBURL='<%= @reposDbUrl %>'
 SOA_REPOS_DBUSER_PREFIX='<%= @reposPrefix %>'
 SOA_REPOS_DBPASSWORD='<%= @reposPassword %>'
 
+BPM_ENABLED=<%= @bpm %>
+
 def createBootPropertiesFile(directoryPath,fileName, username, password):
   adminserverDir = File(directoryPath)
   bool = adminserverDir.mkdirs()
@@ -132,10 +134,9 @@ addTemplate('<%= @templateWSMPM %>')
 addTemplate('<%= @templateSOA %>')
 addTemplate('<%= @templateBAM %>')
 
-
-print 'Adding BPM Template'
-addTemplate('<%= @templateBPM %>')
-
+if BPM_ENABLED == true:
+  print 'Adding BPM Template'
+  addTemplate('<%= @templateBPM %>')
 
 print 'Adding EM Template'
 addTemplate('<%= @templateEM %>')

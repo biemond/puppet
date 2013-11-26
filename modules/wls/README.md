@@ -142,6 +142,8 @@ all templates creates a WebLogic domain, logs the domain creation output
 - domain 'osb'         -> OSB + JRF + EM + OWSM 
 - domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
 - domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
+- domain 'soa'         -> SOA Suite + BAM + JRF + EM + OWSM 
+- domain 'soa_bpm'     -> SOA Suite + BAM + BPM + JRF + EM + OWSM 
 - domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
 - domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
 

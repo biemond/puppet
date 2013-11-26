@@ -198,11 +198,26 @@ if ( $continue ) {
       $wlstPath      = "${mdwHome}/oracle_common/common/bin"
       $oracleHome    = "${mdwHome}/oracle_common"
 
-   } elsif $wlsTemplate == 'osb_soa_bpm' {
+    } elsif $templateFile == 'osb_soa' or $templateFile == 'osb_soa_bpm' {
       $templateFile  = "wls/domains/domain_osb_soa_bpm.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
       $oracleHome    = "${mdwHome}/Oracle_SOA1"
+      if $templateFile == 'osb_soa' {
+        $bpm           = false
+      } elsif $templateFile == 'osb_soa_bpm'  {
+        $bpm           = true
+      }
 
+    } elsif $templateFile == 'soa' or $templateFile == 'soa_bpm' {
+      $templateFile  = "wls/domains/domain_soa_bpm.xml.erb"
+      $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
+      $oracleHome    = "${mdwHome}/Oracle_SOA1"
+
+      if $templateFile == 'soa' {
+        $bpm           = false
+      } elsif $templateFile == 'soa_bpm'  {
+        $bpm           = true
+      }
    } elsif $wlsTemplate == 'wc' {
       $templateFile  = "wls/domains/domain_wc.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_WC1/common/bin"
