@@ -188,36 +188,32 @@ if ( $continue ) {
       $wlstPath      = "${mdwHome}/Oracle_OSB1/common/bin"
       $oracleHome    = "${mdwHome}/Oracle_OSB1"
 
-   } elsif $wlsTemplate == 'osb_soa' {
-      $templateFile  = "wls/domains/domain_osb_soa.xml.erb"
-      $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
-      $oracleHome    = "${mdwHome}/Oracle_SOA1"
-
    } elsif $wlsTemplate == 'adf' {
       $templateFile  = "wls/domains/domain_adf.xml.erb"
       $wlstPath      = "${mdwHome}/oracle_common/common/bin"
       $oracleHome    = "${mdwHome}/oracle_common"
 
-    } elsif $templateFile == 'osb_soa' or $templateFile == 'osb_soa_bpm' {
+    } elsif $wlsTemplate == 'osb_soa' or $wlsTemplate == 'osb_soa_bpm' {
       $templateFile  = "wls/domains/domain_osb_soa_bpm.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
       $oracleHome    = "${mdwHome}/Oracle_SOA1"
-      if $templateFile == 'osb_soa' {
+      if $wlsTemplate == 'osb_soa' {
         $bpm           = false
-      } elsif $templateFile == 'osb_soa_bpm'  {
+      } elsif $wlsTemplate == 'osb_soa_bpm'  {
         $bpm           = true
       }
 
-    } elsif $templateFile == 'soa' or $templateFile == 'soa_bpm' {
+    } elsif $wlsTemplate == 'soa' or $wlsTemplate == 'soa_bpm' {
       $templateFile  = "wls/domains/domain_soa_bpm.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_SOA1/common/bin"
       $oracleHome    = "${mdwHome}/Oracle_SOA1"
 
-      if $templateFile == 'soa' {
+      if $wlsTemplate == 'soa' {
         $bpm           = false
-      } elsif $templateFile == 'soa_bpm'  {
+      } elsif $wlsTemplate == 'soa_bpm'  {
         $bpm           = true
       }
+
    } elsif $wlsTemplate == 'wc' {
       $templateFile  = "wls/domains/domain_wc.xml.erb"
       $wlstPath      = "${mdwHome}/Oracle_WC1/common/bin"

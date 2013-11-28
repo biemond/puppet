@@ -3,7 +3,10 @@ wlsUser    = '<%= @wlsUser %>'
 password   = '<%= @password %>' 
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
-                                
+
+user_config = '<%= @userConfigFile %>'
+user_key    = '<%= @userKeyFile %>'   
+
 #target, subName, jmsModuleName,targetType
 <% @params.each do |param| -%>   
 <%= param %>                    
@@ -14,10 +17,15 @@ useStoreConfig = '<%= @useStoreConfig %>'
 if useStoreConfig != "true":
     connect(wlsUser,password,'t3://'+machine+':'+portNumber)
 else:
-    connect(userConfigFile='<%= @userConfigFile %>', userKeyFile='<%= @userKeyFile %>', url='t3://'+machine+':'+portNumber)    
+    connect(userConfigFile=user_config, userKeyFile=user_key, url='t3://'+machine+':'+portNumber)
 
 
 print "subName: ", subName, "target: ", target, " targetType: ",targetType, " jmsModule: ", jmsModuleName
+
+targets=String(target).split(",")
+
+edit()
+startEdit()
 
 try:
     cd('/')

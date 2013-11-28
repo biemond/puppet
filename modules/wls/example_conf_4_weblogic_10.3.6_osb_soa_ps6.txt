@@ -880,7 +880,6 @@ class wls_application_JMS_6{
   }
 
 
-
   # create jms error Queue for jms module 
   wls::wlstexec { 
   
@@ -894,11 +893,7 @@ class wls_application_JMS_6{
                       "jmsJNDIName       = 'jms/ErrorQueue'",
                       "jmsType           = 'queue'",
                       "distributed       = 'false'",
-                      "balancingPolicy   = 'xxxxx'",
                       "useRedirect       = 'false'",
-                      "limit             = 'xxxxx'",
-                      "policy            = 'xxxxx'",
-                      "errorObject       = 'xxxxx'"
                       ],
      require     => Wls::Resourceadapter['JmsAdapter_hr'];
   #   require     => Wls::Wlstexec['createJmsConnectionFactoryforJmsModule'];
@@ -916,9 +911,10 @@ class wls_application_JMS_6{
                       "jmsJNDIName         = 'jms/Queue1'",
                       "jmsType             = 'queue'",
                       "distributed         = 'false'",
-                      "balancingPolicy     = 'xxxxx'",
                       "useRedirect         = 'true'",
-                      "limit               = '3'",
+                      "limit               = 3",
+                      "deliveryDelay       = 2000",
+                      "timeToLive          = 300000",
                       "policy              = 'Redirect'",
                       "errorObject         = 'ErrorQueue'"
                       ],
@@ -937,13 +933,49 @@ class wls_application_JMS_6{
                       "jmsJNDIName         = 'jms/Topic1'",
                       "jmsType             = 'topic'",
                       "distributed         = 'false'",
-                      "balancingPolicy     = 'xxxxx'",
-                      "useRedirect         = 'false'",
-                      "limit               = 'xxxxx'",
-                      "policy              = 'xxxxx'",
-                      "errorObject         = 'xxxxx'"
                       ],
      require     => Wls::Wlstexec['createJmsQueueforJmsModule'];
   }
+
+  # create jms Queue for jms module 
+  wls::wlstexec { 
+    'createJmsQueue2forJmsModule':
+     wlstype       => "jmsobject",
+     wlsObjectName => "Queue2",
+     script        => 'createJmsQueueOrTopic.py',
+     params        => ["subDeploymentName   = 'JmsServer'",
+                      "jmsModuleName       = 'jmsModule'",
+                      "jmsName             = 'Queue2'",
+                      "jmsJNDIName         = 'jms/Queue2'",
+                      "jmsType             = 'queue'",
+                      "distributed         = 'false'",
+                      "useLogRedirect      = 'true'",
+                      "loggingPolicy       = '%header%,%properties%'",
+                      "limit               = 3",
+                      "deliveryDelay       = 2000",
+                      "timeToLive          = 300000",
+                      ],
+     require     => Wls::Wlstexec['createJmsTopicforJmsModule'];
+  }
+
+  # create jms Queue for jms module 
+  wls::wlstexec { 
+    'createJmsQueue3forJmsModule':
+     wlstype       => "jmsobject",
+     wlsObjectName => "Queue3",
+     script        => 'createJmsQueueOrTopic.py',
+     params        => ["subDeploymentName   = 'JmsServer'",
+                      "jmsModuleName       = 'jmsModule'",
+                      "jmsName             = 'Queue3'",
+                      "jmsJNDIName         = 'jms/Queue3'",
+                      "jmsType             = 'queue'",
+                      "distributed         = 'false'",
+                      "timeToLive          = 300000",
+                      ],
+     require     => Wls::Wlstexec['createJmsQueue2forJmsModule'];
+  }
+
+
+
 
 }

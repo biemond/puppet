@@ -12,6 +12,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.3.1 soa & soa_bpm domain options, new JMS SubDeployment CF, Queue and Topic options
 - 1.3.0 Compatible with earlier linux versions
 - 1.2.9 Optimizations, Weblogic install timeout to 0, WLST fixes and separate domain pack ( no auto pack in wlsdomain )
 - 1.2.8 BSU / nodemanager / WLST scripts fixes. 
