@@ -4,10 +4,13 @@ password   = '<%= @password %>'
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
                                 
-#serverTarget, serviceType, storeType,storeName,safName
+storeType   = ''
+                                
+#target, serviceType, storeType,storeName,name
 <% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
+
 
             
 useStoreConfig = '<%= @useStoreConfig %>'
@@ -23,15 +26,15 @@ startEdit()
 
 try:
     cd('/')
-    cmo.createSAFAgent(safName)
-    cd('/SAFAgents/'+safName)
+    cmo.createSAFAgent(name)
+    cd('/SAFAgents/'+name)
 
     if storeType == "file":
-        cmo.setStore(getMBean('/FileStores/'+storeName))
-    else:
-        cmo.setStore(getMBean('/JDBCStores/'+storeName))
+      cmo.setStore(getMBean('/FileStores/'+storeName))
+    elif storeType == "jdbc":
+      cmo.setStore(getMBean('/JDBCStores/'+storeName))
 
-    set('Targets', jarray.array([ObjectName('com.bea:Name='+serverTarget+',Type=Server')], ObjectName))
+    set('Targets', jarray.array([ObjectName('com.bea:Name='+target+',Type=Server')], ObjectName))
     cmo.setServiceType(serviceType)
 
     save()

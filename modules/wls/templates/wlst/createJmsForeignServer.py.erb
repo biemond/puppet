@@ -4,6 +4,11 @@ password   = '<%= @password %>'
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
 
+subDeployment             = ''
+JNDIInitialContextFactory = ''
+JNDIpropertyName          = ''
+connectionURL             = ''
+
        
 #jmsModuleName, subDeployment, JNDIInitialContextFactory,JNDIpropertyName,JNDIpropertyValue,name
 <% @params.each do |param| -%>   
@@ -19,24 +24,31 @@ else:
     connect(userConfigFile='<%= @userConfigFile %>', userKeyFile='<%= @userKeyFile %>', url='t3://'+machine+':'+portNumber)    
 
 
-
 edit()
 startEdit()
 
 try:
-    cd('/')
     cd('/SystemResources/'+jmsModuleName)
     cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName)
     cmo.createForeignServer(name)
     cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+'/ForeignServers/'+name)
-    cmo.setDefaultTargetingEnabled(false)
-    # cmo.setConnectionURL('some.url')
-    cmo.setInitialContextFactory(JNDIInitialContextFactory)
-    cmo.setSubDeploymentName(subDeployment)
+    if subDeployment:
+      cmo.setSubDeploymentName(subDeployment)
+    else:    
+      cmo.setDefaultTargetingEnabled(true)
+
+    if connectionURL:
+      cmo.setConnectionURL(connectionURL)
+
+    if JNDIInitialContextFactory:
+      cmo.setInitialContextFactory(JNDIInitialContextFactory)
+
     cmo.unSet('JNDIPropertiesCredentialEncrypted')
-    cmo.createJNDIProperty(JNDIpropertyName)
-    cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+'/ForeignServers/'+name+'/JNDIProperties/'+JNDIpropertyName)
-    cmo.setValue(JNDIpropertyValue)
+
+    if JNDIpropertyName:
+      cmo.createJNDIProperty(JNDIpropertyName)
+      cd('/JMSSystemResources/'+jmsModuleName+'/JMSResource/'+jmsModuleName+'/ForeignServers/'+name+'/JNDIProperties/'+JNDIpropertyName)
+      cmo.setValue(JNDIpropertyValue)
 
     save()
     activate()          
