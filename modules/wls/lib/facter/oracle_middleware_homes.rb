@@ -623,7 +623,7 @@ def get_domain(name,i,wlsversion)
       end
 
       safagents = ""
-      root.elements.each("jdbc-store") do |agent|
+      root.elements.each("saf-agent") do |agent|
         safagents += agent.elements['name'].text + ";"
       end
 
