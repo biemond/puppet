@@ -7,15 +7,15 @@ module Puppet::Parser::Functions
     mdwArg = args[0]
 
     # check the middleware home
-    mdw_count = lookupvar('ora_mdw_cnt')
-    if mdw_count.nil?
+    mdw_count = lookupWlsVar('ora_mdw_cnt')
+    if mdw_count == "empty"
       return wls_exists
     else
       # check the all mdw home
       i = 0
       while ( i < mdw_count.to_i) 
-        mdw = lookupvar('ora_mdw_'+i.to_s)
-        unless mdw.nil?
+        mdw = lookupWlsVar('ora_mdw_'+i.to_s)
+        unless mdw == "empty"
           mdw = mdw.strip
           os = lookupvar('operatingsystem')
           if os == "windows"
@@ -30,8 +30,7 @@ module Puppet::Parser::Functions
       end
       
       #check for weblogic >= 12.1.2
-      if lookupvar('ora_inst_products') != :undefined
-        ora = lookupvar('ora_inst_products')
+        ora = lookupWlsVar('ora_inst_products')
         if ora.nil?
           return false
         else
@@ -44,10 +43,25 @@ module Puppet::Parser::Functions
             return true
           end
         end
-      end  
 
     end
     return wls_exists
   end
 end
 
+def lookupWlsVar(name)
+  #puts "lookup fact "+name
+  if wlsVarExists(name)
+    return lookupvar(name).to_s
+  end
+  return "empty"
+end
+
+
+def wlsVarExists(name)
+  #puts "lookup fact "+name
+  if lookupvar(name) != :undefined
+    return true
+  end
+  return false 
+end   

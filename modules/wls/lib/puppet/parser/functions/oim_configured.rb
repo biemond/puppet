@@ -13,16 +13,15 @@ module Puppet::Parser::Functions
     
     
     # check the middleware home
-    mdw_count = lookupvar(prefix+'_cnt')
-    if mdw_count.nil?
+    mdw_count = lookupWlsVar(prefix+'_cnt')
+    if mdw_count == "empty"
       return art_exists
     else
       # check the all mdw home
       i = 0
       while ( i < mdw_count.to_i) 
 
-        if lookupvar(prefix+'_'+i.to_s) != :undefined  
-          mdw = lookupvar(prefix+'_'+i.to_s)
+          mdw = lookupWlsVar(prefix+'_'+i.to_s)
           mdw = mdw.strip.downcase
           os = lookupvar('operatingsystem')
           if os == "windows"
@@ -32,29 +31,22 @@ module Puppet::Parser::Functions
           
 
           # how many domains are there in this mdw home
-          domain_count = lookupvar(prefix+'_'+i.to_s+'_domain_cnt')
+          domain_count = lookupWlsVar(prefix+'_'+i.to_s+'_domain_cnt')
           n = 0
           while ( n < domain_count.to_i )
 
             # lookup up domain
-            if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s) != :undefined
-              domain = lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s)  
+              domain = lookupWlsVar(prefix+'_'+i.to_s+'_domain_'+n.to_s)  
               domain = domain.strip.downcase
 
               # do we found the right domain
               if domain == wlsDomain 
- 
-                if lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_oim_configured') != :undefined
-                  return lookupvar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_oim_configured')
-                end
-
-              end  # domain_path equal 
-            end # domain not nil           
+                return lookupWlsVar(prefix+'_'+i.to_s+'_domain_'+n.to_s+'_oim_configured')
+              end # domain not nil           
             n += 1
 
           end  # while domain
 
-        end 
         i += 1
       end # while mdw
 
@@ -64,3 +56,19 @@ module Puppet::Parser::Functions
   end
 end
 
+def lookupWlsVar(name)
+  #puts "lookup fact "+name
+  if wlsVarExists(name)
+    return lookupvar(name).to_s
+  end
+  return "empty"
+end
+
+
+def wlsVarExists(name)
+  #puts "lookup fact "+name
+  if lookupvar(name) != :undefined
+    return true
+  end
+  return false 
+end   
