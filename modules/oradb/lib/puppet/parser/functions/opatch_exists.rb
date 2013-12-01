@@ -31,8 +31,13 @@ end
 def dbVarExists(name)
   #puts "lookup fact "+name
   if lookupvar(name) != :undefined
-    return true
+    if lookupvar(name).nil?
+      #puts "return false"
+      return false
+    end
+    return true 
   end
+  #puts "not found"
   return false 
 end   
 
