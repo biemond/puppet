@@ -12,6 +12,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.3.2 better WebLogic Facts checking, Foreign Server and FS objects support
 - 1.3.1 soa & soa_bpm domain options, new JMS SubDeployment CF, Queue and Topic options
 - 1.3.0 Compatible with earlier linux versions
 - 1.2.9 Optimizations, Weblogic install timeout to 0, WLST fixes and separate domain pack ( no auto pack in wlsdomain )
@@ -26,17 +27,6 @@ Version updates
 - 1.2.0 Multi node domain support with copydomain class, create Machine, Managed Server & Cluster, less notify output    
 - 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
 - 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom, removed java.security.egd parameter    
-- 1.0.10 createUser param in installwls,installadf(12.1.2) and installjdev when you want to create the OS user and group yourself  
-- 1.0.9 replaced sleep with waitforcompletion parameter  
-- 1.0.8 added Suse SLES as Operating System, 12.1.2 support for Coherence CLuster, see class wls12c_adf_domain, Added Server, Distributed Queue/Topics to Facts  
-- 1.0.7 12.1.2 Fully support for Dynamic Cluster and Elastic JMS, Scripts for creating server templates and dynamic clusters , see class wls12c_adf_domain  
-- 1.0.6 Added 12.1.2 Domain features to the 'adf' domain like coherence, jax-ws advanced + soap over jms  
-- 1.0.5 JDeveloper 12.1.2 with soa plugin install for Linux + small bug fixes
-- 1.0.4 Weblogic 12.1.2 adf domain creation with RCU ( plus EM,JRF, OWSM )  
-- 1.0.3 Weblogic 12.1.2 standard domain creation and start nodemanager of weblogic 12.1.2 domain 
-- 1.0.2 Weblogic 12.1.2 support plus ADF 11g / 12c install manifest, refactoring for weblogic 12.1.2  
-- 1.0.1 Webcenter, BPM and Webcenter Content domain creation, set Domain and Nodemanager passwords in the domain templates + Crossdomain 
-- 1.0.0 Webcenter and Webcenter Content installer support 
 
 Vagrant, Puppet and VirtualBox
 ------------------------------

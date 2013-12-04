@@ -12,6 +12,7 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
+- 0.8.8 RCU allows existing Temp tablespace
 - 0.8.7 Readme update
 - 0.8.6 RCU OIM option for Oracle Identity Management
 - 0.8.5 timeout = 0 and added -ignoreSysPrereqs -ignorePrereq on installdb
@@ -357,6 +358,8 @@ product =
 
 RCU examples
 
+soa suite repository
+
     oradb::rcu{     'DEV_PS6':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.7.0_32_disk1_1of1.zip',
                      product          => 'soasuite',
@@ -372,7 +375,9 @@ RCU examples
                      schemaPrefix     => 'DEV',
                      reposPassword    => 'Welcome02',
     }
-    
+
+webcenter repository with a fixed temp tablespace
+
     oradb::rcu{     'DEV2_PS6':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.7.0_32_disk1_1of1.zip',
                      product          => 'webcenter',
@@ -386,9 +391,12 @@ RCU examples
                      dbService        => 'test.oracle.com',
                      sysPassword      => 'Welcome01',
                      schemaPrefix     => 'DEV',
+                     tempTablespace   => 'TEMP',
                      reposPassword    => 'Welcome02',
     }
-    
+
+delete a repository
+
     oradb::rcu{     'Delete_DEV3_PS5':
                      rcuFile          => 'ofm_rcu_linux_11.1.1.6.0_disk1_1of1.zip',
                      product          => 'soasuite',
@@ -404,8 +412,9 @@ RCU examples
                      schemaPrefix     => 'DEV3',
                      reposPassword    => 'Welcome02',
     }
-    
-    # needs Oracle Enterprise Edition database
+
+OIM, OAM repository, OIM needs an Oracle Enterprise Edition database
+
     oradb::rcu{ 'DEV_1112':
                      rcuFile                => 'V37476-01.zip',
                      product                => 'oim',
