@@ -12,7 +12,7 @@ Works with Puppet 2.7 & 3.0
 Version updates
 ---------------
 
-- 0.8.8 RCU allows existing Temp tablespace
+- 0.8.9 RCU allows existing Temp tablespace
 - 0.8.7 Readme update
 - 0.8.6 RCU OIM option for Oracle Identity Management
 - 0.8.5 timeout = 0 and added -ignoreSysPrereqs -ignorePrereq on installdb
