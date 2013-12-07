@@ -44,7 +44,7 @@ define wls::copydomain ($version         = '1111',
 
 
    # check if the domain already exists
-   $found = domain_exists("${domainPath}/${domain}",$version)
+   $found = domain_exists("${domainPath}/${domain}",$version,$domainPath)
    if $found == undef {
      $continue = true
    } else {
