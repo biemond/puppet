@@ -12,6 +12,7 @@ Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SL
 Version updates
 ---------------
 
+- 1.3.3 Option to override the Oracle operating user and provide your own domains home
 - 1.3.2 better WebLogic Facts checking, Foreign Server and FS objects support
 - 1.3.1 soa & soa_bpm domain options, new JMS SubDeployment CF, Queue and Topic options
 - 1.3.0 Compatible with earlier linux versions
@@ -55,6 +56,19 @@ For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the s
 For bsu patches facts you need to have the java bin folder in your path var of your system.  
 Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) and install this forge module on the puppet master<br>
 puppet module install puppetlabs/registry
+
+Override the default Oracle operating system user
+-------------------------------------------------
+default this wls module uses oracle as weblogic install user ( need to create your own user and group and set createUser=false on installwls or installadf )  
+you can override this by setting the following fact 'override_weblogic_user', like override_weblogic_user=wls or set FACTER_override_weblogic_user=wls  
+/etc/facter/facts.d/ # Puppet Open Source  
+/etc/puppetlabs/facter/facts.d/ # Puppet Enterprise  
+
+Override the default Weblogic domains folder like user_projects 
+---------------------------------------------------------------
+set the following fact 'override_weblogic_domain_folder',  override_weblogic_domain_folder=/opt/oracle/wlsdomains or set FACTER_override_weblogic_domain_folder=/opt/oracle/wlsdomains  
+/etc/facter/facts.d/ # Puppet Open Source  
+/etc/puppetlabs/facter/facts.d/ # Puppet Enterprise  
 
 Oracle Big files and alternate download location
 ------------------------------------------------
