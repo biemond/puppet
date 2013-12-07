@@ -19,14 +19,24 @@ define wls::copydomain ($version         = '1111',
                         $downloadDir     = '/install',
                        ) {
 
-   $domainPath  = "${mdwHome}/user_projects/domains"
-   $appPath     = "${mdwHome}/user_projects/applications"
+
+   if $::override_weblogic_domain_folder == undef {
+     $domainPath = "${mdwHome}/user_projects/domains"
+     $appPath    = "${mdwHome}/user_projects/applications"
+   } else {
+     $domainPath = "${::override_weblogic_domain_folder}/domains"
+     $appPath    = "${::override_weblogic_domain_folder}/applications"
+   }
 
    if $version == "1111" {
      $nodeMgrHome = "${wlHome}/common/nodemanager"
 
    } elsif $version == "1212" {
-     $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+     if $::override_weblogic_domain_folder == undef {
+       $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+     } else {
+       $nodeMgrHome = "${::override_weblogic_domain_folder}/domains/${domain}/nodemanager"
+     }
 
    } else {
      $nodeMgrHome = "${wlHome}/common/nodemanager"
@@ -92,45 +102,64 @@ define wls::copydomain ($version         = '1111',
 	     }
 	   }
 
-	   # make the default domain folders
-	   if ! defined(File["${mdwHome}/user_projects"]) {
-	      # check oracle install folder
-	      file { "${mdwHome}/user_projects" :
-	        ensure  => directory,
-	        recurse => false,
-	        replace => false,
-	      }
-	   }
 
-	   if ! defined(File["${mdwHome}/user_projects/domains"]) {
-	      # check oracle install folder
-	      file { "${mdwHome}/user_projects/domains" :
-	        ensure  => directory,
-	        recurse => false,
-	        replace => false,
-	        require => File["${mdwHome}/user_projects"],
-	      }
-	   }
+    if $::override_weblogic_domain_folder == undef {
+      # make the default domain folders
+      if !defined(File["weblogic_domain_folder"]) {
+        # check oracle install folder
+        file { "weblogic_domain_folder":
+          path    => "${mdwHome}/user_projects",
+          ensure  => directory,
+          recurse => false,
+          replace => false,
+        }
+      }
+    } else {
+      # make override domain folders
 
-	   if ! defined(File["${mdwHome}/user_projects/applications"]) {
-	      # check oracle install folder
-	      file { "${mdwHome}/user_projects/applications" :
-	        ensure  => directory,
-	        recurse => false,
-	        replace => false,
-	        require => File["${mdwHome}/user_projects"],
-	      }
-	   }
+      if !defined(File["weblogic_domain_folder"]) {
+        # check oracle install folder
+        file { "weblogic_domain_folder":
+          path    => $::override_weblogic_domain_folder,
+          ensure  => directory,
+          recurse => false,
+          replace => false,
+        }
+      }
+    }
+
+
+    if !defined(File[$domainPath]) {
+      # check oracle install folder
+      file { $domainPath:
+        ensure  => directory,
+        recurse => false,
+        replace => false,
+        mode    => 0775,
+        require => File["weblogic_domain_folder"],
+      }
+    }
+
+    if !defined(File[$appPath]) {
+      # check oracle install folder
+      file { $appPath:
+        ensure  => directory,
+        recurse => false,
+        replace => false,
+        require => File["weblogic_domain_folder"],
+      }
+    }
 
      exec { "copy domain jar ${domain}":
         command => "sshpass -p ${userPassword} scp -oStrictHostKeyChecking=no -oCheckHostIP=no ${user}@${adminListenAdr}:${path}/domain_${domain}.jar ${path}/domain_${domain}.jar",
      }
 
-     $unPackCommand    = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -app_dir=${appPath} -log=${path}/domain_${domain}.log -log_priority=INFO"
+     $unPackCommand = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -app_dir=${appPath} -log=${path}/domain_${domain}.log -log_priority=INFO"
 
      exec { "unpack ${domain}":
         command => "${wlHome}/common/bin/unpack.sh ${unPackCommand} -user_name=${wlsUser} -password=${password}",
-        require => [File["${mdwHome}/user_projects/domains"],Exec[ "copy domain jar ${domain}"]],
+        require => [File[$domainPath],
+                    Exec[ "copy domain jar ${domain}"]],
      }
 
 
@@ -147,7 +176,8 @@ define wls::copydomain ($version         = '1111',
 	        exec { "execwlst ${domain} ${title}":
 	          command     => "${wlHome}/common/bin/wlst.sh ${path}/enroll_domain_${domain}.py",
 	          environment => ["JAVA_HOME=${JAVA_HOME}"],
-	          require     => [File["${path}/enroll_domain_${domain}.py"],Exec["unpack ${domain}"]],
+	          require     => [File["${path}/enroll_domain_${domain}.py"],
+	                          Exec["unpack ${domain}"]],
 	        }
 
 	        case $operatingsystem {

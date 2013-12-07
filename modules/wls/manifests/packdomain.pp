@@ -12,7 +12,11 @@ define wls::packdomain (
   $downloadDir     = '/install',
 ) {
 
-  $domainPath = "${mdwHome}/user_projects/domains"
+  if $::override_weblogic_domain_folder == undef {
+    $domainPath = "${mdwHome}/user_projects/domains"
+  } else {
+    $domainPath = "${::override_weblogic_domain_folder}/domains"
+  }
 
   case $operatingsystem {
     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES : {

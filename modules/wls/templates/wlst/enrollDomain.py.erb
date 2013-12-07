@@ -1,2 +1,12 @@
-connect('<%= @wlsUser %>','<%= @password %>','t3://<%= @adminListenAdr %>:<%= @adminListenPort %>')
-nmEnroll(domainDir='<%= @mdwHome %>/user_projects/domains/<%= @domain %>',nmHome='<%= @nodeMgrHome %>')
+wlsUser       = '<%= @wlsUser %>'
+password      = '<%= @password %>'
+machine       = '<%= @adminListenAdr %>'
+portNumber    = '<%= @adminListenPort %>'
+
+domains_path  = '<%= @domainPath %>'
+
+domain        = '<%= @domain %>'
+nodeMgrHome   = '<%= @nodeMgrHome %>'
+
+connect(wlsUser,password,'t3://'+machine+':'+portNumber)
+nmEnroll(domainDir=domains_path+'/'+domain,nmHome=nodeMgrHome)

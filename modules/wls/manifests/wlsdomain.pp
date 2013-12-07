@@ -84,11 +84,18 @@ define wls::wlsdomain ($version         = '1111',
                        $sysPassword     = undef,
                        ) {
 
-   $domainPath  = "${mdwHome}/user_projects/domains"
-   $appPath     = "${mdwHome}/user_projects/applications"
+
+  if $::override_weblogic_domain_folder == undef {
+    $domainPath = "${mdwHome}/user_projects/domains"
+    $appPath    = "${mdwHome}/user_projects/applications"
+  } else {
+    $domainPath = "${::override_weblogic_domain_folder}/domains"
+    $appPath    = "${::override_weblogic_domain_folder}/applications"
+  }
+
 
    # check if the domain already exists
-   $found = domain_exists("${domainPath}/${domain}",$version)
+   $found = domain_exists("${domainPath}/${domain}",$version, $domainPath)
    if $found == undef {
      $continue = true
    } else {
@@ -399,37 +406,50 @@ if ( $continue ) {
      content => template($templateFile),
    }
 
-   # make the default domain folders
-   if ! defined(File["${mdwHome}/user_projects"]) {
+    if $::override_weblogic_domain_folder == undef {
+      # make the default domain folders
+      if !defined(File["weblogic_domain_folder"]) {
+        # check oracle install folder
+        file { "weblogic_domain_folder":
+          path    => "${mdwHome}/user_projects",
+          ensure  => directory,
+          recurse => false,
+          replace => false,
+        }
+      }
+    } else {
+      # make override domain folders
+
+      if !defined(File["weblogic_domain_folder"]) {
+        # check oracle install folder
+        file { "weblogic_domain_folder":
+          path    => $::override_weblogic_domain_folder,
+          ensure  => directory,
+          recurse => false,
+          replace => false,
+        }
+      }
+    }
+
+    if !defined(File[$domainPath]) {
       # check oracle install folder
-      file { "${mdwHome}/user_projects" :
+      file { $domainPath:
         ensure  => directory,
         recurse => false,
         replace => false,
+        require => File["weblogic_domain_folder"],
       }
-   }
+    }
 
-   if ! defined(File["${mdwHome}/user_projects/domains"]) {
+    if !defined(File[$appPath]) {
       # check oracle install folder
-      file { "${mdwHome}/user_projects/domains" :
+      file { $appPath:
         ensure  => directory,
         recurse => false,
         replace => false,
-        require => File["${mdwHome}/user_projects"],
+        require => File["weblogic_domain_folder"],
       }
-   }
-
-   if ! defined(File["${mdwHome}/user_projects/applications"]) {
-      # check oracle install folder
-      file { "${mdwHome}/user_projects/applications" :
-        ensure  => directory,
-        recurse => false,
-        replace => false,
-        require => File["${mdwHome}/user_projects"],
-      }
-   }
-
-#   $packCommand    = "-domain=${domainPath}/${domain} -template=${path}/domain_${domain}.jar -template_name=domain_${domain} -log=${path}/domain_${domain}.log -log_priority=INFO"
+    }
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
@@ -439,7 +459,9 @@ if ( $continue ) {
           environment => ["JAVA_HOME=${JAVA_HOME}"],
           unless      => "/usr/bin/test -e ${domainPath}/${domain}",
           creates     => "${domainPath}/${domain}",
-          require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
+          require     => [File["domain.py ${domain} ${title}"],
+                          File[$domainPath],
+                          File[$appPath]],
           timeout     => 0,
         }
 
@@ -455,7 +477,8 @@ if ( $continue ) {
           exec { "execwlst validate OPSS store ${domain} ${title}":
             command     => "${wlstPath}/wlst.sh ${mdwHome}/Oracle_IDM1/common/tools/configureSecurityStore.py -d ${domainPath}/${domain} -m validate",
             environment => ["JAVA_HOME=${JAVA_HOME}"],
-            require     => [Exec["execwlst ${domain} ${title}"],Exec["execwlst create OPSS store ${domain} ${title}"]],
+            require     => [Exec["execwlst ${domain} ${title}"],
+                            Exec["execwlst create OPSS store ${domain} ${title}"]],
             timeout     => 0,
           }
 
@@ -486,11 +509,6 @@ if ( $continue ) {
            }
         }
 
-#        exec { "pack domain ${domain} ${title}":
-#           command     => "${wlHome}/common/bin/pack.sh ${packCommand}",
-#           require     => Exec["setDebugFlagOnFalse ${domain} ${title}"],
-#           creates     => "${path}/domain_${domain}.jar",
-#        }
 
      }
      windows: {
@@ -502,7 +520,9 @@ if ( $continue ) {
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
           creates     => "${domainPath}/${domain}",
-          require     => [File["domain.py ${domain} ${title}"],File["${mdwHome}/user_projects/domains"],File["${mdwHome}/user_projects/applications"]],
+          require     => [File["domain.py ${domain} ${title}"],
+                          File[$domainPath],
+                          File[$appPath]],
           timeout     => 0,
         }
 
@@ -517,11 +537,7 @@ if ( $continue ) {
            require   => Exec["icacls domain ${title}"],
           }
 
-#        exec { "pack domain ${domain} ${title}":
-#           command     => "C:\\Windows\\System32\\cmd.exe /c ${wlHome}/common/bin/pack.cmd ${packCommand}",
-#           require   => Exec["icacls domain ${title}"],
-#           creates     => "${path}/domain_${domain}.jar",
-#        }
+
      }
    }
 

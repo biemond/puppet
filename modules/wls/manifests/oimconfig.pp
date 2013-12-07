@@ -114,7 +114,7 @@ define wls::oimconfig ($oimHome                 = undef,
        fail("wlsDomain parameter is empty ")
      }
 
-	   if ( $oimValue == "false" ) {
+	   if ( $oimValue == false ) {
 
 
 	     file { "${path}/${title}config_oim_server.rsp":
@@ -122,16 +122,22 @@ define wls::oimconfig ($oimHome                 = undef,
 	       content => template("wls/oim/oim_server.rsp.erb"),
 	     }
 
+       if $::override_weblogic_domain_folder == undef {
+        $domainsHome = "${wlHome}/../user_projects/domains"
+       } else {
+        $domainsHome = "${::override_weblogic_domain_folder}/domains"
+       }
+
 	     exec { "config oim server ${title}":
 	       command     => "${oimHome}/bin/config.sh -silent -response ${path}/${title}config_oim_server.rsp",
 	       timeout     => 0,
 	       require     => File["${path}/${title}config_oim_server.rsp"],
-	       creates     => "${mdwHome}/user_projects/domains/${wlsDomain}/soa/autodeploy",
+	       creates     => "${domainsHome}/${wlsDomain}/soa/autodeploy",
 	     }
 
 	     Wls::Wlscontrol{
 	       wlsDomain     => $wlsDomain,
-	       wlsDomainPath => "${mdwHome}/user_projects/domains/${wlsDomain}",
+	       wlsDomainPath => "${domainsHome}/${wlsDomain}",
 	       wlHome        => $wlHome,
 	       fullJDKName   => $fullJDKName,
 	       wlsUser       => $wlsUser,

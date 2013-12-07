@@ -1,5 +1,29 @@
 # oracle_middleware_homes.rb
 require 'rexml/document' 
+require 'facter'
+
+
+def get_weblogicUser()
+  weblogicUser = Facter.value('override_weblogic_user')
+  if weblogicUser.nil?
+    puts "weblogic user is oracle"
+  else 
+    puts "weblogic user is " + weblogicUser
+    return weblogicUser
+  end
+  return "oracle"
+end
+
+def get_domainFolder(mdwHome)
+  domainFolder = Facter.value('override_weblogic_domain_folder')
+  if domainFolder.nil?
+    puts "domain folder is " + mdwHome + "/user_projects"
+  else 
+    puts "domain folder is " + domainFolder
+    return domainFolder
+  end
+  return mdwHome+"/user_projects"
+end
 
 
 # read middleware home in the oracle home folder
@@ -8,9 +32,9 @@ def get_homes()
   os = Facter.value(:operatingsystem)
 
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
-    beafile = "/home/oracle/bea/beahomelist"
+    beafile = "/home/"+get_weblogicUser()+"/bea/beahomelist"
   elsif ["Solaris"].include?os
-    beafile = "/export/home/oracle/bea/beahomelist"      
+    beafile = "/export/home/"+get_weblogicUser()+"/bea/beahomelist"      
   elsif ["windows"].include?os 
     beafile = "c:/bea/beahomelist"
   else
@@ -35,7 +59,7 @@ def get_bsu_patches(name)
 
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
    if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
-    output2 = Facter::Util::Resolution.exec("su -l oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
+    output2 = Facter::Util::Resolution.exec("su -l "+get_weblogicUser()+" -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
     if output2.nil?
       return "empty"
     end
@@ -44,7 +68,7 @@ def get_bsu_patches(name)
    end 
   elsif ["Solaris"].include?os
    if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
-    output2 = Facter::Util::Resolution.exec("su - oracle -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
+    output2 = Facter::Util::Resolution.exec("su - "+get_weblogicUser()+" -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
     if output2.nil?
       return "empty"
     end
@@ -80,9 +104,9 @@ def get_opatch_patches(name)
     os = Facter.value(:operatingsystem)
 
     if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
-      output3 = Facter::Util::Resolution.exec("su -l oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
+      output3 = Facter::Util::Resolution.exec("su -l "+get_weblogicUser()+" -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
     elsif ["Solaris"].include?os
-      output3 = Facter::Util::Resolution.exec("su - oracle -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc\"")
+      output3 = Facter::Util::Resolution.exec("su - "+get_weblogicUser()+" -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc\"")
     elsif ["windows"].include?os
       output3 = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat lsinventory -patch_id -oh " + name)
     end
@@ -220,7 +244,7 @@ end
 
 
 
-# read weblogic domains in the user_projects folder of the middleware home
+# read weblogic domains in the domains folder of the middleware home
 def get_domain(name,i,wlsversion)
 
   if wlsversion == "1212"
@@ -235,8 +259,8 @@ def get_domain(name,i,wlsversion)
 
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris","SLES"].include?os
 
-    if FileTest.exists?(name+'/user_projects/domains')
-      output2 = Facter::Util::Resolution.exec('/bin/ls '+name+'/user_projects/domains')
+    if FileTest.exists?( get_domainFolder(name)+'/domains')
+      output2 = Facter::Util::Resolution.exec('/bin/ls '+ get_domainFolder(name)+'/domains')
       if output2.nil?
         Facter.add("#{prefix}_domain_cnt") do
           setcode do
@@ -255,8 +279,8 @@ def get_domain(name,i,wlsversion)
     end
 
   elsif ["windows"].include?os 
-    if FileTest.exists?(name+'/user_projects/domains')
-      output2 = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+name+'\user_projects\domains')
+    if FileTest.exists?( get_domainFolder(name)+'/domains')
+      output2 = Facter::Util::Resolution.exec('C:\Windows\system32\cmd.exe /c dir /B '+ get_domainFolder(name)+'/domains')
       if output2.nil?
         Facter.add("#{prefix}_domain_cnt") do
           setcode do
@@ -283,10 +307,10 @@ def get_domain(name,i,wlsversion)
   output2.split(/\r?\n/).each_with_index do |domain, n|
 
     if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","Solaris","SLES"].include?os
-      domainfile = name+'/user_projects/domains/'+domain+'/config/config.xml'
+      domainfile =  get_domainFolder(name)+'/domains/'+domain+'/config/config.xml'
 
     elsif ["windows"].include?os 
-      domainfile = name+'/user_projects/domains/'+domain+'/config/config.xml'
+      domainfile =  get_domainFolder(name)+'/domains/'+domain+'/config/config.xml'
     end
 
     if FileTest.exists?(domainfile)
@@ -313,7 +337,7 @@ def get_domain(name,i,wlsversion)
       end
 				
 
-      if File.directory?(name+'/user_projects/domains/'+domain+'/soa/autodeploy')
+      if File.directory?(get_domainFolder(name)+'/domains/'+domain+'/soa/autodeploy')
         Facter.add("#{prefix}_domain_#{n}_oim_configured") do
           setcode do
             "true"
@@ -663,7 +687,7 @@ def get_domain(name,i,wlsversion)
 
 
 
-        subfile = File.read( name+'/user_projects/domains/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
+        subfile = File.read( get_domainFolder(name)+'/domains/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
         subdoc = REXML::Document.new subfile
 
         jmsroot = subdoc.root

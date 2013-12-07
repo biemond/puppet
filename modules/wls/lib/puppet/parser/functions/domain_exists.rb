@@ -15,6 +15,13 @@ module Puppet::Parser::Functions
       wlsversion = args[1].strip
     end
 
+    if args[2].nil?
+      return art_exists
+    else
+      domainsHomeDir = args[2]
+    end
+
+    
     if wlsversion == "1212"
       versionStr = "_1212"
     else
@@ -53,8 +60,8 @@ module Puppet::Parser::Functions
             domain = lookupWlsVar(prefix+'_'+i.to_s+'_domain_'+n.to_s)
             unless domain == "empty"
               domain = domain.strip.downcase
-              
-              domain_path = mdw + "/user_projects/domains/" + domain
+
+              domain_path = domainsHomeDir + "/" + domain
 
               # do we found the right domain
               if domain_path == mdwArg 

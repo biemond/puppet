@@ -53,7 +53,12 @@ define wls::nodemanager($version         = "1111",
      $nodeMgrHome = "${wlHome}/common/nodemanager"
 
    } elsif $version == "1212" {
-     $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+
+     if $::override_weblogic_domain_folder == undef {
+       $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+     } else {
+       $nodeMgrHome = "${::override_weblogic_domain_folder}/domains/${domain}/nodemanager"
+     }
 
    } else {
      $nodeMgrHome = "${wlHome}/common/nodemanager"
@@ -133,8 +138,15 @@ if $version == "1212" {
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
+             if $::override_weblogic_domain_folder == undef {
+               $domainsHome = "${wlHome}/../user_projects/domains"
+             } else {
+               $domainsHome = "${::override_weblogic_domain_folder}/domains"
+             }
+
+
              exec { "startNodemanager 1212 ${title}":
-               command => "nohup ${wlHome}/../user_projects/domains/${domain}/bin/startNodeManager.sh &",
+               command => "nohup ${domainsHome}/${domain}/bin/startNodeManager.sh &",
                unless  => "${checkCommand}",
              }
              exec { "sleep 20 sec for wlst exec ${title}":
