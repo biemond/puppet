@@ -38,8 +38,9 @@ define oradb::rcu( $rcuFile                 = undef,
                    $logoutput               = false,
 )
 {
-  case $operatingsystem {
-    CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
+  case $::kernel {
+    Linux: {
+
       $execPath           = "${oracleHome}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
       $path               = $downloadDir
 
@@ -57,7 +58,7 @@ define oradb::rcu( $rcuFile                 = undef,
       }
     }
     default: {
-      fail("Unrecognized operating system")
+      fail("Unrecognized or not supported operating system")
     }
   }
 
