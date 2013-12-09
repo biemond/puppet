@@ -6,7 +6,7 @@ module Puppet::Parser::Functions
     oracleHome    = oracleHomeArg.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
 
     # check the oracle home opatch
-    lookupDbVar("ora_inst_opatch#{oracleHome}")
+    lookupDbVar("oradb_inst_opatch#{oracleHome}")
   end
 end
 

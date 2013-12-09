@@ -5,13 +5,14 @@ created by Edwin Biemond
 [biemond.blogspot.com](http://biemond.blogspot.com)
 [Github homepage](https://github.com/biemond/puppet)
 
-Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
+Should work for Solaris and all Linux version like RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 
 Works with Puppet 2.7 & 3.0
 
 Version updates
 ---------------
 
+- 0.9.0 Solaris Support,Own DB facts, no conflict with orawls or wls
 - 0.8.9 RCU allows existing Temp tablespace
 - 0.8.7 Readme update
 - 0.8.6 RCU OIM option for Oracle Identity Management
@@ -113,9 +114,9 @@ Contains Oracle Facter which displays the following
 
 ### Example of the Oracle Database Facts
 
-    ora_inst_loc_data /oracle/oraInventory
-    ora_inst_patches_oracle_product_11.2_db Patches;14727310;
-    ora_inst_products /oracle/product/11.2/db;
+    oradb_inst_loc_data /oracle/oraInventory
+    oradb_inst_patches_oracle_product_11.2_db Patches;14727310;
+    oradb_inst_products /oracle/product/11.2/db;
 
 templates.pp
 ------------
