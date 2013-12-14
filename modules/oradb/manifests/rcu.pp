@@ -35,6 +35,7 @@ define oradb::rcu( $rcuFile                 = undef,
                    $reposPassword           = undef,
                    $tempTablespace          = undef,
                    $puppetDownloadMntPoint  = undef,
+                   $remoteFile              = true,
                    $logoutput               = false,
 )
 {
@@ -115,21 +116,30 @@ define oradb::rcu( $rcuFile                 = undef,
   }
 
   # put rcu software
-  if ! defined(File["${downloadDir}/${rcuFile}"]) {
-    file { "${downloadDir}/${rcuFile}":
-      source              => "${mountPoint}/${rcuFile}",
-    }
+  if $remoteFile == true {
+	  if ! defined(File["${downloadDir}/${rcuFile}"]) {
+	    file { "${downloadDir}/${rcuFile}":
+	      source => "${mountPoint}/${rcuFile}",
+	    }
+	  }
   }
+  
 
   # unzip rcu software
-  if ! defined(Exec["extract ${rcuFile}"]) {
-    exec { "extract ${rcuFile}":
-      command             => "unzip ${downloadDir}/${rcuFile} -d ${downloadDir}/rcu_${version}",
-      require             => File ["${downloadDir}/${rcuFile}"],
-      creates             => "${downloadDir}/rcu_${version}/rcuHome",
-    }
+  if $remoteFile == true {
+	  if ! defined(Exec["extract ${rcuFile}"]) {
+	    exec { "extract ${rcuFile}":
+	      command             => "unzip ${downloadDir}/${rcuFile} -d ${downloadDir}/rcu_${version}",
+	      require             => File ["${downloadDir}/${rcuFile}"],
+	      creates             => "${downloadDir}/rcu_${version}/rcuHome",
+	    }
+	  }
+  } else {
+      exec { "extract ${rcuFile}":
+        command             => "unzip ${mountPoint}/${rcuFile} -d ${downloadDir}/rcu_${version}",
+        creates             => "${downloadDir}/rcu_${version}/rcuHome",
+      }
   }
-
   if ! defined(File["${downloadDir}/rcu_${version}/rcuHome/rcu/log"]) {
     # check rcu log folder
     file { "${downloadDir}/rcu_${version}/rcuHome/rcu/log":
