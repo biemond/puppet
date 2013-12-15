@@ -434,9 +434,28 @@ def get_domain(name,i,wlsversion)
          end
       end
             
+      bpmTargets  = nil
+      soaTargets  = nil
+      osbTargets  = nil
+      bamTargets  = nil
+
       deployments = ""
       root.elements.each("app-deployment[module-type = 'ear']") do |apps|
-        deployments += apps.elements['name'].text + ";"
+        earName = apps.elements['name'].text
+        deployments += earName + ";"
+
+        if earName == "BPMComposer" 
+           bpmTargets = apps.elements['target'].text
+        end 
+        if earName == "soa-infra" 
+           soaTargets = apps.elements['target'].text
+        end 
+        if earName == "oracle-bam#11.1.1" 
+           bamTargets = apps.elements['target'].text
+        end         
+        if earName == "ALSB Domain Singleton Marker Application" 
+           osbTargets = apps.elements['target'].text
+        end  
       end
 
       Facter.add("#{prefix}_domain_#{n}_deployments") do
@@ -444,6 +463,59 @@ def get_domain(name,i,wlsversion)
             deployments
          end
       end
+
+      unless bpmTargets.nil?
+        Facter.add("#{prefix}_domain_#{n}_bpm") do
+          setcode do
+            bpmTargets
+          end
+        end
+      else
+        Facter.add("#{prefix}_domain_#{n}_bpm") do
+          setcode do
+            "NotFound"
+          end
+        end
+      end  
+      unless soaTargets.nil?
+        Facter.add("#{prefix}_domain_#{n}_soa") do
+          setcode do
+            soaTargets
+          end
+        end
+      else
+        Facter.add("#{prefix}_domain_#{n}_soa") do
+          setcode do
+            "NotFound"
+          end
+        end
+      end
+      unless bamTargets.nil?
+        Facter.add("#{prefix}_domain_#{n}_bam") do
+          setcode do
+            bamTargets
+          end
+        end
+      else
+        Facter.add("#{prefix}_domain_#{n}_bam") do
+          setcode do
+            "NotFound"
+          end
+        end
+      end
+      unless osbTargets.nil?
+        Facter.add("#{prefix}_domain_#{n}_osb") do
+          setcode do
+            osbTargets
+          end
+        end
+      else
+        Facter.add("#{prefix}_domain_#{n}_osb") do
+          setcode do
+            "NotFound"
+          end
+        end
+      end                  
 
       fileAdapterPlan = ""
       fileAdapterPlanEntries = ""
@@ -685,9 +757,13 @@ def get_domain(name,i,wlsversion)
           end
         end
 
-
-
-        subfile = File.read( get_domainFolder(name)+'/domains/'+domain+"/config/" + jmsresource.elements['descriptor-file-name'].text )
+        unless jmsresource.elements['descriptor-file-name'].nil?
+          fileJms = jmsresource.elements['descriptor-file-name'].text
+        else
+          fileJms = "jms/"+jmsresource.elements['name'].text.downcase + "-jms.xml"
+        end  
+ 
+        subfile = File.read( get_domainFolder(name)+'/domains/'+domain+"/config/" + fileJms )
         subdoc = REXML::Document.new subfile
 
         jmsroot = subdoc.root
