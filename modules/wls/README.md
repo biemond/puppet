@@ -5,13 +5,22 @@ created by Edwin Biemond  email biemond at gmail dot com
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)  
 [Oracle OpenWorld presentation, how to roll out a complete FMW environment in less than 10 minutes](http://www.slideshare.net/biemond/fmw-puppet-oow13)  
-   
 
 Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux 
+
+New orawls module designed for puppet 3 and totally refactored and optimized for Hiera, see the biemond-orawls module  
+
+Reference implementation, the vagrant test case for full working WebLogic 10.3.6 cluster example  
+https://github.com/biemond/biemond-wls-vagrant-10.3.6  
+
+Reference implementation, the vagrant test case for full working WebLogic 12.1.2 cluster example  
+https://github.com/biemond/biemond-wls-vagrant-12.1.2  
+
 
 Version updates
 ---------------
 
+- 1.3.4 Nodemanager listen address, Domain ALSBdebug param check, remoteFile param for installwls ( for vagrant), managed server listen address, logdir fixes in copydomain & nodemanager, packdomain permissions fix, option to use copydomain without sshpass
 - 1.3.3 Option to override the Oracle operating user and provide your own domains home
 - 1.3.2 better WebLogic Facts checking, Foreign Server and FS objects support
 - 1.3.1 soa & soa_bpm domain options, new JMS SubDeployment CF, Queue and Topic options
@@ -1323,7 +1332,7 @@ WebLogic configuration examples
 	       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer1.out -Dweblogic.Stderr=/data/logs/wlsServer1_err.out'",
 	                         "wlsServerName    = 'wlsServer1'",
 	                         "machineName      = 'LocalMachine'",
-	                         "listenAddress    = 9201",
+	                         "listenPort       = 9201",
 	                         "nodeMgrLogDir    = '/data/logs'",
 	                        ],
 	      require        => Wls::Wlstexec['createRemoteMachine'],
@@ -1338,7 +1347,7 @@ WebLogic configuration examples
 	       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer2.out -Dweblogic.Stderr=/data/logs/wlsServer2_err.out'",
 	                         "wlsServerName    = 'wlsServer2'",
 	                         "machineName      = 'RemoteMachine'",
-	                         "listenAddress    = 9202",
+	                         "listenPort       = 9202",
 	                         "nodeMgrLogDir    = '/data/logs'",
 	                        ],
 	      require        => Wls::Wlstexec['createManagerServerWlsServer1'],

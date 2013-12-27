@@ -39,6 +39,8 @@ define wls::packdomain (
         command   => "${wlHome}/common/bin/pack.sh ${packCommand}",
         creates   => "${downloadDir}/domain_${domain}.jar",
         logoutput => true,
+        user      => $user,
+        group     => $group,
       }
     }
     windows : {
@@ -46,6 +48,8 @@ define wls::packdomain (
         command   => "${checkCommand} ${wlHome}/common/bin/pack.cmd ${packCommand}",
         creates   => "${downloadDir}/domain_${domain}.jar",
         logoutput => true,
+        user      => $user,
+        group     => $group,
       }
     }
   }

@@ -41,6 +41,7 @@ define wls::nodemanager($version         = "1111",
                         $wlHome          = undef,
                         $fullJDKName     = undef,
                         $listenPort      = 5556,
+                        $listenAddress   = undef,
                         $user            = 'oracle',
                         $group           = 'dba',
                         $serviceName     = undef,
@@ -67,6 +68,39 @@ define wls::nodemanager($version         = "1111",
    if $logDir == undef {
       $nodeLogDir = "${nodeMgrHome}/nodemanager.log"
    } else {
+      # create all folders
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
+            if ! defined(Exec["create ${logDir} directory"]) {
+             exec { "create ${logDir} directory":
+                     command => "mkdir -p ${logDir}",
+                     unless  => "test -d ${logDir}",
+                     user    => 'root',
+             }
+           }
+         }
+         windows: {
+           $logDirWin = slash_replace( $logDir )
+           if ! defined(Exec["create ${logDir} directory"]) {
+             exec { "create ${logDir} directory":
+                  command => "${checkCommand} mkdir ${logDirWin}",
+                  unless  => "${checkCommand} dir ${logDirWin}",
+             }
+           }
+         }
+         default: {
+           fail("Unrecognized operating system")
+         }
+      }
+
+      if ! defined(File["${logDir}"]) {
+           file { "${logDir}" :
+             ensure  => directory,
+             recurse => false,
+             replace => false,
+             require => Exec["create ${logDir} directory"],
+           }
+      }
       $nodeLogDir = "${logDir}/nodemanager.log"
    }
 
@@ -157,51 +191,15 @@ if $version == "1212" {
 
          }
          windows: {
-		        service { "window nodemanager initial start ${title}":
-		                name       => "Oracle Weblogic ${domain} NodeManager (${serviceName})",
-		                enable     => true,
-		                ensure     => true,
-		        }
+            service { "window nodemanager initial start ${title}":
+                    name       => "Oracle Weblogic ${domain} NodeManager (${serviceName})",
+                    enable     => true,
+                    ensure     => true,
+            }
          }
       }
 }
 elsif $version == "1111" {
-   if $logDir != undef {
-      # create all folders
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
-            if ! defined(Exec["create ${logDir} directory"]) {
-             exec { "create ${logDir} directory":
-                     command => "mkdir -p ${logDir}",
-                     unless  => "test -d ${logDir}",
-                     user    => 'root',
-             }
-           }
-         }
-         windows: {
-      	   $logDirWin = slash_replace( $logDir )
-           if ! defined(Exec["create ${logDir} directory"]) {
-             exec { "create ${logDir} directory":
-                  command => "${checkCommand} mkdir ${logDirWin}",
-                  unless  => "${checkCommand} dir ${logDirWin}",
-             }
-           }
-         }
-         default: {
-           fail("Unrecognized operating system")
-         }
-      }
-
-
-      if ! defined(File["${logDir}"]) {
-           file { "${logDir}" :
-             ensure  => directory,
-             recurse => false,
-             replace => false,
-             require => Exec["create ${logDir} directory"],
-           }
-      }
-   }
 
    $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
 
