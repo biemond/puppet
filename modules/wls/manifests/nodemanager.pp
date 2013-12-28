@@ -50,59 +50,6 @@ define wls::nodemanager($version         = "1111",
                         $domain          = undef,
                        ) {
 
-   if $version == "1111" {
-     $nodeMgrHome = "${wlHome}/common/nodemanager"
-
-   } elsif $version == "1212" {
-
-     if $::override_weblogic_domain_folder == undef {
-       $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
-     } else {
-       $nodeMgrHome = "${::override_weblogic_domain_folder}/domains/${domain}/nodemanager"
-     }
-
-   } else {
-     $nodeMgrHome = "${wlHome}/common/nodemanager"
-   }
-
-   if $logDir == undef {
-      $nodeLogDir = "${nodeMgrHome}/nodemanager.log"
-   } else {
-      # create all folders
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
-            if ! defined(Exec["create ${logDir} directory"]) {
-             exec { "create ${logDir} directory":
-                     command => "mkdir -p ${logDir}",
-                     unless  => "test -d ${logDir}",
-                     user    => 'root',
-             }
-           }
-         }
-         windows: {
-           $logDirWin = slash_replace( $logDir )
-           if ! defined(Exec["create ${logDir} directory"]) {
-             exec { "create ${logDir} directory":
-                  command => "${checkCommand} mkdir ${logDirWin}",
-                  unless  => "${checkCommand} dir ${logDirWin}",
-             }
-           }
-         }
-         default: {
-           fail("Unrecognized operating system")
-         }
-      }
-
-      if ! defined(File["${logDir}"]) {
-           file { "${logDir}" :
-             ensure  => directory,
-             recurse => false,
-             replace => false,
-             require => Exec["create ${logDir} directory"],
-           }
-      }
-      $nodeLogDir = "${logDir}/nodemanager.log"
-   }
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
@@ -166,6 +113,63 @@ define wls::nodemanager($version         = "1111",
         }
      }
    }
+
+
+   if $version == "1111" {
+     $nodeMgrHome = "${wlHome}/common/nodemanager"
+
+   } elsif $version == "1212" {
+
+     if $::override_weblogic_domain_folder == undef {
+       $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+     } else {
+       $nodeMgrHome = "${::override_weblogic_domain_folder}/domains/${domain}/nodemanager"
+     }
+
+   } else {
+     $nodeMgrHome = "${wlHome}/common/nodemanager"
+   }
+
+   if $logDir == undef {
+      $nodeLogDir = "${nodeMgrHome}/nodemanager.log"
+   } else {
+      # create all folders
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
+            if ! defined(Exec["create ${logDir} directory"]) {
+             exec { "create ${logDir} directory":
+                     command => "mkdir -p ${logDir}",
+                     unless  => "test -d ${logDir}",
+                     user    => 'root',
+             }
+           }
+         }
+         windows: {
+           $logDirWin = slash_replace( $logDir )
+           if ! defined(Exec["create ${logDir} directory"]) {
+             exec { "create ${logDir} directory":
+                  command => "${checkCommand} mkdir ${logDirWin}",
+                  unless  => "${checkCommand} dir ${logDirWin}",
+             }
+           }
+         }
+         default: {
+           fail("Unrecognized operating system")
+         }
+      }
+
+      if ! defined(File["${logDir}"]) {
+           file { "${logDir}" :
+             ensure  => directory,
+             recurse => false,
+             replace => false,
+             require => Exec["create ${logDir} directory"],
+           }
+      }
+      $nodeLogDir = "${logDir}/nodemanager.log"
+   }
+
+
 
 # nodemanager is part of the domain creation
 if $version == "1212" {
