@@ -2,7 +2,7 @@
 module Puppet::Parser::Functions
   newfunction(:domain_exists, :type => :rvalue) do |args|
 
-    puts "domain check"
+    #puts "domain check"
     
     art_exists = false
     if args[0].nil?
@@ -32,7 +32,7 @@ module Puppet::Parser::Functions
 
     prefix = "ora_mdw#{versionStr}"
 
-    puts "domain check arguments: mdwArg "+mdwArg + " version " +wlsversion  + " domains homedir " +domainsHomeDir  + " prefix " +prefix
+    #puts "domain check arguments: mdwArg "+mdwArg + " version " +wlsversion  + " domains homedir " +domainsHomeDir  + " prefix " +prefix
     
     # check the middleware home
     mdw_count = lookupWlsVar(prefix+'_cnt')
@@ -67,8 +67,8 @@ module Puppet::Parser::Functions
 
               domain_path = domainsHomeDir + "/" + domain
               domain_path = domain_path.strip.downcase
-              puts "domain arg1: " +domain_path
-              puts "domain arg2: " +mdwArg
+              #puts "domain arg1: " +domain_path
+              #puts "domain arg2: " +mdwArg
               # do we found the right domain
               if domain_path == mdwArg 
                 return true

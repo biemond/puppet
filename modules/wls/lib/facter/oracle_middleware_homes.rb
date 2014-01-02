@@ -6,9 +6,9 @@ require 'facter'
 def get_weblogicUser()
   weblogicUser = Facter.value('override_weblogic_user')
   if weblogicUser.nil?
-    puts "weblogic user is oracle"
+    #puts "weblogic user is oracle"
   else 
-    puts "weblogic user is " + weblogicUser
+    #puts "weblogic user is " + weblogicUser
     return weblogicUser
   end
   return "oracle"
@@ -17,9 +17,9 @@ end
 def get_domainFolder(mdwHome)
   domainFolder = Facter.value('override_weblogic_domain_folder')
   if domainFolder.nil?
-    puts "domain folder is " + mdwHome + "/user_projects"
+    #puts "domain folder is " + mdwHome + "/user_projects"
   else 
-    puts "domain folder is " + domainFolder
+    #puts "domain folder is " + domainFolder
     return domainFolder
   end
   return mdwHome+"/user_projects"
