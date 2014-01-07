@@ -1,0 +1,687 @@
+
+
+#
+# Oracle Identity management databaase machine setup with 11.2.0.4 database EE
+#                                                                              
+# RCU V37476-01.zip 11.1.2.1 
+#
+
+node 'oimdb' inherits default {
+
+   include oimdb_os, oimdb_11204, oimdb_maintenance
+   
+   Class['oimdb_os'] -> Class['oimdb_11204'] -> Class['oimdb_maintenance']
+
+}
+
+#
+# Oracle Identity management application server machine setup 
+#                                                                              
+#
+
+node 'oimapp' inherits default {
+
+   include oimapp_os, oimapp_wls1036, oimapp_wlsdomain, oimapp_maintenance
+   
+   Class['oimapp_os'] -> Class['oimapp_wls1036'] -> Class['oimapp_wlsdomain'] ->  Class['oimapp_maintenance']
+
+}
+
+class oimapp_os {
+  $remove = [ "java-1.7.0-openjdk.x86_64", "java-1.6.0-openjdk.x86_64" ]
+
+  package { $remove:
+    ensure  => absent,
+  }
+
+  $install = [ 'binutils.x86_64', 'compat-libstdc++-33.x86_64','compat-libstdc++-33.i686','elfutils-libelf','elfutils-libelf-devel','gcc.x86_64',
+               'gcc-c++.x86_64','glibc.x86_64','glibc.i686','glibc-devel.x86_64','glibc-devel.i686','libaio.x86_64','libaio.i686','libaio-devel.x86_64',
+               'libstdc++.x86_64','libstdc++.i686','libstdc++-devel.x86_64','ksh.x86_64', 'libgcc.x86_64','libgcc.i686', 'make.x86_64','compat-libcap1.x86_64',
+               'sysstat.x86_64','unixODBC-devel']
+               
+  package { $install:
+    ensure  => present,
+  }
+
+
+  include jdk7
+
+  jdk7::install7{ 'jdk1.7.0_40':
+    version              => "7u40" , 
+    fullVersion          => "jdk1.7.0_40",
+    alternativesPriority => 18000, 
+    x64                  => true,
+    downloadDir          => "/data/install",
+    urandomJavaFix       => false,
+    sourcePath           => "puppet:///modules/jdk7/"
+  }
+
+  class { 'jdk7::urandomfix' :}  
+
+  class { 'limits':
+    config => {
+               '*'       => { 'nofile'   => { soft => '2048'   , hard => '8192',   },},
+               'oracle'  => {  'nofile'  => { soft => '65536'  , hard => '65536',  },
+                               'nproc'   => { soft => '2048'   , hard => '16384',   },
+                               'memlock' => { soft => '1048576', hard => '1048576',},
+                               'stack'   => { soft => '10240'  ,},},
+               },
+    use_hiera => false,
+  }
+
+  sysctl { 'kernel.msgmnb':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.msgmax':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.shmmax':                 ensure => 'present', permanent => 'yes', value => '2588483584',}
+  sysctl { 'kernel.shmall':                 ensure => 'present', permanent => 'yes', value => '2097152',}
+  sysctl { 'fs.file-max':                   ensure => 'present', permanent => 'yes', value => '6815744',}
+  sysctl { 'net.ipv4.tcp_keepalive_time':   ensure => 'present', permanent => 'yes', value => '1800',}
+  sysctl { 'net.ipv4.tcp_keepalive_intvl':  ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'net.ipv4.tcp_keepalive_probes': ensure => 'present', permanent => 'yes', value => '5',}
+  sysctl { 'net.ipv4.tcp_fin_timeout':      ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'kernel.shmmni':                 ensure => 'present', permanent => 'yes', value => '4096', }
+  sysctl { 'fs.aio-max-nr':                 ensure => 'present', permanent => 'yes', value => '1048576',}
+  sysctl { 'kernel.sem':                    ensure => 'present', permanent => 'yes', value => '250 32000 100 128',}
+  sysctl { 'net.ipv4.ip_local_port_range':  ensure => 'present', permanent => 'yes', value => '9000 65500',}
+  sysctl { 'net.core.rmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.rmem_max':             ensure => 'present', permanent => 'yes', value => '4194304', }
+  sysctl { 'net.core.wmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.wmem_max':             ensure => 'present', permanent => 'yes', value => '1048576',}
+
+}
+
+
+class oimapp_wls1036 {
+
+  $jdkWls11gJDK = 'jdk1.7.0_40'
+  $wls11gVersion = "1036"
+                       
+  $puppetDownloadMntPoint = "puppet:///middleware/"
+ 
+  $osOracleHome = "/opt/oracle"
+  $osMdwHome    = "/opt/oracle/Middleware11gR1"
+  $osWlHome     = "/opt/oracle/Middleware11gR1/wlserver_10.3"
+  $user         = "oracle"
+  $group        = "dba"
+  $downloadDir  = "/data/install"
+  $logDir       = "/data/logs"       
+
+  # set the defaults
+  Wls::Installwls {
+    version                => $wls11gVersion,
+    fullJDKName            => $jdkWls11gJDK,
+    oracleHome             => $osOracleHome,
+    mdwHome                => $osMdwHome,
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint,
+  }
+
+  Wls::Installsoa {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    oracleHome             => $osOracleHome,
+    fullJDKName            => $jdkWls11gJDK,  
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+  Wls::Installoim {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    oracleHome             => $osOracleHome,
+    fullJDKName            => $jdkWls11gJDK,  
+    user                   => $user,
+    group                  => $group,    
+    downloadDir            => $downloadDir,
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+  
+  Wls::Nodemanager {
+    wlHome       => $osWlHome,
+    fullJDKName  => $jdkWls11gJDK,  
+    user         => $user,
+    group        => $group,
+    serviceName  => $serviceName,  
+    downloadDir  => $downloadDir, 
+  }
+
+  Wls::Bsupatch {
+    mdwHome                => $osMdwHome,
+    wlHome                 => $osWlHome,
+    fullJDKName            => $jdkWls11gJDK,
+    user                   => $user,
+    group                  => $group,
+    downloadDir            => $downloadDir, 
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+  }
+
+  # install
+  wls::installwls{'11gPS5':}
+
+  # weblogic patch 10.3.6.0.5
+  wls::bsupatch{'p16619891':
+     patchId      => 'L51R',    
+     patchFile    => 'p16619891_1036_Generic.zip',  
+     require      => Wls::Installwls['11gPS5'],
+  }
+
+  wls::installsoa{'soaPS5':
+     soaFile1      => 'ofm_soa_generic_11.1.1.6.0_disk1_1of2.zip',
+     soaFile2      => 'ofm_soa_generic_11.1.1.6.0_disk1_2of2.zip',
+     require       =>  Wls::Bsupatch['p16619891'],
+  }
+
+  wls::opatch{'16702086_soa_patch':
+    oracleProductHome      => "${osMdwHome}/Oracle_SOA1" ,
+    fullJDKName            => $jdkWls11gJDK,
+    patchId                => '16702086',
+    patchFile              => 'p16702086_111160_Generic.zip',
+    user                   => $user,
+    group                  => $group,
+    downloadDir            => $downloadDir, 
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+    require                => Wls::Installsoa['soaPS5'],
+  }
+
+  wls::opatch{'16366204_soa_patch':
+    oracleProductHome      => "${osMdwHome}/Oracle_SOA1" ,
+    fullJDKName            => $jdkWls11gJDK,
+    patchId                => '16366204',
+    patchFile              => 'p16366204_111160_Generic.zip',
+    user                   => $user,
+    group                  => $group,
+    downloadDir            => $downloadDir, 
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+    require                => Wls::Opatch['16702086_soa_patch'],
+  }
+
+
+  wls::installoim{'oim11.1.2.1':
+    oimFile1    => 'V37472-01_1of2.zip',
+    oimFile2    => 'V37472-01_2of2.zip',
+    require     => Wls::Opatch['16366204_soa_patch'],
+  }
+
+  wls::opatch{'17086188_oim_patch':
+    oracleProductHome      => "${osMdwHome}/Oracle_IDM1" ,
+    fullJDKName            => $jdkWls11gJDK,
+    patchId                => '17086188',
+    patchFile              => 'p17086188_111210_Generic.zip',
+    user                   => $user,
+    group                  => $group,
+    downloadDir            => $downloadDir, 
+    puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+    require                => Wls::Installoim['oim11.1.2.1'],
+  }
+
+  #nodemanager configuration and starting
+  wls::nodemanager{'nodemanager11g':
+    listenPort  => '5556',
+    logDir      => $logDir,
+    require     => Wls::Opatch['17086188_oim_patch'],
+  }
+
+
+
+}
+
+class oimapp_wlsdomain{
+
+  $jdkWls11gJDK = 'jdk1.7.0_40'
+  $wls11gVersion = "1036"
+                       
+  $puppetDownloadMntPoint = "puppet:///middleware/"
+ 
+  $osOracleHome = "/opt/oracle"
+  $osMdwHome    = "/opt/oracle/Middleware11gR1"
+  $osWlHome     = "/opt/oracle/Middleware11gR1/wlserver_10.3"
+  $user         = "oracle"
+  $group        = "dba"
+  $downloadDir  = "/data/install"
+  $logDir       = "/data/logs"       
+
+
+  $wlsDomainName   = "oimDomain"
+  $osTemplate      = "oim"
+
+  $adminListenPort = "7001"
+  $nodemanagerPort = "5556"
+  $address         = "localhost"
+
+  $userConfigDir = '/home/oracle'
+
+ 
+  # rcu soa repository
+  $reposUrl        = "jdbc:oracle:thin:@oimdb.alfa.local:1521/oim.oracle.com"
+  $reposPrefix     = "DEV"
+  # rcu soa repository schema password
+  $reposPassword   = "Welcome02"
+
+  class{'orautils':
+        osOracleHomeParam      => $osOracleHome,
+        oraInventoryParam      => "${osOracleHome}/oraInventory",
+        osDomainTypeParam      => "oim",
+        osLogFolderParam       => $logsDir,
+        osDownloadFolderParam  => $downloadDir,
+        osMdwHomeParam         => $osMdwHome ,
+        osWlHomeParam          => $osWlHome,
+        oraUserParam           => $user,
+        osDomainParam          => $wlsDomainName,
+        osDomainPathParam      => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+        nodeMgrPathParam       => "${osWlHome}/server/bin",
+        nodeMgrPortParam       => 5556,
+        wlsUserParam           => "weblogic",
+        wlsPasswordParam       => "weblogic1",
+        wlsAdminServerParam    => "AdminServer",
+  } 
+
+
+
+  # install OIM,OAM, SOA domain
+  wls::wlsdomain{'oimDomain':
+    version         => "1121",
+    wlHome          => $osWlHome,
+    mdwHome         => $osMdwHome,
+    fullJDKName     => $jdkWls11gJDK, 
+    wlsTemplate     => $osTemplate,
+    domain          => $wlsDomainName,
+    developmentMode => false,
+    adminServerName => "AdminServer",
+    adminListenAdr  => "localhost",
+    adminListenPort => $adminListenPort,
+    nodemanagerPort => $nodemanagerPort,
+    wlsUser         => "weblogic",
+    password        => "weblogic1",
+    user            => $user,
+    group           => $group,    
+    logDir          => $logDir,
+    downloadDir     => $downloadDir, 
+    reposDbUrl      => $reposUrl,
+    reposPrefix     => $reposPrefix,
+    reposPassword   => $reposPassword,
+  } 
+
+  Wls::Wlscontrol{
+    wlsDomain     => $wlsDomainName,
+    wlsDomainPath => "${osMdwHome}/user_projects/domains/${wlsDomainName}",
+    wlHome        => $osWlHome,
+    fullJDKName   => $jdkWls11gJDK,  
+    wlsUser       => "weblogic",
+    password      => "weblogic1",
+    address       => $address,
+    user          => $user,
+    group         => $group,
+    downloadDir   => $downloadDir,
+    logOutput     => true, 
+  }
+
+  # start AdminServers for configuration
+  wls::wlscontrol{'startOIMAdminServer':
+    wlsServer     => "AdminServer",
+    action        => 'start',
+    port          => $nodemanagerPort,
+    require       => Wls::Wlsdomain['oimDomain'],
+  }
+
+
+  # create keystores for automatic WLST login
+  wls::storeuserconfig{
+   'oimDomain_keys':
+    wlHome        => $osWlHome,
+    fullJDKName   => $jdkWls11gJDK,
+    domain        => $wlsDomainName, 
+    address       => $address,
+    wlsUser       => "weblogic",
+    password      => "weblogic1",
+    port          => $adminListenPort,
+    user          => $user,
+    group         => $group,
+    userConfigDir => $userConfigDir, 
+    downloadDir   => $downloadDir, 
+    require       => Wls::Wlscontrol['startOIMAdminServer'],
+  }
+
+# wls::installwebtier{'webtierPS6':
+#   mdwHome                => $osMdwHome,
+#   wlHome                 => $osWlHome,
+#   oracleHome             => $osOracleHome,
+#   fullJDKName            => $jdkWls11gJDK,  
+#   user                   => $user,
+#   group                  => $group,    
+#   downloadDir            => $downloadDir,
+#   puppetDownloadMntPoint => $puppetDownloadMntPoint, 
+#   webtierFile            => 'ofm_webtier_linux_11.1.1.7.0_64_disk1_1of1.zip',
+#   configureHTTP          => true,
+#   associateWebtier       => true,
+#   wlsAdminUrl            => "localhost",
+#   wlsAdminPort           => 7001,
+#   wlsUser                => "weblogic",
+#   password               => "weblogic1",
+#   require                => Wls::Storeuserconfig['oimDomain_keys'],
+##   require                => Wls::Oimconfig['oimconfig'],
+# }
+#       
+#    
+
+
+  # start Soa server for configuration
+  wls::wlscontrol{'startOIMSoaServer1':
+      wlsServerType => 'managed',
+      wlsServer     => "soa_server1",
+      action        => 'start',
+      port          => $adminListenPort,
+#      require       => Wls::Installwebtier['webtierPS6'],
+      require       => Wls::Storeuserconfig['oimDomain_keys'],
+  } 
+
+  # start Oim server for configuration
+  wls::wlscontrol{'startOIMOimServer1':
+      wlsServerType => 'managed',
+      wlsServer     => "oim_server1",
+      action        => 'start',
+      port          => $adminListenPort,
+      require       => Wls::Wlscontrol['startOIMSoaServer1'],
+  } 
+
+  wls::oimconfig{'oimconfig':
+     oimHome             => "${osMdwHome}/Oracle_IDM1",
+     fullJDKName         => $jdkWls11gJDK,
+     serverConfig        => true,
+     oimDatabaseUrl      => 'oimdb.alfa.local:1521:oim.oracle.com',
+     oimSchemaPrefix     => 'DEV',
+     oimSchemaPassword   => 'Welcome02',
+     wlsUser             => "weblogic",
+     password            => "weblogic1", 
+     oimPassword         => "Welcome01",
+     remoteConfig        => false,
+     keystorePassword    => "Welcome01",
+     designConfig        => false,
+     oimServerHostname   => "oimapp.alfa.local",
+     oimServerPort       => 14000,
+     user                => $user,
+     group               => $group,
+     downloadDir         => $downloadDir,
+     wlHome              => $osWlHome,
+     mdwHome             => $osMdwHome, 
+     wlsDomain           => $wlsDomainName,
+     adminServerName     => "AdminServer",
+     soaServerName       => "soa_server1",
+     oimServerName       => "oim_server1",
+     adminServerAddress  => $address,
+     adminServerport     => $adminListenPort,
+     nodemanagerPort     => 5556,
+     require             => Wls::Wlscontrol['startOIMOimServer1'],
+  }
+      
+  
+}
+
+class oimapp_maintenance {
+
+  $jdkWls11gJDK = 'jdk1.7.0_40'
+
+ 
+  $osOracleHome = "/opt/oracle"
+  $osMdwHome    = "/opt/oracle/Middleware11gR1"
+  $osWlHome     = "/opt/oracle/Middleware11gR1/wlserver_10.3"
+  $user         = "oracle"
+  $group        = "dba"
+  $downloadDir  = "/data/install"
+  $logsDir      = "/data/logs"       
+
+
+  $mtimeParam = "1"
+
+
+  cron { 'cleanwlstmp' :
+        command => "find /tmp -name '*.tmp' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/tmp_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 25,
+  }
+     
+  cron { 'mdwlogs' :
+        command => "find ${osMdwHome}/logs -name 'wlst_*.*' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/wlst_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 30,
+  }
+     
+  cron { 'oracle_common_lsinv' :
+        command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_common_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 31,
+  }
+     
+
+  cron { 'oracle_soa1_lsinv' :
+        command => "find ${osMdwHome}/Oracle_SOA1/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_soa1_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 33,
+  }
+     
+  cron { 'oracle_common_opatch' :
+        command => "find ${osMdwHome}/oracle_common/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_common_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 34,
+  }
+     
+     
+  cron { 'oracle_soa1_opatch' :
+        command => "find ${osMdwHome}/Oracle_SOA1/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_soa_purge.log 2>&1",
+        user    => oracle,
+        hour    => 06,
+        minute  => 35,
+  }
+     
+
+}
+
+
+
+
+# operating settings for Database
+class oimdb_os {
+
+
+  $remove = [ "java-1.7.0-openjdk.x86_64", "java-1.6.0-openjdk.x86_64" ]
+
+  package { $remove:
+    ensure  => absent,
+  }
+
+  $install = [ 'binutils.x86_64', 'compat-libstdc++-33.x86_64', 'glibc.x86_64','ksh.x86_64','libaio.x86_64',
+               'libgcc.x86_64', 'libstdc++.x86_64', 'make.x86_64','compat-libcap1.x86_64', 'gcc.x86_64',
+               'gcc-c++.x86_64','glibc-devel.x86_64','libaio-devel.x86_64','libstdc++-devel.x86_64',
+               'sysstat.x86_64','unixODBC-devel','glibc.i686','libXext.i686','libXtst.i686']
+               
+               
+  package { $install:
+    ensure  => present,
+  }
+
+  class { 'limits':
+    config => {
+               '*'       => { 'nofile'   => { soft => '2048'   , hard => '8192',   },},
+               'oracle'  => {  'nofile'  => { soft => '65536'  , hard => '65536',  },
+                               'nproc'   => { soft => '2048'   , hard => '16384',   },
+                               'memlock' => { soft => '1048576', hard => '1048576',},
+                               'stack'   => { soft => '10240'  ,},},
+               },
+    use_hiera => false,
+  }
+
+  sysctl { 'kernel.msgmnb':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.msgmax':                 ensure => 'present', permanent => 'yes', value => '65536',}
+  sysctl { 'kernel.shmmax':                 ensure => 'present', permanent => 'yes', value => '4294967295',}  
+  sysctl { 'kernel.shmall':                 ensure => 'present', permanent => 'yes', value => '2097152',}
+  sysctl { 'fs.file-max':                   ensure => 'present', permanent => 'yes', value => '6815744',}
+  sysctl { 'net.ipv4.tcp_keepalive_time':   ensure => 'present', permanent => 'yes', value => '1800',}
+  sysctl { 'net.ipv4.tcp_keepalive_intvl':  ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'net.ipv4.tcp_keepalive_probes': ensure => 'present', permanent => 'yes', value => '5',}
+  sysctl { 'net.ipv4.tcp_fin_timeout':      ensure => 'present', permanent => 'yes', value => '30',}
+  sysctl { 'kernel.shmmni':                 ensure => 'present', permanent => 'yes', value => '4096', }
+  sysctl { 'fs.aio-max-nr':                 ensure => 'present', permanent => 'yes', value => '1048576',}
+  sysctl { 'kernel.sem':                    ensure => 'present', permanent => 'yes', value => '250 32000 100 128',}
+  sysctl { 'net.ipv4.ip_local_port_range':  ensure => 'present', permanent => 'yes', value => '9000 65500',}
+  sysctl { 'net.core.rmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.rmem_max':             ensure => 'present', permanent => 'yes', value => '4194304', }
+  sysctl { 'net.core.wmem_default':         ensure => 'present', permanent => 'yes', value => '262144',}
+  sysctl { 'net.core.wmem_max':             ensure => 'present', permanent => 'yes', value => '1048576',}
+
+}
+
+
+class oimdb_11204 {
+
+    $puppetDownloadMntPoint = "puppet:///database/"
+
+    oradb::installdb{ '112040_Linux-x86-64':
+            version                => '11.2.0.4',
+            file                   => 'p13390677_112040_Linux-x86-64',
+            databaseType           => 'EE',
+            oracleBase             => '/oracle',
+            oracleHome             => '/oracle/product/11.2/db',
+            user                   => 'oracle',
+            group                  => 'dba',
+            downloadDir            => '/data/install',
+            puppetDownloadMntPoint => $puppetDownloadMntPoint,  
+    }
+
+   oradb::net{ 'config net8':
+            oracleHome   => '/oracle/product/11.2/db',
+            version      => '11.2',
+            user         => 'oracle',
+            group        => 'dba',
+            downloadDir  => '/data/install',
+            require      => Oradb::Installdb['112040_Linux-x86-64'],
+   }
+
+
+   oradb::listener{'start listener':
+            oracleBase   => '/oracle',
+            oracleHome   => '/oracle/product/11.2/db',
+            user         => 'oracle',
+            group        => 'dba',
+            action       => 'start',  
+            require      => Oradb::Net['config net8'],
+   }
+
+
+   oradb::database{ 'oimDb': 
+                    oracleBase              => '/oracle',
+                    oracleHome              => '/oracle/product/11.2/db',
+                    user                    => 'oracle',
+                    group                   => 'dba',
+                    downloadDir             => '/data/install',
+                    action                  => 'create',
+                    dbName                  => 'oim',
+                    dbDomain                => 'oracle.com',
+                    sysPassword             => hiera('database_test_sys_password'),
+                    systemPassword          => hiera('database_test_system_password'),
+                    dataFileDestination     => "/oracle/oradata",
+                    recoveryAreaDestination => "/oracle/flash_recovery_area",
+                    characterSet            => "AL32UTF8",
+                    nationalCharacterSet    => "UTF8",
+                    initParams              => "open_cursors=1000,processes=600,job_queue_processes=4",
+                    sampleSchema            => 'FALSE',
+                    memoryPercentage        => "40",
+                    memoryTotal             => "800",
+                    databaseType            => "MULTIPURPOSE",                         
+                    require                 => Oradb::Listener['start listener'],
+   }
+
+  oradb::dbactions{ 'start oimDb': 
+                   oracleHome              => '/oracle/product/11.2/db',
+                   user                    => 'oracle',
+                   group                   => 'dba',
+                   action                  => 'start',
+                   dbName                  => 'oim',
+                   require                 => Oradb::Database['oimDb'],
+  }
+
+   oradb::autostartdatabase{ 'autostart oracle': 
+                   oracleHome              => '/oracle/product/11.2/db',
+                   user                    => 'oracle',
+                   dbName                  => 'oim',
+                   require                 => Oradb::Dbactions['start oimDb'],
+   }
+
+   oradb::rcu{ 'DEV_1112':
+                     rcuFile                => 'V37476-01.zip',
+                     product                => 'oim',
+                     version                => '11.1.2.1',  
+                     oracleHome             => '/oracle/product/11.2/db',
+                     user                   => 'oracle',
+                     group                  => 'dba',
+                     downloadDir            => '/data/install',
+                     action                 => 'create',
+                     dbServer               => 'oimdb.alfa.local:1521',  
+                     dbService              => 'oim.oracle.com',
+                     sysPassword            => hiera('database_test_sys_password'),
+                     schemaPrefix           => 'DEV',
+                     reposPassword          => hiera('database_test_rcu_dev_password'),
+                     puppetDownloadMntPoint => $puppetDownloadMntPoint,
+                     logoutput              => true, 
+                     require                => Oradb::Dbactions['start oimDb'],
+    }
+
+
+}
+
+
+
+
+class oimdb_maintenance {
+
+  case $operatingsystem {
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
+      $mtimeParam = "1"
+    }
+    Solaris: { 
+      $mtimeParam = "+1"
+    }
+  }
+
+
+	cron { 'oracle_db_opatch' :
+	  command => "find /oracle/product/11.2/db/cfgtoollogs/opatch -name 'opatch*.log' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_db_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 34,
+	}
+	
+	cron { 'oracle_db_lsinv' :
+	  command => "find /oracle/product/11.2/db/cfgtoollogs/opatch/lsinv -name 'lsinventory*.txt' -mtime ${mtimeParam} -exec rm {} \\; >> /tmp/opatch_lsinv_db_purge.log 2>&1",
+	  user    => oracle,
+	  hour    => 06,
+	  minute  => 32,
+	}
+
+
+}
+
+class oimdb_java {
+	
+  include jdk7
+
+  jdk7::install7{ 'jdk1.7.0_40':
+    version              => "7u40" , 
+    fullVersion          => "jdk1.7.0_40",
+    alternativesPriority => 18000, 
+    x64                  => true,
+    downloadDir          => "/data/install",
+    urandomJavaFix       => false,
+    sourcePath           => "puppet:///modules/jdk7/"
+  }
+
+  class { 'jdk7::urandomfix' :}  
+	
+
+}	

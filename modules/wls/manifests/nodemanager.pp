@@ -51,6 +51,21 @@ define wls::nodemanager($version         = "1111",
                        ) {
 
 
+   if $version == "1111" {
+     $nodeMgrHome = "${wlHome}/common/nodemanager"
+
+   } elsif $version == "1212" {
+
+     if $::override_weblogic_domain_folder == undef {
+       $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+     } else {
+       $nodeMgrHome = "${::override_weblogic_domain_folder}/domains/${domain}/nodemanager"
+     }
+
+   } else {
+     $nodeMgrHome = "${wlHome}/common/nodemanager"
+   }
+
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
@@ -114,21 +129,6 @@ define wls::nodemanager($version         = "1111",
      }
    }
 
-
-   if $version == "1111" {
-     $nodeMgrHome = "${wlHome}/common/nodemanager"
-
-   } elsif $version == "1212" {
-
-     if $::override_weblogic_domain_folder == undef {
-       $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
-     } else {
-       $nodeMgrHome = "${::override_weblogic_domain_folder}/domains/${domain}/nodemanager"
-     }
-
-   } else {
-     $nodeMgrHome = "${wlHome}/common/nodemanager"
-   }
 
    if $logDir == undef {
       $nodeLogDir = "${nodeMgrHome}/nodemanager.log"
@@ -213,23 +213,24 @@ elsif $version == "1111" {
         file { "nodemanager.properties ux ${title}":
                 path    => "${nodeMgrHome}/nodemanager.properties",
                 ensure  => present,
-                replace => 'yes',
+                replace => true,
                 content => template("wls/nodemgr/nodemanager.properties.erb"),
         }
 
-        exec { "execwlst ux nodemanager ${title}":
+        exec { "exec ux nodemanager ${title}":
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${wlHome}/server/native/${nativeLib}"],
-          unless      => "${checkCommand}",
+          unless      => $checkCommand,
+          logoutput   => true,
           require     => File ["nodemanager.properties ux ${title}"],
         }
 
 
-        exec { "sleep 5 sec for wlst exec ${title}":
+        exec { "sleep 5 sec for exec ${title}":
           command     => "/bin/sleep 5",
-          subscribe   => Exec ["execwlst ux nodemanager ${title}"],
+          subscribe   => Exec ["exec ux nodemanager ${title}"],
           refreshonly => true,
         }
 
@@ -249,7 +250,7 @@ elsif $version == "1111" {
            logoutput  => false,
         }
 
-        exec { "execwlst win nodemanager ${title}":
+        exec { "exec win nodemanager ${title}":
           command     => "${wlHome}\\server\\bin\\installNodeMgrSvc.cmd",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
@@ -263,7 +264,7 @@ elsif $version == "1111" {
                 ensure  => present,
                 replace => 'yes',
                 content => template("wls/nodemgr/nodemanager.properties.erb"),
-                require => Exec ["execwlst win nodemanager ${title}"],
+                require => Exec ["exec win nodemanager ${title}"],
         }
 
         service { "window nodemanager initial start ${title}":

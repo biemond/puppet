@@ -20,6 +20,7 @@ https://github.com/biemond/biemond-wls-vagrant-12.1.2
 Version updates
 ---------------
 
+- 1.3.5 Nodemanager fix, Added AdminServer startup properties for Nodemanager, Readme update for OIM,OAM
 - 1.3.4 Nodemanager listen address, Domain ALSBdebug param check, remoteFile param for installwls ( for vagrant), managed server listen address, logdir fixes in copydomain & nodemanager, packdomain permissions fix, option to use copydomain without sshpass
 - 1.3.3 Option to override the Oracle operating user and provide your own domains home
 - 1.3.2 better WebLogic Facts checking, Foreign Server and FS objects support
@@ -38,9 +39,52 @@ Version updates
 - 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
 - 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom, removed java.security.egd parameter    
 
-Vagrant, Puppet and VirtualBox
-------------------------------
-Look at this great blog how to make your own WebLogic 12.1.2 server in just 10 minutes http://vbatik.wordpress.com/2013/10/11/weblogic-12-1-2-00-with-vagrant/ 
+
+WLS WebLogic Features
+---------------------------
+- installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
+- apply BSU patch ( WebLogic Patch )
+- installs Oracle ADF 11g & 12c ( 12.1.2)
+- installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
+- installs Oracle Soa Suite 11g
+- installs Oracle Webcenter 11g
+- installs Oracle Webcenter Content 11g
+- installs Oracle Webtier and associate domain
+- installs Oracle OIM ( identity management ) + OAM ( Access management ) 11.1.2.1
+- apply Oracle patch ( OPatch for Oracle products )
+- installs Oracle JDeveloper 11g / 12.1.2 + SOA Suite plugin
+- configures and starts nodemanager
+- start or stop a WebLogic server
+- pack a WebLogic domain
+- storeUserConfig for storing WebLogic Credentials and using in WLST
+- set the log folder of the WebLogic Domain, Managed servers and FMW   
+- add JCA resource adapter plan + Entries
+- create Machines, Managed Servers, Clusters, Server templates, Dynamic Clusters, Coherence clusters ( all 12.1.2 )
+- create File or JDBC Persistence Store
+- create JMS Server, Module, SubDeployment, Quota, Connection Factory, JMS (distributed) Queue or Topic,Foreign Servers + entries
+- create SAF agents, SAF Remote Destinations, SAF Imported Destinations, SAF objects
+- basically can run every WLST script with the flexible WLST define manifest
+
+Other options
+-------------
+- low on entropy fix ( urandom ) by RNGD or RNG-Tools service
+- Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
+
+Domain creation options (Dev or Prod mode)
+------------------------------------------
+all templates creates a WebLogic domain, logs the domain creation output  
+
+- domain 'standard'    -> a default WebLogic    
+- domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
+- domain 'osb'         -> OSB + JRF + EM + OWSM 
+- domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
+- domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
+- domain 'soa'         -> SOA Suite + BAM + JRF + EM + OWSM 
+- domain 'soa_bpm'     -> SOA Suite + BAM + BPM + JRF + EM + OWSM 
+- domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
+- domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
+- domain 'oim'         -> OIM + OAM + SOA Suite 
+
 
 Linux low on entropy or urandom fix 
 -----------------------------------
@@ -116,50 +160,10 @@ Standard WebLogic 12.1.2 windows server with a domain ( no ADF or FMW )
 ------------------------------------------------------------------------
 see example_conf_6_server_wls12.1.2_windows_standard.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
 
+Standard WebLogic 10.3.6 server with a 11.1.2.1 OIM,OAM, SOA Suite domain 
+-------------------------------------------------------------------------
+see example_conf_7_oim_oam_11.1.2.1.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
 
-
-WLS WebLogic Features
----------------------------
-- installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
-- apply BSU patch ( WebLogic Patch )
-- installs Oracle ADF 11g & 12c ( 12.1.2)
-- installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
-- installs Oracle Soa Suite 11g
-- installs Oracle Webcenter 11g
-- installs Oracle Webcenter Content 11g
-- installs Oracle Webtier and associate domain
-- apply Oracle patch ( OPatch for Oracle products )
-- installs Oracle JDeveloper 11g / 12.1.2 + SOA Suite plugin
-- configures and starts nodemanager
-- start or stop a WebLogic server
-- pack a WebLogic domain
-- storeUserConfig for storing WebLogic Credentials and using in WLST
-- set the log folder of the WebLogic Domain, Managed servers and FMW   
-- add JCA resource adapter plan + Entries
-- create Machines, Managed Servers, Clusters, Server templates, Dynamic Clusters, Coherence clusters ( all 12.1.2 )
-- create File or JDBC Persistence Store
-- create JMS Server, Module, SubDeployment, Quota, Connection Factory, JMS (distributed) Queue or Topic,Foreign Servers + entries
-- create SAF agents, SAF Remote Destinations, SAF Imported Destinations, SAF objects
-- basically can run every WLST script with the flexible WLST define manifest
-
-Other options
--------------
-- low on entropy fix ( urandom ) by RNGD or RNG-Tools service
-- Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
-
-Domain creation options (Dev or Prod mode)
-------------------------------------------
-all templates creates a WebLogic domain, logs the domain creation output  
-
-- domain 'standard'    -> a default WebLogic    
-- domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
-- domain 'osb'         -> OSB + JRF + EM + OWSM 
-- domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
-- domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
-- domain 'soa'         -> SOA Suite + BAM + JRF + EM + OWSM 
-- domain 'soa_bpm'     -> SOA Suite + BAM + BPM + JRF + EM + OWSM 
-- domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
-- domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
 
 ![Oracle WebLogic Console](https://raw.github.com/biemond/puppet/master/modules/wls/wlsconsole.png)
 

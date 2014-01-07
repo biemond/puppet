@@ -1,6 +1,6 @@
 {
   "name": "biemond-wls",
-  "version": "1.3.3",
+  "version": "1.3.5",
   "summary": "Oracle WebLogic / Fusion Middleware ( ADF, OSB, WebCenter, SOA Suite, WebCenter ) puppet module",
   "author": "Edwin Biemond",
   "description": "Oracle WebLogic / Fusion Middleware puppet module",
