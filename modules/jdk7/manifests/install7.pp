@@ -19,7 +19,7 @@ define jdk7::install7 (
   $alternativesPriority = 17065,
   $downloadDir          = '/install',
   $urandomJavaFix       = true,
-  $sourcePath           = "puppet:///modules/${module_name}/",
+  $sourcePath           = "puppet:///modules/jdk7/",
 ) {
 
   if $x64 == true {
