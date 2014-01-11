@@ -16,10 +16,14 @@ https://github.com/biemond/biemond-wls-vagrant-10.3.6
 Reference implementation, the vagrant test case for full working WebLogic 12.1.2 cluster example  
 https://github.com/biemond/biemond-wls-vagrant-12.1.2  
 
+Reference implementation, the vagrant test case for full working WebLogic SOA Suite, OIM and OAM example  
+https://github.com/biemond/biemond-wls-vagrant-oim  
+
 
 Version updates
 ---------------
 
+- 1.3.6 remoteFile param for BSU,Opatch,SOA Suite and OIM 
 - 1.3.5 Nodemanager fix, Added AdminServer startup properties for Nodemanager, Readme update for OIM,OAM
 - 1.3.4 Nodemanager listen address, Domain ALSBdebug param check, remoteFile param for installwls ( for vagrant), managed server listen address, logdir fixes in copydomain & nodemanager, packdomain permissions fix, option to use copydomain without sshpass
 - 1.3.3 Option to override the Oracle operating user and provide your own domains home

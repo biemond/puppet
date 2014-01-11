@@ -44,6 +44,7 @@ define wls::bsupatch($mdwHome         = undef,
                      $group           = 'dba',
                      $downloadDir     = '/install',
                      $puppetDownloadMntPoint  = undef,
+                     $remoteFile              = true,
                     ) {
 
    case $operatingsystem {
@@ -118,7 +119,7 @@ if ( $continue ) {
    if $puppetDownloadMntPoint == undef {
      $mountPoint =  "puppet:///modules/wls/"
    } else {
-     $mountPoint =	$puppetDownloadMntPoint
+     $mountPoint =  $puppetDownloadMntPoint
    }
 
    if ! defined(File["${mdwHome}/utils/bsu/cache_dir"]) {
@@ -128,13 +129,13 @@ if ( $continue ) {
      }
    }
 
+  if $remoteFile == true {
    # the patch used by the bsu
-   if ! defined(File["${path}/${patchFile}"]) {
     file { "${path}/${patchFile}":
      source  => "${mountPoint}/${patchFile}",
      require => File ["${mdwHome}/utils/bsu/cache_dir"],
     }
-   }
+  } 
 
 
 
@@ -144,20 +145,26 @@ if ( $continue ) {
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
+      if $remoteFile == true {
         exec { "extract ${patchFile}":
           command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
           require => File ["${path}/${patchFile}"],
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
         }
-
-        exec { "exec bsu ux ${title}":
+      } else {
+        exec { "extract ${patchFile}":
+          command => "unzip -n ${puppetDownloadMntPoint}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
+          creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
+        }
+      } 
+      exec { "exec bsu ux ${title}":
           command     => "${mdwHome}/utils/bsu/bsu.sh ${bsuCommand}",
           require     => Exec["extract ${patchFile}"],
           cwd         => "${mdwHome}/utils/bsu",
           environment => ["USER=${user}",
                           "HOME=/home/${user}",
                           "LOGNAME=${user}"],
-        }
+      }
 
      }
      windows: {
@@ -166,21 +173,29 @@ if ( $continue ) {
            command    => "${checkCommand} icacls ${mdwHome}/utils/bsu/cache_dir /T /C /grant Administrator:F Administrators:F",
 #           unless     => "${checkCommand} test -e ${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
            logoutput  => false,
-           require    => File ["${path}/${patchFile}"],
+           require    => File ["${mdwHome}/utils/bsu/cache_dir"],
         }
 
+      if $remoteFile == true {
         exec { "extract ${patchFile} ${title}":
           command => "${checkCommand} unzip ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
           creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
+          require => [Exec["icacls win patchfile ${title}"],File["${path}/${patchFile}"]],
+        }
+      } else {
+        exec { "extract ${patchFile} ${title}":
+          command => "${checkCommand} unzip ${puppetDownloadMntPoint}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
+          creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
           require => Exec["icacls win patchfile ${title}"],
         }
+      }  
 
-        exec { "exec bsu win ${title}":
+      exec { "exec bsu win ${title}":
           command     => "${checkCommand} bsu.cmd ${bsuCommand}",
           logoutput   => true,
           require     => Exec["extract ${patchFile} ${title}"],
           cwd         => "${mdwHome}\\utils\\bsu",
-        }
+      }
 
      }
    }

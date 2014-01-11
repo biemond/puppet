@@ -223,15 +223,23 @@ readDomain(DOMAIN_PATH)
 
 setOption( "AppDir", APP_PATH )
 
-cd('/Servers/AdminServer')
+print('change the default machine LocalMachine with type Machine')
+cd('/')
+cd('Machine/LocalMachine')
+create('LocalMachine','NodeManager')
+cd('NodeManager/LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
+
+print 'Change AdminServer'
+cd('/Servers/'+ADMIN_SERVER)
 set('Machine','LocalMachine')
 
 
 print 'Change wc_collaboration'
-setOption( "AppDir", APP_PATH )
 
 cd('/Servers/WC_Collaboration')
 set('Machine','LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
 
 create('WC_Collaboration','ServerStart')
 cd('ServerStart/WC_Collaboration')
@@ -260,6 +268,7 @@ setOption( "AppDir", APP_PATH )
 
 cd('/Servers/WC_Portlet')
 set('Machine','LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
 
 create('WC_Portlet','ServerStart')
 cd('ServerStart/WC_Portlet')
@@ -289,6 +298,7 @@ setOption( "AppDir", APP_PATH )
 
 cd('/Servers/WC_Spaces')
 set('Machine','LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
 
 create('WC_Spaces','ServerStart')
 cd('ServerStart/WC_Spaces')

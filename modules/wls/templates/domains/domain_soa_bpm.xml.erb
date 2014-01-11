@@ -218,10 +218,24 @@ closeDomain();
 
 readDomain(DOMAIN_PATH)
 
+print('change the default machine LocalMachine with type Machine')
+cd('/')
+cd('Machine/LocalMachine')
+create('LocalMachine','NodeManager')
+cd('NodeManager/LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
+
+print 'Change AdminServer'
+cd('/Servers/'+ADMIN_SERVER)
+set('Machine','LocalMachine')
+
+
 print 'Change soa_server1'
 setOption( "AppDir", APP_PATH )
 cd('/Servers/soa_server1')
 set('Machine','LocalMachine')
+# set listen adress on server
+set('ListenAddress','<%= @adminListenAdr %>')
 
 create('soa_server1','ServerStart')
 cd('ServerStart/soa_server1')
@@ -249,6 +263,8 @@ if BAM_ENABLED == true:
   print 'Change bam_server1'
   cd('/Servers/bam_server1')
   set('Machine','LocalMachine')
+  # set listen adress on server
+  set('ListenAddress','<%= @adminListenAdr %>')
   
   create('bam_server1','ServerStart')
   cd('ServerStart/bam_server1')
@@ -310,9 +326,6 @@ create('myJdbcConnectionPoolParams','JDBCConnectionPoolParams')
 cd('JDBCConnectionPoolParams/NO_NAME_0')
 set('TestTableName','SQL SELECT 1 FROM DUAL')
 
-
-
-
 dumpStack();
 updateDomain()
 closeDomain()
@@ -321,17 +334,6 @@ closeDomain()
 createBootPropertiesFile(DOMAIN_PATH+'/servers/soa_server1/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
 if BAM_ENABLED == true:
   createBootPropertiesFile(DOMAIN_PATH+'/servers/bam_server1/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
-
-readDomain(DOMAIN_PATH)
-
-setOption( "AppDir", APP_PATH )
-
-cd('/Servers/AdminServer')
-set('Machine','LocalMachine')
-
-dumpStack();
-updateDomain()
-closeDomain()
 
 print('Exiting...')
 exit()

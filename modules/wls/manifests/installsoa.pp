@@ -48,6 +48,7 @@ define wls::installsoa($mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install',
+                       $remoteFile      = true,
                        $puppetDownloadMntPoint  = undef,
                     ) {
 
@@ -132,7 +133,7 @@ if ( $continue ) {
    if $puppetDownloadMntPoint == undef {
      $mountPoint =  "puppet:///modules/wls/"
    } else {
-     $mountPoint =	$puppetDownloadMntPoint
+     $mountPoint =  $puppetDownloadMntPoint
    }
 
    wls::utils::orainst{'create soa oraInst':
@@ -150,72 +151,87 @@ if ( $continue ) {
      }
 #   }
 
-   # soa file 1 installer zip
-   if ! defined(File["${path}/${soaFile1}"]) {
-    file { "${path}/${soaFile1}":
-     source  => "${mountPoint}/${soaFile1}",
-     require => File ["${path}/${title}silent_soa.xml"],
-    }
-   }
+  # for performance reasons, download and install or just install it
+  if $remoteFile == true {
 
-   # soa file 2 installer zip
-   if ! defined(File["${path}/${soaFile2}"]) {
-    file { "${path}/${soaFile2}":
-     source  => "${mountPoint}/${soaFile2}",
-     require => [File ["${path}/${title}silent_soa.xml"],File["${path}/${soaFile1}"]],
-    }
-   }
+     # soa file 1 installer zip
+     if ! defined(File["${path}/${soaFile1}"]) {
+      file { "${path}/${soaFile1}":
+       source  => "${mountPoint}/${soaFile1}",
+       require => File ["${path}/${title}silent_soa.xml"],
+      }
+     }
 
+     # soa file 2 installer zip
+     if ! defined(File["${path}/${soaFile2}"]) {
+      file { "${path}/${soaFile2}":
+       source  => "${mountPoint}/${soaFile2}",
+       require => [File ["${path}/${title}silent_soa.xml"],File["${path}/${soaFile1}"]],
+      }
+     }
+  }
    $command  = "-silent -response ${path}/${title}silent_soa.xml -waitforcompletion "
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
-
-        if ! defined(Exec["extract ${soaFile1}"]) {
+          # for performance reasons, download and install or just install it
+      if $remoteFile == true {
          exec { "extract ${soaFile1}":
           command => "unzip -o ${path}/${soaFile1} -d ${path}/soa",
           creates => "${path}/soa/Disk1",
           require => [File ["${path}/${soaFile2}"],File ["${path}/${soaFile1}"]],
          }
-        }
-
-        if ! defined(Exec["extract ${soaFile2}"]) {
          exec { "extract ${soaFile2}":
           command => "unzip -o ${path}/${soaFile2} -d ${path}/soa",
           creates => "${path}/soa/Disk5",
           require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
          }
-        }
-
-        exec { "install soa ${title}":
+      } else {
+         exec { "extract ${soaFile1}":
+          command => "unzip -o ${puppetDownloadMntPoint}/${soaFile1} -d ${path}/soa",
+          creates => "${path}/soa/Disk1",
+         }
+         exec { "extract ${soaFile2}":
+          command => "unzip -o ${puppetDownloadMntPoint}/${soaFile2} -d ${path}/soa",
+          creates => "${path}/soa/Disk5",
+          require => Exec["extract ${soaFile1}"],
+         }
+      }
+      exec { "install soa ${title}":
           command     => "${path}/soa/Disk1/install/${soaInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_soa.xml"],Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
           creates     => $soaOracleHome,
           timeout     => 0,
-        }
+      }
      }
      Solaris: {
-
-        if ! defined(Exec["extract ${soaFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${soaFile1}":
           command => "unzip ${path}/${soaFile1} -d ${path}/soa",
           creates => "${path}/soa/Disk1",
           require => [File ["${path}/${soaFile2}"],File ["${path}/${soaFile1}"]],
          }
-        }
-
-        if ! defined(Exec["extract ${soaFile2}"]) {
          exec { "extract ${soaFile2}":
           command => "unzip ${path}/${soaFile2} -d ${path}/soa",
           creates => "${path}/soa/Disk5",
           require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
          }
-        }
+      } else {
+         exec { "extract ${soaFile1}":
+          command => "unzip ${puppetDownloadMntPoint}/${soaFile1} -d ${path}/soa",
+          creates => "${path}/soa/Disk1",
+         }
+         exec { "extract ${soaFile2}":
+          command => "unzip ${puppetDownloadMntPoint}/${soaFile2} -d ${path}/soa",
+          creates => "${path}/soa/Disk5",
+          require => Exec["extract ${soaFile1}"],
+         }
+      }
 
-        exec { "add -d64 oraparam.ini soa":
+      exec { "add -d64 oraparam.ini soa":
           command => "sed -e's/JRE_MEMORY_OPTIONS=\" -Xverify:none\"/JRE_MEMORY_OPTIONS=\"-d64 -Xverify:none\"/g' ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini > /tmp/soa.tmp && mv /tmp/soa.tmp ${path}/soa/Disk1/install/${soaInstallDir}/oraparam.ini",
           require => [Exec["extract ${soaFile1}"],Exec["extract ${soaFile2}"]],
-        }
+      }
 
 
         exec { "install soa ${title}":
@@ -227,22 +243,29 @@ if ( $continue ) {
      }
 
      windows: {
-
-        if ! defined(Exec["extract ${soaFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${soaFile1}":
           command => "${checkCommand} unzip ${path}/${soaFile1} -d ${path}/soa",
           require => [Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],File ["${path}/${soaFile1}"]],
           creates => "${path}/soa/Disk1",
          }
-        }
-
-        if ! defined(Exec["extract ${soaFile2}"]) {
          exec { "extract ${soaFile2}":
           command => "${checkCommand} unzip ${path}/${soaFile2} -d ${path}/soa",
           require => [Exec["extract ${soaFile1}"],File ["${path}/${soaFile2}"]],
           creates => "${path}/soa/Disk5",
          }
-        }
+      } else {
+         exec { "extract ${soaFile1}":
+          command => "${checkCommand} unzip ${puppetDownloadMntPoint}/${soaFile1} -d ${path}/soa",
+          require => Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],
+          creates => "${path}/soa/Disk1",
+         }
+         exec { "extract ${soaFile2}":
+          command => "${checkCommand} unzip ${puppetDownloadMntPoint}/${soaFile2} -d ${path}/soa",
+          require => Exec["extract ${soaFile1}"],
+          creates => "${path}/soa/Disk5",
+         }
+      }
 
         exec {"icacls soa disk ${title}":
            command    => "${checkCommand} icacls ${path}\\soa\\* /T /C /grant Administrator:F Administrators:F",

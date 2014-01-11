@@ -37,6 +37,7 @@ define wls::opatch(  $oracleProductHome = undef,
                      $group             = 'dba',
                      $downloadDir       = '/install',
                      $puppetDownloadMntPoint  = undef,
+                     $remoteFile              = true,
                     ) {
 
    case $operatingsystem {
@@ -90,7 +91,7 @@ define wls::opatch(  $oracleProductHome = undef,
         $oracleHomeWin    = slash_replace($oracleProductHome)
 
         Exec { path      => $execPath,
-        	     logoutput => true,
+               logoutput => true,
              }
         File { ensure  => present,
                mode    => 0555,
@@ -118,17 +119,16 @@ if ( $continue ) {
    if $puppetDownloadMntPoint == undef {
      $mountPoint =  "puppet:///modules/wls/"
    } else {
-     $mountPoint =	$puppetDownloadMntPoint
+     $mountPoint =  $puppetDownloadMntPoint
    }
 
 
    # the patch used by the opatch
-   if ! defined(File["${path}/${patchFile}"]) {
+  if $remoteFile == true {
     file { "${path}/${patchFile}":
      source  => "${mountPoint}/${patchFile}",
     }
-   }
-
+  }
 
    # opatch apply -silent -jdk %JDK_HOME% -jre %JDK_HOME%\jre  -oh C:\oracle\MiddlewarePS5\Oracle_OSB1 C:\temp\14389126
    $oPatchCommand  = "opatch apply -silent -jre"
@@ -136,32 +136,46 @@ if ( $continue ) {
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
+      if $remoteFile == true {
         exec { "extract opatch ${patchFile} ${title}":
           command => "unzip -n ${path}/${patchFile} -d ${path}",
           require => File ["${path}/${patchFile}"],
           creates => "${path}/${patchId}",
         }
-
-        exec { "exec opatch ux ${title}":
+      } else {
+        exec { "extract opatch ${patchFile} ${title}":
+          command => "unzip -n ${puppetDownloadMntPoint}/${patchFile} -d ${path}",
+          creates => "${path}/${patchId}",
+        }
+      }
+      exec { "exec opatch ux ${title}":
           command     => "${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleProductHome} ${path}/${patchId}",
           require     => Exec["extract opatch ${patchFile} ${title}"],
-        }
+      }
 
      }
      windows: {
 
+      if $remoteFile == true {
         exec { "extract opatch ${patchFile} ${title}":
           command => "jar.exe xf ${path}/${patchFile}",
           creates => "${path}/${patchId}",
           cwd     => $path,
           require => File ["${path}/${patchFile}"],
         }
-        #notify {"wls::opatch win exec ${title} ${checkCommand} ${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}/${patchId}":}
-        exec { "exec opatch win ${title}":
+      } else {
+        exec { "extract opatch ${patchFile} ${title}":
+          command => "jar.exe xf ${puppetDownloadMntPoint}/${patchFile}",
+          creates => "${path}/${patchId}",
+          cwd     => $path,
+        }
+      }  
+      #notify {"wls::opatch win exec ${title} ${checkCommand} ${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}/${patchId}":}
+      exec { "exec opatch win ${title}":
           command     => "${checkCommand} ${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}\\jre -oh ${oracleHomeWin} ${path}/${patchId}",
           logoutput   => true,
           require     => Exec["extract opatch ${patchFile} ${title}"],
-        }
+      }
 
      }
    }

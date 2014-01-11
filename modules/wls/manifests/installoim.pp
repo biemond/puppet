@@ -50,6 +50,7 @@ define wls::installoim($mdwHome                 = undef,
                        $group                   = 'dba',
                        $downloadDir             = '/install',
                        $puppetDownloadMntPoint  = undef,
+                       $remoteFile              = true,
                     ) {
 
    case $operatingsystem {
@@ -133,7 +134,7 @@ if ( $continue ) {
    if $puppetDownloadMntPoint == undef {
      $mountPoint =  "puppet:///modules/wls/"
    } else {
-     $mountPoint =	$puppetDownloadMntPoint
+     $mountPoint =  $puppetDownloadMntPoint
    }
 
    wls::utils::orainst{'create oim oraInst':
@@ -149,113 +150,131 @@ if ( $continue ) {
        require => Wls::Utils::Orainst ['create oim oraInst'],
    }
 
+  if $remoteFile == true {
    # oim file 1 installer zip
-   if ! defined(File["${path}/${oimFile1}"]) {
     file { "${path}/${oimFile1}":
      source  => "${mountPoint}/${oimFile1}",
      require => File ["${path}/${title}silent_oim.xml"],
     }
-   }
 
    # oim file 2 installer zip
-   if ! defined(File["${path}/${oimFile2}"]) {
     file { "${path}/${oimFile2}":
      source  => "${mountPoint}/${oimFile2}",
      require => [File ["${path}/${title}silent_oim.xml"],File["${path}/${oimFile1}"]],
     }
-   }
+  }
 
-   $command  = "-silent -response ${path}/${title}silent_oim.xml -waitforcompletion "
+  $command  = "-silent -response ${path}/${title}silent_oim.xml -waitforcompletion "
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        if ! defined(Exec["extract ${oimFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${oimFile1}":
           command => "unzip -o ${path}/${oimFile1} -d ${path}/oim",
           creates => "${path}/oim/Disk1",
           require => [File ["${path}/${oimFile2}"],File ["${path}/${oimFile1}"]],
          }
-        }
-
-        if ! defined(Exec["extract ${oimFile2}"]) {
          exec { "extract ${oimFile2}":
           command => "unzip -o ${path}/${oimFile2} -d ${path}/oim",
           creates => "${path}/oim/Disk3",
           require => [File ["${path}/${oimFile2}"],Exec["extract ${oimFile1}"]],
          }
-        }
-
-        exec { "install oim ${title}":
+      } else {
+         exec { "extract ${oimFile1}":
+          command => "unzip -o ${puppetDownloadMntPoint}/${oimFile1} -d ${path}/oim",
+          creates => "${path}/oim/Disk1",
+         }
+         exec { "extract ${oimFile2}":
+          command => "unzip -o ${puppetDownloadMntPoint}/${oimFile2} -d ${path}/oim",
+          creates => "${path}/oim/Disk3",
+          require => Exec["extract ${oimFile1}"],
+         }
+      }
+      exec { "install oim ${title}":
           command     => "${path}/oim/Disk1/install/${oimInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_oim.xml"],Exec["extract ${oimFile1}"],Exec["extract ${oimFile2}"]],
           creates     => $oimOracleHome,
           timeout     => 0,
-        }
+      }
      }
      Solaris: {
 
-        if ! defined(Exec["extract ${oimFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${oimFile1}":
           command => "unzip ${path}/${oimFile1} -d ${path}/oim",
           creates => "${path}/oim/Disk1",
           require => [File ["${path}/${oimFile2}"],File ["${path}/${oimFile1}"]],
          }
-        }
-
-        if ! defined(Exec["extract ${oimFile2}"]) {
          exec { "extract ${oimFile2}":
           command => "unzip ${path}/${oimFile2} -d ${path}/oim",
           creates => "${path}/oim/Disk3",
           require => [File ["${path}/${oimFile2}"],Exec["extract ${oimFile1}"]],
          }
-        }
-
-        exec { "add -d64 oraparam.ini oim":
+      } else {
+         exec { "extract ${oimFile1}":
+          command => "unzip ${puppetDownloadMntPoint}/${oimFile1} -d ${path}/oim",
+          creates => "${path}/oim/Disk1",
+         }
+         exec { "extract ${oimFile2}":
+          command => "unzip ${puppetDownloadMntPoint}/${oimFile2} -d ${path}/oim",
+          creates => "${path}/oim/Disk3",
+          require => Exec["extract ${oimFile1}"],
+         }
+      }
+     
+      exec { "add -d64 oraparam.ini oim":
           command => "sed -e's/JRE_MEMORY_OPTIONS=\" -Xverify:none\"/JRE_MEMORY_OPTIONS=\"-d64 -Xverify:none\"/g' ${path}/oim/Disk1/install/${oimInstallDir}/oraparam.ini > /tmp/oim.tmp && mv /tmp/oim.tmp ${path}/oim/Disk1/install/${oimInstallDir}/oraparam.ini",
           require => [Exec["extract ${oimFile1}"],Exec["extract ${oimFile2}"]],
-        }
+      }
 
-
-        exec { "install oim ${title}":
+      exec { "install oim ${title}":
           command     => "${path}/oim/Disk1/install/${oimInstallDir}/runInstaller ${command} -invPtrLoc /var/opt/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
           require     => [File["${path}/${title}silent_oim.xml"],Exec["extract ${oimFile1}"],Exec["extract ${oimFile2}"],Exec["add -d64 oraparam.ini oim"]],
           creates     => $oimOracleHome,
           timeout     => 0,
-        }
+      }
      }
 
      windows: {
 
-        if ! defined(Exec["extract ${oimFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${oimFile1}":
           command => "${checkCommand} unzip ${path}/${oimFile1} -d ${path}/oim",
           require => [Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],File ["${path}/${oimFile1}"]],
           creates => "${path}/oim/Disk1",
          }
-        }
-
-        if ! defined(Exec["extract ${oimFile2}"]) {
          exec { "extract ${oimFile2}":
           command => "${checkCommand} unzip ${path}/${oimFile2} -d ${path}/oim",
           require => [Exec["extract ${oimFile1}"],File ["${path}/${oimFile2}"]],
           creates => "${path}/oim/Disk3",
          }
-        }
+      } else {
+         exec { "extract ${oimFile1}":
+          command => "${checkCommand} unzip ${puppetDownloadMntPoint}/${oimFile1} -d ${path}/oim",
+          require => [Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"]],
+          creates => "${path}/oim/Disk1",
+         }
+         exec { "extract ${oimFile2}":
+          command => "${checkCommand} unzip ${puppetDownloadMntPoint}/${oimFile2} -d ${path}/oim",
+          require => [Exec["extract ${oimFile1}"]],
+          creates => "${path}/oim/Disk3",
+         }
+      }
 
-        exec {"icacls oim disk ${title}":
+      exec {"icacls oim disk ${title}":
            command    => "${checkCommand} icacls ${path}\\oim\\* /T /C /grant Administrator:F Administrators:F",
            logoutput  => false,
            require    => [Exec["extract ${oimFile2}"],Exec["extract ${oimFile1}"]],
-        }
+      }
 
-        exec { "install oim ${title}":
+      exec { "install oim ${title}":
           command     => "${path}\\oim\\Disk1\\setup.exe ${command} -ignoreSysPrereqs -jreLoc C:\\oracle\\${fullJDKName}",
           logoutput   => true,
           require     => [Exec["icacls oim disk ${title}"],File["${path}/${title}silent_oim.xml"],Exec["extract ${oimFile2}"],Exec["extract ${oimFile1}"]],
           creates     => $oimOracleHome,
           timeout     => 0,
-        }
+      }
 
      }
    }
