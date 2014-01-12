@@ -19,6 +19,9 @@ https://github.com/biemond/biemond-wls-vagrant-12.1.2
 Reference implementation, the vagrant test case for full working WebLogic SOA Suite, OIM and OAM example  
 https://github.com/biemond/biemond-wls-vagrant-oim  
 
+Reference implementation, the vagrant test case for full working WebLogic SOA Suite, OSB example  
+https://github.com/biemond/biemond-wls-vagrant-soa-osb  
+
 
 Version updates
 ---------------

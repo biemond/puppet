@@ -49,6 +49,7 @@ define wls::installosb($mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install',
+                       $remoteFile      = true,
                        $puppetDownloadMntPoint  = undef,
                     ) {
 
@@ -134,7 +135,7 @@ if ( $continue ) {
    if $puppetDownloadMntPoint == undef {
      $mountPoint =  "puppet:///modules/wls/"
    } else {
-     $mountPoint =	$puppetDownloadMntPoint
+     $mountPoint =  $puppetDownloadMntPoint
    }
 
 
@@ -159,43 +160,56 @@ if ( $continue ) {
 #   }
 
    # weblogic generic installer zip
-   if ! defined(File["${path}/${osbFile}"]) {
+  if $remoteFile == true {
     file { "${path}/${osbFile}":
      source  => "${mountPoint}/${osbFile}",
      require => File ["${path}/${title}silent_osb.xml"],
     }
-   }
-
+  } 
 
    $command  = "-silent -response ${path}/${title}silent_osb.xml -waitforcompletion "
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        if ! defined(Exec["extract ${osbFile}"]) {
+        if $remoteFile == true {
          exec { "extract ${osbFile}":
           command => "unzip ${path}/${osbFile} -d ${path}/osb",
-          require => [File ["${path}/${osbFile}"],File ["${path}/${title}silent_osb.xml"]],
+          require => [File ["${path}/${osbFile}"],
+                      File ["${path}/${title}silent_osb.xml"]],
           creates => "${path}/osb",
          }
-        }
+        } else {
+         exec { "extract ${osbFile}":
+          command => "unzip ${mountPoint}/${osbFile} -d ${path}/osb",
+          require => File ["${path}/${title}silent_osb.xml"],
+          creates => "${path}/osb",
+         }
+       }
 
         exec { "install osb ${title}":
           command     => "${path}/osb/Disk1/install/${osbInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
-          require     => [File ["${path}/${title}silent_osb.xml"],Exec["extract ${osbFile}"]],
+          require     => [File ["${path}/${title}silent_osb.xml"],
+                          Exec["extract ${osbFile}"]],
           creates     => $osbOracleHome,
           timeout     => 0,
         }
      }
      Solaris: {
 
-        if ! defined(Exec["extract ${osbFile}"]) {
+        if $remoteFile == true {
          exec { "extract ${osbFile}":
           command => "unzip ${path}/${osbFile} -d ${path}/osb",
           require => [File ["${path}/${osbFile}"],File ["${path}/${title}silent_osb.xml"]],
           creates => "${path}/osb",
          }
-        }
+        } else {
+         exec { "extract ${osbFile}":
+          command => "unzip ${mountPoint}/${osbFile} -d ${path}/osb",
+          require => File ["${path}/${title}silent_osb.xml"],
+          creates => "${path}/osb",
+         }
+       }
 
         exec { "add -d64 oraparam.ini osb":
           command => "sed -e's/\\[Oracle\\]/\\[Oracle\\]\\nJRE_MEMORY_OPTIONS=\"-d64\"/g' ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini > /tmp/osb.tmp && mv /tmp/osb.tmp ${path}/osb/Disk1/install/${osbInstallDir}/oraparam.ini",
@@ -230,14 +244,20 @@ if ( $continue ) {
      windows: {
 
 
-        if ! defined(Exec["extract ${osbFile}"]) {
+        if $remoteFile == true {
          exec { "extract ${osbFile}":
           command => "${checkCommand} unzip ${path}/${osbFile} -d ${path}/osb",
           require => File ["${path}/${osbFile}"],
           creates => "${path}/osb/Disk1",
           cwd     => $path,
          }
-        }
+        } else {
+         exec { "extract ${osbFile}":
+          command => "${checkCommand} unzip ${mountPoint}/${osbFile} -d ${path}/osb",
+          creates => "${path}/osb/Disk1",
+          cwd     => $path,
+         }
+       }
 
         exec {"icacls osb disk ${title}":
            command    => "${checkCommand} icacls ${path}\\osb\\* /T /C /grant Administrator:F Administrators:F",
