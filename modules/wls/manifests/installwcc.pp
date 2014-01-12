@@ -48,6 +48,7 @@ define wls::installwcc($mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install',
+                       $remoteFile      = true,
                        $puppetDownloadMntPoint  = undef,
                     ) {
 
@@ -151,15 +152,11 @@ if ( $continue ) {
 #   }
 
    # wcc file 1 installer zip
-   if ! defined(File["${path}/${wccFile1}"]) {
+  if $remoteFile == true {
     file { "${path}/${wccFile1}":
      source  => "${mountPoint}/${wccFile1}",
      require => File ["${path}/${title}silent_wcc.xml"],
     }
-   }
-
-   # wcc file 2 installer zip
-   if ! defined(File["${path}/${wccFile2}"]) {
     file { "${path}/${wccFile2}":
      source  => "${mountPoint}/${wccFile2}",
      require => [File ["${path}/${title}silent_wcc.xml"],File["${path}/${wccFile1}"]],
@@ -171,21 +168,29 @@ if ( $continue ) {
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        if ! defined(Exec["extract ${wccFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${wccFile1}":
           command => "unzip -o ${path}/${wccFile1} -d ${path}/wcc",
           creates => "${path}/wcc/Disk1",
           require => [File ["${path}/${wccFile2}"],File ["${path}/${wccFile1}"]],
          }
-        }
-
-        if ! defined(Exec["extract ${wccFile2}"]) {
          exec { "extract ${wccFile2}":
           command => "unzip -o ${path}/${wccFile2} -d ${path}/wcc",
           creates => "${path}/wcc/Disk2",
           require => [File ["${path}/${wccFile2}"],Exec["extract ${wccFile1}"]],
          }
-        }
+      } else {
+         exec { "extract ${wccFile1}":
+          command => "unzip -o ${mountPoint}/${wccFile1} -d ${path}/wcc",
+          creates => "${path}/wcc/Disk1",
+         }
+         exec { "extract ${wccFile2}":
+          command => "unzip -o ${mountPoint}/${wccFile2} -d ${path}/wcc",
+          creates => "${path}/wcc/Disk2",
+          require => Exec["extract ${wccFile1}"],
+         }
+
+      }
 
         exec { "install wcc ${title}":
           command     => "${path}/wcc/Disk1/install/${wccInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
@@ -197,21 +202,29 @@ if ( $continue ) {
      }
      Solaris: {
 
-        if ! defined(Exec["extract ${wccFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${wccFile1}":
           command => "unzip ${path}/${wccFile1} -d ${path}/wcc",
           creates => "${path}/wcc/Disk1",
           require => [File ["${path}/${wccFile2}"],File ["${path}/${wccFile1}"]],
          }
-        }
-
-        if ! defined(Exec["extract ${wccFile2}"]) {
          exec { "extract ${wccFile2}":
           command => "unzip -o ${path}/${wccFile2} -d ${path}/wcc",
           creates => "${path}/wcc/Disk2",
           require => [File ["${path}/${wccFile2}"],Exec["extract ${wccFile1}"]],
          }
-        }
+      } else {
+         exec { "extract ${wccFile1}":
+          command => "unzip ${mountPoint}/${wccFile1} -d ${path}/wcc",
+          creates => "${path}/wcc/Disk1",
+         }
+         exec { "extract ${wccFile2}":
+          command => "unzip -o ${mountPoint}/${wccFile2} -d ${path}/wcc",
+          creates => "${path}/wcc/Disk2",
+          require => Exec["extract ${wccFile1}"],
+         }
+
+      }
 
         exec { "add -d64 oraparam.ini wcc":
           command => "sed -e's/JRE_MEMORY_OPTIONS=\" -Xverify:none\"/JRE_MEMORY_OPTIONS=\"-d64 -Xverify:none\"/g' ${path}/wcc/Disk1/install/${wccInstallDir}/oraparam.ini > /tmp/wcc.tmp && mv /tmp/wcc.tmp ${path}/wcc/Disk1/install/${wccInstallDir}/oraparam.ini",
@@ -229,22 +242,29 @@ if ( $continue ) {
 
      windows: {
 
-
-        if ! defined(Exec["extract ${wccFile1}"]) {
+      if $remoteFile == true {
          exec { "extract ${wccFile1}":
           command => "${checkCommand} unzip ${path}/${wccFile1} -d ${path}/wcc",
           require => [Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],File ["${path}/${wccFile1}"]],
           creates => "${path}/wcc/Disk1",
          }
-        }
-
-        if ! defined(Exec["extract ${wccFile2}"]) {
          exec { "extract ${wccFile2}":
           command => "${checkCommand} unzip -o ${path}/${wccFile2} -d ${path}/wcc",
           require => [Exec["extract ${wccFile1}"],File ["${path}/${wccFile2}"]],
           creates => "${path}/wcc/Disk2",
          }
-        }
+      } else {
+         exec { "extract ${wccFile1}":
+          command => "${checkCommand} unzip ${mountPoint}/${wccFile1} -d ${path}/wcc",
+          require => Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],
+          creates => "${path}/wcc/Disk1",
+         }
+         exec { "extract ${wccFile2}":
+          command => "${checkCommand} unzip -o ${mountPoint}/${wccFile2} -d ${path}/wcc",
+          require => Exec["extract ${wccFile1}"],
+          creates => "${path}/wcc/Disk2",
+         }
+       }
 
 
         exec {"icacls wcc disk ${title}":

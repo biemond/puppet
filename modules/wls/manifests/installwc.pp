@@ -38,6 +38,7 @@ define wls::installwc( $mdwHome         = undef,
                        $user            = 'oracle',
                        $group           = 'dba',
                        $downloadDir     = '/install',
+                       $remoteFile      = true,
                        $puppetDownloadMntPoint  = undef,
                     ) {
 
@@ -142,12 +143,12 @@ if ( $continue ) {
 #   }
 
    # weblogic generic installer zip
-   if ! defined(File["${path}/${wcFile}"]) {
+  if $remoteFile == true {
     file { "${path}/${wcFile}":
      source  => "${mountPoint}/${wcFile}",
      require => File ["${path}/${title}silent_wc.xml"],
     }
-   }
+  }
 
 
    $command  = "-silent -response ${path}/${title}silent_wc.xml -waitforcompletion "
@@ -155,13 +156,19 @@ if ( $continue ) {
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        if ! defined(Exec["extract ${wcFile}"]) {
+      if $remoteFile == true {
          exec { "extract ${wcFile}":
           command => "unzip ${path}/${wcFile} -d ${path}/wc",
           require => [File ["${path}/${wcFile}"],File ["${path}/${title}silent_wc.xml"]],
           creates => "${path}/wc",
          }
-        }
+      } else {
+         exec { "extract ${wcFile}":
+          command => "unzip ${mountPoint}/${wcFile} -d ${path}/wc",
+          require => File ["${path}/${title}silent_wc.xml"],
+          creates => "${path}/wc",
+         }
+      }
 
         exec { "install wc ${title}":
           command     => "${path}/wc/Disk1/install/${wcInstallDir}/runInstaller ${command} -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs -jreLoc ${jreLocDir}",
@@ -173,13 +180,19 @@ if ( $continue ) {
      }
      Solaris: {
 
-        if ! defined(Exec["extract ${wcFile}"]) {
+      if $remoteFile == true {
          exec { "extract ${wcFile}":
           command => "unzip ${path}/${wcFile} -d ${path}/wc",
           require => [File ["${path}/${wcFile}"],File ["${path}/${title}silent_wc.xml"]],
           creates => "${path}/wc",
          }
-        }
+      } else {
+        exec { "extract ${wcFile}":
+          command => "unzip ${mountPoint}/${wcFile} -d ${path}/wc",
+          require => File ["${path}/${title}silent_wc.xml"],
+          creates => "${path}/wc",
+         }
+      }
 
         exec { "add -d64 oraparam.ini wc":
           command => "sed -e's/JRE_MEMORY_OPTIONS=\" -Xverify:none\"/JRE_MEMORY_OPTIONS=\"-d64 -Xverify:none\"/g' ${path}/wc/Disk1/install/${wcInstallDir}/oraparam.ini > /tmp/wc.tmp && mv /tmp/wc.tmp ${path}/wc/Disk1/install/${wcInstallDir}/oraparam.ini",
@@ -198,14 +211,20 @@ if ( $continue ) {
 
      windows: {
 
-        if ! defined(Exec["extract ${wcFile}"]) {
+      if $remoteFile == true {
          exec { "extract ${wcFile}":
           command => "${checkCommand} unzip ${path}/${wcFile} -d ${path}/wc",
           require => File ["${path}/${wcFile}"],
           creates => "${path}/wc/Disk1",
           cwd     => $path,
          }
-        }
+      } else {
+         exec { "extract ${wcFile}":
+          command => "${checkCommand} unzip ${mountPoint}/${wcFile} -d ${path}/wc",
+          creates => "${path}/wc/Disk1",
+          cwd     => $path,
+         }
+       }
 
         exec {"icacls wc disk ${title}":
            command    => "${checkCommand} icacls ${path}\\wc\\* /T /C /grant Administrator:F Administrators:F",
