@@ -29,6 +29,7 @@ https://github.com/biemond/biemond-wls-vagrant-wc
 Version updates
 ---------------
 
+- 1.3.7 javaParameters param for installwls ( support for Docker -Dspace.detection=false ,thanks Jyrk )
 - 1.3.6 remoteFile param for BSU,Opatch,SOA Suite, WebCenter, WebCenter Content and OIM 
 - 1.3.5 Nodemanager fix, Added AdminServer startup properties for Nodemanager, Readme update for OIM,OAM
 - 1.3.4 Nodemanager listen address, Domain ALSBdebug param check, remoteFile param for installwls ( for vagrant), managed server listen address, logdir fixes in copydomain & nodemanager, packdomain permissions fix, option to use copydomain without sshpass

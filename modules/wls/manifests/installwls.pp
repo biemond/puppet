@@ -30,16 +30,16 @@
 #
 #
 
-define wls::installwls( $version     = undef,
-                        $fullJDKName = undef,
-                        $oracleHome  = undef,
-                        $mdwHome     = undef,
-                        $createUser  = true,
-                        $user        = 'oracle',
-                        $group       = 'dba',
-                        $downloadDir = '/install',
-                        $remoteFile  = true,
-                        $javaParameters = '',
+define wls::installwls( $version                 = undef,
+                        $fullJDKName             = undef,
+                        $oracleHome              = undef,
+                        $mdwHome                 = undef,
+                        $createUser              = true,
+                        $user                    = 'oracle',
+                        $group                   = 'dba',
+                        $downloadDir             = '/install',
+                        $remoteFile              = true,
+                        $javaParameters          = '', # '-Dspace.detection=false'
                         $puppetDownloadMntPoint  = undef,
                       ) {
 
