@@ -486,14 +486,16 @@ if ( $continue ) {
 
         case $operatingsystem {
            CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
-              exec { "setDebugFlagOnFalse ${domain} ${title}":
-                command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
-                onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
-                require => Exec["execwlst ${domain} ${title}"],
-              }
               if ( $wlsTemplate == 'osb' or
                    $wlsTemplate == 'osb_soa' or
                    $wlsTemplate == 'osb_soa_bpm'){
+
+	               exec { "setDebugFlagOnFalse ${domain} ${title}":
+	                 command => "sed -i -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
+	                 onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
+	                 require => Exec["execwlst ${domain} ${title}"],
+ 	               }
+
                  exec { "setOSBDebugFlagOnFalse ${domain} ${title}":
                    command => "sed -i -e's/ALSB_DEBUG_FLAG=\"true\"/ALSB_DEBUG_FLAG=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh",
                    onlyif  => "/bin/grep ALSB_DEBUG_FLAG=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
@@ -506,14 +508,16 @@ if ( $continue ) {
               }
            }
            Solaris: {
-             exec { "setDebugFlagOnFalse ${domain} ${title}":
-               command => "sed -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh > /tmp/test.tmp && mv /tmp/test.tmp ${domainPath}/${domain}/bin/setDomainEnv.sh",
-               onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
-               require => Exec["execwlst ${domain} ${title}"],
-             }
 				     if ( $wlsTemplate == 'osb' or
 				          $wlsTemplate == 'osb_soa' or
 				          $wlsTemplate == 'osb_soa_bpm'){
+
+		             exec { "setDebugFlagOnFalse ${domain} ${title}":
+		               command => "sed -e's/debugFlag=\"true\"/debugFlag=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh > /tmp/test.tmp && mv /tmp/test.tmp ${domainPath}/${domain}/bin/setDomainEnv.sh",
+		               onlyif  => "/bin/grep debugFlag=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
+		               require => Exec["execwlst ${domain} ${title}"],
+		             }
+
 		             exec { "setOSBDebugFlagOnFalse ${domain} ${title}":
 		               command => "sed -e's/ALSB_DEBUG_FLAG=\"true\"/ALSB_DEBUG_FLAG=\"false\"/g' ${domainPath}/${domain}/bin/setDomainEnv.sh > /tmp/test2.tmp && mv /tmp/test2.tmp ${domainPath}/${domain}/bin/setDomainEnv.sh",
 		               onlyif  => "/bin/grep ALSB_DEBUG_FLAG=\"true\" ${domainPath}/${domain}/bin/setDomainEnv.sh | /usr/bin/wc -l",
