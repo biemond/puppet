@@ -5,7 +5,7 @@ password   = '<%= @password %>'
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
                                 
-#fileStoreName, target, targetType
+#fileStoreName, fileStoreDirectory, target, targetType
 <% @params.each do |param| -%>   
 <%= param %>                    
 <% end -%>                      
@@ -25,6 +25,7 @@ try:
     cd('/')
     cmo.createFileStore(fileStoreName)
     cd('/FileStores/'+fileStoreName)
+    cmo.setDirectory(fileStoreDirectory)
     set('Targets', jarray.array([ObjectName('com.bea:Name='+target+',Type='+targetType)], ObjectName))
     save()
     activate()          

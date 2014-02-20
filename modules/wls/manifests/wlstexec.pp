@@ -97,12 +97,18 @@ define wls::wlstexec ($version        = '1111',
      }
    }
 
-   # use userConfigStore for the connect
-	 if $password == undef {
-     $useStoreConfig = true
-   } else {
-     $useStoreConfig = false
-   }
+  # use userConfigStore for the connect
+  if $password == undef {    
+    $useStoreConfig = true
+  } else {
+    # override if config and key files are provided 
+    if($userConfigFile != undef and $userKeyFile != undef) {
+      $useStoreConfig = true
+    }
+    else {
+       $useStoreConfig = false
+    }
+  }
 
 
 if ( $continue ) {

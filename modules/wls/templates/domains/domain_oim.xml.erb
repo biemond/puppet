@@ -14,10 +14,31 @@ ADMIN_PASSWORD='<%= @password %>'
 
 JAVA_HOME='<%= @JAVA_HOME %>'
 
+
+<% if @java_arguments["ADM"] %>
+ADM_JAVA_ARGUMENTS='<%= @java_arguments["ADM"] %>'
+<% else %>
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
-OAM_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @oamNodeMgrLogDir %>/oam_server1.out -Dweblogic.Stderr=<%= @oamNodeMgrLogDir %>/oam_server1_err.out'
+<% end %>
+
+<% if @java_arguments["SOA"] %>
+SOA_JAVA_ARGUMENTS='<%= @java_arguments["SOA"] %>'
+<% else %>
 SOA_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @soaNodeMgrLogDir %>/soa_server1.out -Dweblogic.Stderr=<%= @soaNodeMgrLogDir %>/soa_server1_err.out'
+<% end %>
+
+<% if @java_arguments["OAM"] %>
+OAM_JAVA_ARGUMENTS='<%= @java_arguments["OAM"] %>'
+<% else %>
+OAM_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @oamNodeMgrLogDir %>/oam_server1.out -Dweblogic.Stderr=<%= @oamNodeMgrLogDir %>/oam_server1_err.out'
+<% end %>
+
+<% if @java_arguments["OIM"] %>
+OIM_JAVA_ARGUMENTS='<%= @java_arguments["OIM"] %>'
+<% else %>
 OIM_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @oimNodeMgrLogDir %>/oim_server1.out -Dweblogic.Stderr=<%= @oimNodeMgrLogDir %>/oim_server1_err.out'
+<% end %>
+
 
 
 OIM_REPOS_DBURL='<%= @reposDbUrl %>'

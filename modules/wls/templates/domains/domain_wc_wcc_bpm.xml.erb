@@ -14,11 +14,35 @@ ADMIN_PASSWORD='<%= @password %>'
 
 JAVA_HOME='<%= @JAVA_HOME %>'
 
+<% if @java_arguments["ADM"] %>
+ADM_JAVA_ARGUMENTS='<%= @java_arguments["ADM"] %>'
+<% else %>
 ADM_JAVA_ARGUMENTS='-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>.out -Dweblogic.Stderr=<%= @adminNodeMgrLogDir %>/<%= @adminServerName %>_err.out'
+<% end %>
+
+<% if @java_arguments["WC_COL"] %>
+WC_COLLABORATION_JAVA_ARGUMENTS='<%= @java_arguments["WC_COL"] %>'
+<% else %>
 WC_COLLABORATION_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @wcCollaborationNodeMgrLogDir %>/wc_collaboration.out -Dweblogic.Stderr=<%= @wcCollaborationNodeMgrLogDir %>/wc_collaboration_err.out'
+<% end %>
+
+<% if @java_arguments["WC_POR"] %>
+WC_PORTLET_JAVA_ARGUMENTS='<%= @java_arguments["WC_POR"] %>'
+<% else %>
 WC_PORTLET_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @wcPortletNodeMgrLogDir %>/wc_portlet.out -Dweblogic.Stderr=<%= @wcPortletNodeMgrLogDir %>/wc_portlet_err.out'
+<% end %>
+
+<% if @java_arguments["WC_SPC"] %>
+WC_SPACES_JAVA_ARGUMENTS='<%= @java_arguments["WC_SPC"] %>'
+<% else %>
 WC_SPACES_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @wcSpacesNodeMgrLogDir %>/wc_spaces.out -Dweblogic.Stderr=<%= @wcSpacesNodeMgrLogDir %>/wc_spaces_err.out'
+<% end %>
+
+<% if @java_arguments["UCM"] %>
+UMC_JAVA_ARGUMENTS='<%= @java_arguments["UCM"] %>'
+<% else %>
 UMC_JAVA_ARGUMENTS='-XX:PermSize=512m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=<%= @umcNodeMgrLogDir %>/ucm_server1.out -Dweblogic.Stderr=<%= @umcNodeMgrLogDir %>/ucm_server1_err.out'
+<% end %>
 
 
 WC_REPOS_DBURL='<%= @reposDbUrl %>'

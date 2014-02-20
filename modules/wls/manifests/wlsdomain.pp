@@ -71,6 +71,7 @@ define wls::wlsdomain ($version         = '1111',
                        $adminListenAdr  = "localhost",
                        $adminListenPort = '7001',
                        $nodemanagerPort = '5556',
+                       $java_arguments  = {},   # java_arguments = { "ADM" => "...", "OSB" => "...", "SOA" => "...", "BAM" => "...","OAM" => "....","OIM" => "...."}
                        $wlsUser         = undef,
                        $password        = undef,
                        $user            = 'oracle',
