@@ -178,17 +178,9 @@ Standard WebLogic 10.3.6 server with a 11.1.2.1 OIM,OAM, SOA Suite domain
 -------------------------------------------------------------------------
 see example_conf_7_oim_oam_11.1.2.1.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
 
-
-![Oracle WebLogic Console](https://raw.github.com/biemond/puppet/master/modules/wls/wlsconsole.png)
-
-![Oracle Enterprise Manager Console](https://raw.github.com/biemond/puppet/master/modules/wls/em.png)
-
 WLS WebLogic Facter
 -------------------
-
 Contains WebLogic Facter which displays the following: Middleware homes, Oracle Software, BSU & OPatch patches, Domain configuration ( everything of a domain like deployments, datasource, JMS, SAF)
-
-![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/facts.png)
 
 ### My WLS module Files folder, you need to download it yourself and agree to the Oracle (Developer) License
 WebLogic 11g + patches: wls1036_generic.jar, p13573621_1036_Generic.zip, p14736139_1036_Generic.zip  
@@ -197,7 +189,6 @@ IDE: jdevstudio11117install.jar, soa-jdev-extension_11117.zip, oepe-indigo-all-i
 OSB + SOA software: ofm_osb_generic_11.1.1.7.0_disk1_1of1.zip, ofm_soa_generic_11.1.1.7.0_disk1_1of2.zip, ofm_soa_generic_11.1.1.7.0_disk1_2of2.zip    
 Webcenter software: ofm_wc_generic_11.1.1.7.0_disk1_1of1.zip, ofm_wcc_generic_11.1.1.7.0_disk1_1of2.zip, ofm_wcc_generic_11.1.1.7.0_disk1_2of2.zip  
     
-![Oracle Puppet Facts](https://raw.github.com/biemond/puppet/master/modules/wls/modulefiles.png)
     
 WebLogic settings for ulimits and kernel parameters
 ---------------------------------------------------
