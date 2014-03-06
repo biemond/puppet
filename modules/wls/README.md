@@ -8,7 +8,16 @@ created by Edwin Biemond  email biemond at gmail dot com
 
 Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux 
 
-New orawls module designed for puppet 3 and totally refactored and optimized for Hiera, see the biemond-orawls module  
+New orawls module  
+-----------------
+differences
+- designed for puppet 3
+- types & providers/ wls resource instead of wlstexec scripts like wls_machine, wls_server, wls_cluster, wls_jmsserver, wls_safagent
+- totally refactored ( less manifests, parameters have hiera defaults and better parameter names )
+- optimized for Hiera ( classes instead of defines )
+
+For more info see the biemond-orawls module
+
 
 Reference implementation, the vagrant test case for full working WebLogic 10.3.6 cluster example  
 https://github.com/biemond/biemond-wls-vagrant-10.3.6  
@@ -29,6 +38,7 @@ https://github.com/biemond/biemond-wls-vagrant-wc
 Version updates
 ---------------
 
+- 1.3.9 added a raise to all wlst scripts, plus queue/topic fix.
 - 1.3.8 Option to override the server arguments in the domain templates, small bugfixes.
 - 1.3.7 javaParameters param for installwls ( support for Docker -Dspace.detection=false ,thanks Jyrk )
 - 1.3.6 remoteFile param for BSU,Opatch,SOA Suite, WebCenter, WebCenter Content and OIM 
