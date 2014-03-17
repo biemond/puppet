@@ -8,6 +8,7 @@ Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 Version updates
 ---------------
 
+- 0.3.8 rsakeySizeFix parameter set true for weblogic 12.1.1 and jdk 1.7 >= version 40
 - 0.3.6 performance fix
 - 0.3.5 ruby escaped char warnings resolved
 - 0.3.4 bugfix on install folder, conflicts with others modules

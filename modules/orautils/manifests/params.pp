@@ -65,6 +65,9 @@ class orautils::params {
   $nodeMgrPort = $::hostname ?  {
                                     default    => "5556",
                                 }
+  $nodeMgrAddress = $::hostname ?  {
+                                    default    => "localhost",
+                                   }
 
   $wlsUser     = $::hostname ?  {
                                     default    => "weblogic",

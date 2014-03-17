@@ -11,6 +11,7 @@ class orautils(
   $osDomainPathParam      = undef,
   $nodeMgrPathParam       = undef,
   $nodeMgrPortParam       = undef,
+  $nodeMgrAddressParam    = undef,
   $wlsUserParam           = undef,
   $wlsPasswordParam       = undef,
   $wlsAdminServerParam    = undef,
@@ -104,7 +105,7 @@ class orautils(
     }
 
     if ( $nodeMgrPathParam == undef ) {
-      $nodeMgrPat  = $orautils::params::nodeMgrPath
+      $nodeMgrPath  = $orautils::params::nodeMgrPath
     } else {
       $nodeMgrPath = $nodeMgrPathParam
     }
@@ -127,7 +128,11 @@ class orautils(
       $wlsAdminServer = $wlsAdminServerParam
     }
 
-
+    if ( $nodeMgrAddressParam == undef ) {
+      $nodeMgrAddress = $orautils::params::nodeMgrAddress
+    } else {
+      $nodeMgrAddress = $nodeMgrAddressParam
+    }
 
 
     if ! defined(File['/opt/scripts']) {

@@ -19,6 +19,7 @@ define jdk7::install7 (
   $alternativesPriority = 17065,
   $downloadDir          = '/install',
   $urandomJavaFix       = true,
+  $rsakeySizeFix        = false,  # set true for weblogic 12.1.1 and jdk 1.7 > version 40
   $sourcePath           = "puppet:///modules/jdk7/",
 ) {
 
@@ -95,4 +96,17 @@ define jdk7::install7 (
       require => Javaexec["jdkexec ${title} ${version}"],
     }
   }
+  if ($rsakeySizeFix == true) {
+    exec { "sleep 3 sec for urandomJavaFix ${fullVersion}":
+      command => "/bin/sleep 3",
+      unless  => "grep 'RSA keySize < 512' /usr/java/${fullVersion}/jre/lib/security/java.security",
+      require => Javaexec["jdkexec ${title} ${version}"],
+    }   
+    exec { "set RSA keySize ${fullVersion}":
+      command     => "sed -i -e's/RSA keySize < 1024/RSA keySize < 512/g' /usr/java/${fullVersion}/jre/lib/security/java.security",
+      unless      => "grep 'RSA keySize < 512' /usr/java/${fullVersion}/jre/lib/security/java.security",
+      subscribe   => Exec["sleep 3 sec for urandomJavaFix ${fullVersion}"],
+      refreshonly => true,
+    }
+  }    
 }
