@@ -15,6 +15,7 @@
 define jdk7::install7 (
   $version              = '7u25',
   $fullVersion          = 'jdk1.7.0_25',
+  $javaHomes            = '/usr/java/',
   $x64                  = true,
   $alternativesPriority = 17065,
   $downloadDir          = '/install',
@@ -23,7 +24,7 @@ define jdk7::install7 (
   $sourcePath           = "puppet:///modules/jdk7/",
 ) {
 
-  if $x64 == true {
+  if ( $x64 == true ) {
     $type = 'x64'
   } else {
     $type = 'i586'
@@ -41,6 +42,7 @@ define jdk7::install7 (
       fail('Unrecognized operating system, please use it on a Linux host')
     }
   }
+  
 
   $jdkfile = "jdk-${version}-${installVersion}-${type}${installExtension}"
 
@@ -82,6 +84,7 @@ define jdk7::install7 (
   javaexec { "jdkexec ${title} ${version}":
     path                 => $downloadDir,
     fullVersion          => $fullVersion,
+    javaHomes            => $javaHomes,    
     jdkfile              => $jdkfile,
     alternativesPriority => $alternativesPriority,
     user                 => $user,
@@ -91,20 +94,20 @@ define jdk7::install7 (
 
   if ($urandomJavaFix == true) {
     exec { "set urandom ${fullVersion}":
-      command => "sed -i -e's/securerandom.source=file:\\/dev\\/urandom/securerandom.source=file:\\/dev\\/.\\/urandom/g' /usr/java/${fullVersion}/jre/lib/security/java.security",
-      unless  => "grep '^securerandom.source=file:/dev/./urandom' /usr/java/${fullVersion}/jre/lib/security/java.security",
+      command => "sed -i -e's/securerandom.source=file:\\/dev\\/urandom/securerandom.source=file:\\/dev\\/.\\/urandom/g' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
+      unless  => "grep '^securerandom.source=file:/dev/./urandom' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
       require => Javaexec["jdkexec ${title} ${version}"],
     }
   }
   if ($rsakeySizeFix == true) {
     exec { "sleep 3 sec for urandomJavaFix ${fullVersion}":
       command => "/bin/sleep 3",
-      unless  => "grep 'RSA keySize < 512' /usr/java/${fullVersion}/jre/lib/security/java.security",
+      unless  => "grep 'RSA keySize < 512' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
       require => Javaexec["jdkexec ${title} ${version}"],
     }   
     exec { "set RSA keySize ${fullVersion}":
-      command     => "sed -i -e's/RSA keySize < 1024/RSA keySize < 512/g' /usr/java/${fullVersion}/jre/lib/security/java.security",
-      unless      => "grep 'RSA keySize < 512' /usr/java/${fullVersion}/jre/lib/security/java.security",
+      command     => "sed -i -e's/RSA keySize < 1024/RSA keySize < 512/g' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
+      unless      => "grep 'RSA keySize < 512' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
       subscribe   => Exec["sleep 3 sec for urandomJavaFix ${fullVersion}"],
       refreshonly => true,
     }

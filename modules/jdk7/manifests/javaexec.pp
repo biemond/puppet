@@ -7,6 +7,7 @@
 define javaexec (
   $path                 = undef,
   $fullVersion          = undef,
+  $javaHomes            = undef,
   $jdkfile              = undef,
   $alternativesPriority = undef,
   $user                 = undef,
@@ -30,34 +31,41 @@ define javaexec (
   }
 
   # check java install folder
-  if ! defined(File["/usr/java"]) {
-    file { "/usr/java" :
+  if ! defined(File['/usr/java']) {
+    file { '/usr/java' :
+      ensure  => directory,
+    }
+  }
+
+  # check java install folder
+  if ! defined(File[$javaHomes]) {
+    file { $javaHomes :
       ensure  => directory,
     }
   }
 
   # extract gz file in /usr/java
   exec { "extract java ${fullVersion}":
-    cwd     => "/usr/java",
+    cwd     => $javaHomes,
     command => "tar -xzf ${path}/${jdkfile}",
-    creates => "/usr/java/${fullVersion}",
-    require => File["/usr/java"],
+    creates => "${javaHomes}/${fullVersion}",
+    require => File[$javaHomes],
   }
 
   # set permissions
-  exec { "chown -R root:root /usr/java/${fullVersion}":
-    unless  => "ls -al /usr/java/${fullVersion}/bin/java | awk ' { print \$3 }' |  grep  root",
+  exec { "chown -R root:root ${javaHomes}/${fullVersion}":
+    unless  => "ls -al ${javaHomes}/${fullVersion}/bin/java | awk ' { print \$3 }' |  grep  root",
     require => Exec["extract java ${fullVersion}"],
   }
 
-	# java link to latest
+  # java link to latest
   file { '/usr/java/latest':
     ensure  => link,
-    target  => "/usr/java/${fullVersion}",
+    target  => "${javaHomes}/${fullVersion}",
     require => Exec["extract java ${fullVersion}"],
   }
 
-	# java link to default
+  # java link to default
   file { '/usr/java/default':
     ensure  => link,
     target  => "/usr/java/latest",
@@ -66,17 +74,17 @@ define javaexec (
 
   case $osfamily {
     RedHat: {
-			# set the java default
+      # set the java default
       exec { "default java alternatives ${fullVersion}":
-        command => "alternatives --install /usr/bin/java java /usr/java/${fullVersion}/bin/java ${alternativesPriority}",
+        command => "alternatives --install /usr/bin/java java ${javaHomes}/${fullVersion}/bin/java ${alternativesPriority}",
         require => File['/usr/java/default'],
         unless  => "alternatives --display java | /bin/grep ${fullVersion}",
       }
     }
     Debian, Suse:{
-			# set the java default
+      # set the java default
       exec { "default java alternatives ${fullVersion}":
-        command => "update-alternatives --install /usr/bin/java java /usr/java/${fullVersion}/bin/java ${alternativesPriority}",
+        command => "update-alternatives --install /usr/bin/java java ${javaHomes}/${fullVersion}/bin/java ${alternativesPriority}",
         require => File['/usr/java/default'],
         unless  => "update-alternatives --list java | /bin/grep ${fullVersion}",
       }
