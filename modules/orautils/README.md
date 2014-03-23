@@ -1,5 +1,7 @@
 Oracle WebLogic orautils puppet module
 =======================================================
+[![Build Status](https://travis-ci.org/biemond/biemond-orautils.png)](https://travis-ci.org/biemond/biemond-orautils)
+
 
 changes
 
