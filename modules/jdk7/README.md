@@ -1,5 +1,7 @@
 JDK JAVA SE 7, 8 puppet module
 ============================== 
+[![Build Status](https://travis-ci.org/biemond/biemond-jdk7.png)](https://travis-ci.org/biemond/biemond-jdk7)
+
 
 Works with Puppet 2.7 or higher
 

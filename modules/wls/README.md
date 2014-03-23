@@ -1,5 +1,6 @@
 Oracle WebLogic / Fusion Middleware puppet module
 =================================================
+[![Build Status](https://travis-ci.org/biemond/biemond-wls.png)](https://travis-ci.org/biemond/biemond-wls)
 
 created by Edwin Biemond  email biemond at gmail dot com   
 [biemond.blogspot.com](http://biemond.blogspot.com)    
