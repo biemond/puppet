@@ -67,25 +67,31 @@ define oradb::database( $oracleBase               = undef,
       Linux,SunOS: {
         $execPath    = "${oracleHome}/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
         $path        = $downloadDir
-        Exec { path  => $execPath,
-          user       => $user,
-          group      => $group,
-          environment => [
-              "USER=${user}",
-          ],
-          logoutput  => true,
+
+        Exec { 
+          path        => $execPath,
+          user        => $user,
+          group       => $group,
+          environment => ["USER=${user}",],
+          logoutput   => true,
         }
+
         File {
           ensure     => present,
           mode       => 0775,
           owner      => $user,
           group      => $group,
         }
+
       }
       default: {
         fail("Unrecognized operating system")
       }
     }
+
+    $sanitized_title = regsubst($title, "[^a-zA-Z0-9.-]", "_", "G")
+
+    $filename = "${path}/database_${sanitized_title}.rsp"
 
     if $action == 'create' {
       $operationType = 'createDatabase'
@@ -96,8 +102,8 @@ define oradb::database( $oracleBase               = undef,
     }
 
     $globalDbName    = "${dbName}.${dbDomain}"
-    if ! defined(File["${path}/database_${title}.rsp"]) {
-      file { "${path}/database_${title}.rsp":
+    if ! defined(File[$filename]) {
+      file { $filename:
         ensure       => present,
         content      => template("oradb/dbca_${version}.rsp.erb"),
       }
@@ -105,15 +111,15 @@ define oradb::database( $oracleBase               = undef,
 
     if $action == 'create' {
       exec { "install oracle database ${title}":
-        command      => "dbca -silent -responseFile ${path}/database_${title}.rsp",
-        require      => File["${path}/database_${title}.rsp"],
+        command      => "dbca -silent -responseFile $filename",
+        require      => File[$filename],
         creates      => "${oracleBase}/admin/${dbName}",
         timeout      => 0,
       }
     } elsif $action == 'delete' {
       exec { "delete oracle database ${title}":
-        command      => "dbca -silent -responseFile ${path}/database_${title}.rsp",
-        require      => File["${path}/database_${title}.rsp"],
+        command      => "dbca -silent -responseFile $filename",
+        require      => File[$filename],
         onlyif       => "ls ${oracleBase}/admin/${dbName}",
         timeout      => 0,
       }
