@@ -139,25 +139,25 @@ class orautils(
 
 
     if ! defined(File['/opt/scripts']) {
-     file { '/opt/scripts':
-       ensure  => directory,
-       recurse => false,
-       replace => false,
-       owner   => $user,
-       group   => $group,
-       mode    => $mode,
+      file { '/opt/scripts':
+        ensure  => directory,
+        recurse => false,
+        replace => false,
+        owner   => $user,
+        group   => $group,
+        mode    => $mode,
       }
     }
 
     if ! defined(File['/opt/scripts/wls']) {
-     file { '/opt/scripts/wls':
-       ensure  => directory,
-       recurse => false,
-       replace => false,
-       owner   => $user,
-       group   => $group,
-       mode    => $mode,
-       require => File['/opt/scripts'],
+      file { '/opt/scripts/wls':
+        ensure  => directory,
+        recurse => false,
+        replace => false,
+        owner   => $user,
+        group   => $group,
+        mode    => $mode,
+        require => File['/opt/scripts'],
       }
     }
 

@@ -83,5 +83,4 @@ class orautils::params
   $wlsAdminServer = $::hostname ?  {
                                     default    => "AdminServer",
                                 }
-
 }
