@@ -81,7 +81,7 @@ define jdk7::install7 (
   }
 
   # install on client
-  javaexec { "jdkexec ${title} ${version}":
+  jdk7::javaexec { "jdkexec ${title} ${version}":
     path                 => $downloadDir,
     fullVersion          => $fullVersion,
     javaHomes            => $javaHomes,    

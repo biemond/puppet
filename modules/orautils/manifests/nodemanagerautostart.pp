@@ -4,28 +4,26 @@
 #
 define orautils::nodemanagerautostart(
                         $version         = "1111",
-                        $wlHome          = undef, 
+                        $wlHome          = undef,
                         $user            = 'oracle',
                         $domain          = undef,
                         $logDir          = undef,
                        ) {
-
-
    if $version == "1111" {
      $nodeMgrPath    = "${wlHome}/common/nodemanager"
      $nodeMgrBinPath = "${wlHome}/server/bin"
 
-     $scriptName = "nodemanager_${$version}" 
+     $scriptName = "nodemanager_${$version}"
 
-	   if $logDir == undef {
-	      $nodeMgrLckFile = "${nodeMgrPath}/nodemanager.log.lck"
-	   } else {
-	      $nodeMgrLckFile = "${logDir}/nodemanager.log.lck"
-	   }
+     if $logDir == undef {
+        $nodeMgrLckFile = "${nodeMgrPath}/nodemanager.log.lck"
+     } else {
+        $nodeMgrLckFile = "${logDir}/nodemanager.log.lck"
+     }
    } elsif $version == "1212" {
      $nodeMgrPath    = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
-     $nodeMgrBinPath = "${wlHome}/../user_projects/domains/${domain}/bin"     
-     $scriptName = "nodemanager_${domain}" 
+     $nodeMgrBinPath = "${wlHome}/../user_projects/domains/${domain}/bin"
+     $scriptName = "nodemanager_${domain}"
 
      if $logDir == undef {
         $nodeMgrLckFile = "${nodeMgrPath}/nodemanager_${domain}.log.lck"
@@ -44,17 +42,17 @@ define orautils::nodemanagerautostart(
    }
 
    case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: { 
+     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-        
+
         Exec { path      => $execPath,
                logoutput => true,
              }
 
      }
-     default: { 
-        fail("Unrecognized operating system") 
+     default: {
+        fail("Unrecognized operating system")
      }
    }
 
@@ -71,4 +69,4 @@ define orautils::nodemanagerautostart(
       unless  => "chkconfig | /bin/grep '${scriptName}'",
    }
 
-}  
+}

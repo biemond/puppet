@@ -37,9 +37,9 @@ class jdk7::urandomfix () {
       }
 
       service { "start rngd service":
+        ensure  => true,
         name    => "rngd",
         enable  => true,
-        ensure  => true,
         require => Exec["set urandom /etc/sysconfig/rngd"],
       }
 
@@ -58,9 +58,9 @@ class jdk7::urandomfix () {
       }
 
       service { "start rng-tools service":
+        ensure  => true,
         name    => "rng-tools",
         enable  => true,
-        ensure  => true,
         require => Exec["set urandom /etc/default/rng-tools"],
       }
     }

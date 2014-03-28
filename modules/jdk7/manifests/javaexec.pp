@@ -4,7 +4,7 @@
 # set the default java links
 # set this java as default
 #
-define javaexec (
+define jdk7::javaexec (
   $path                 = undef,
   $fullVersion          = undef,
   $javaHomes            = undef,

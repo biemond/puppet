@@ -1,3 +1,6 @@
+#
+#
+#
 class orautils(
   $osOracleHomeParam      = undef,
   $oraInventoryParam      = undef,
@@ -160,8 +163,8 @@ class orautils(
 
 
     file { "showStatus.sh":
-      path    => "/opt/scripts/wls/showStatus.sh",
       ensure  => present,
+      path    => "/opt/scripts/wls/showStatus.sh",
       content => template("orautils/wls/showStatus.sh.erb"),
       owner   => $user,
       group   => $group,
@@ -170,8 +173,8 @@ class orautils(
     }
 
     file { "stopNodeManager.sh":
-      path    => "/opt/scripts/wls/stopNodeManager.sh",
       ensure  => present,
+      path    => "/opt/scripts/wls/stopNodeManager.sh",
       content => template("orautils/wls/stopNodeManager.sh.erb"),
       owner   => $user,
       group   => $group,
@@ -180,8 +183,8 @@ class orautils(
     }
 
     file { "cleanOracleEnvironment.sh":
-      path    => "/opt/scripts/wls/cleanOracleEnvironment.sh",
       ensure  => present,
+      path    => "/opt/scripts/wls/cleanOracleEnvironment.sh",
       content => template("orautils/cleanOracleEnvironment.sh.erb"),
       owner   => 'root',
       group   => 'root',
@@ -191,8 +194,8 @@ class orautils(
 
 
     file { "startNodeManager.sh":
-      path    => "/opt/scripts/wls/startNodeManager.sh",
       ensure  => present,
+      path    => "/opt/scripts/wls/startNodeManager.sh",
       content => template("orautils/startNodeManager.sh.erb"),
       owner   => $user,
       group   => $group,
@@ -202,8 +205,8 @@ class orautils(
 
 
     file { "startWeblogicAdmin.sh":
-      path    => "/opt/scripts/wls/startWeblogicAdmin.sh",
       ensure  => present,
+      path    => "/opt/scripts/wls/startWeblogicAdmin.sh",
       content => template("orautils/startWeblogicAdmin.sh.erb"),
       owner   => $user,
       group   => $group,
@@ -212,8 +215,8 @@ class orautils(
     }
 
     file { "stopWeblogicAdmin.sh":
-      path    => "/opt/scripts/wls/stopWeblogicAdmin.sh",
       ensure  => present,
+      path    => "/opt/scripts/wls/stopWeblogicAdmin.sh",
       content => template("orautils/stopWeblogicAdmin.sh.erb"),
       owner   => $user,
       group   => $group,

@@ -1,4 +1,7 @@
-class orautils::params {
+#
+#
+class orautils::params
+{
 
   $osOracleHome = $::hostname ? {
                                     wls12           => "/oracle/product",
@@ -26,9 +29,9 @@ class orautils::params {
 
   $osDownloadFolder = $::hostname ? { default    => "/data/install",}
 
-	$shell        = $::operatingsystem ? { Solaris => "!/usr/bin/ksh",
-  															         default => "!/bin/sh",
-  															       }
+  $shell        = $::operatingsystem ? { Solaris => "!/usr/bin/ksh",
+                                         default => "!/bin/sh",
+                                       }
 
   $osMdwHome     = $::hostname ?  { wls12           => "${osOracleHome}/Middleware12c",
                                     default         => "${osOracleHome}/Middleware11gR1",
@@ -41,12 +44,12 @@ class orautils::params {
   $oraUser      = $::hostname ? { default => "oracle", }
 
   $userHome     = $::operatingsystem ? { Solaris => "/export/home",
-  															         default => "/home",
-  															       }
+                                         default => "/home",
+                                       }
 
   $oraInstHome  = $::operatingsystem ? { Solaris => "/var/opt",
-  															         default => "/etc",
-  															       }
+                                         default => "/etc",
+                                       }
 
   $osDomain     = $::hostname ? {   wls12           => "Wls12c",
                                     oimapp          => "oimDomain",
