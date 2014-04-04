@@ -85,7 +85,7 @@ define jdk7::javaexec (
   }
 
   case $osfamily {
-    RedHat: {
+    'RedHat': {
       # set the java default
       exec { "default java alternatives ${fullVersion}":
         command => "alternatives --install /usr/bin/java java ${javaHomes}/${fullVersion}/bin/java ${alternativesPriority}",
@@ -93,13 +93,16 @@ define jdk7::javaexec (
         unless  => "alternatives --display java | /bin/grep ${fullVersion}",
       }
     }
-    Debian, Suse:{
+    'Debian', 'Suse':{
       # set the java default
       exec { "default java alternatives ${fullVersion}":
         command => "update-alternatives --install /usr/bin/java java ${javaHomes}/${fullVersion}/bin/java ${alternativesPriority}",
         require => File['/usr/java/default'],
         unless  => "update-alternatives --list java | /bin/grep ${fullVersion}",
       }
+    }
+    default: {
+      fail("Unrecognized osfamily ${::osfamily}, please use it on a Linux host")
     }
   }
 }

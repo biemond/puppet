@@ -15,7 +15,7 @@
 define jdk7::install7 (
   $version                   = '7u51',
   $fullVersion               = 'jdk1.7.0_51',
-  $javaHomes                 = '/usr/java/',
+  $javaHomes                 = '/usr/java',
   $x64                       = true,
   $alternativesPriority      = 17065,
   $downloadDir               = '/install',

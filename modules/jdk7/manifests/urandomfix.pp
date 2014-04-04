@@ -15,7 +15,7 @@
 class jdk7::urandomfix () {
 
   case $::kernel {
-    Linux   : { $path = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:' }
+    'Linux': { $path = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:' }
     default : { fail("Unrecognized operating system") }
   }
 
@@ -29,7 +29,7 @@ class jdk7::urandomfix () {
   package { "rng-tools": ensure => present, }
 
   case $osfamily {
-    RedHat       : {
+    'RedHat': {
       exec { "set urandom /etc/sysconfig/rngd":
         command => "sed -i -e's/EXTRAOPTIONS=\"\"/EXTRAOPTIONS=\"-r \\/dev\\/urandom -o \\/dev\\/random -b\"/g' /etc/sysconfig/rngd",
         unless  => "/bin/grep '^EXTRAOPTIONS=\"-r /dev/urandom -o /dev/random -b\"' /etc/sysconfig/rngd",
@@ -50,7 +50,7 @@ class jdk7::urandomfix () {
       }
 
     }
-    Debian, Suse : {
+    'Debian','Suse' : {
       exec { "set urandom /etc/default/rng-tools":
         command => "sed -i -e's/#HRNGDEVICE=\\/dev\\/null/HRNGDEVICE=\\/dev\\/urandom/g' /etc/default/rng-tools",
         unless  => "/bin/grep '^HRNGDEVICE=/dev/urandom' /etc/default/rng-tools",
@@ -64,5 +64,9 @@ class jdk7::urandomfix () {
         require => Exec["set urandom /etc/default/rng-tools"],
       }
     }
+    default: {
+      fail("Unrecognized osfamily ${::osfamily}, please use it on a Linux host")
+    }
+    
   }
 }
