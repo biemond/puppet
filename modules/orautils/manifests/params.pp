@@ -29,7 +29,7 @@ class orautils::params
 
   $osDownloadFolder = $::hostname ? { default    => "/data/install",}
 
-  $shell        = $::operatingsystem ? { Solaris => "!/usr/bin/ksh",
+  $shell        = $::operatingsystem ? { 'Solaris' => "!/usr/bin/ksh",
                                          default => "!/bin/sh",
                                        }
 
@@ -43,11 +43,11 @@ class orautils::params
 
   $oraUser      = $::hostname ? { default => "oracle", }
 
-  $userHome     = $::operatingsystem ? { Solaris => "/export/home",
+  $userHome     = $::operatingsystem ? { 'Solaris' => "/export/home",
                                          default => "/home",
                                        }
 
-  $oraInstHome  = $::operatingsystem ? { Solaris => "/var/opt",
+  $oraInstHome  = $::operatingsystem ? { 'Solaris' => "/var/opt",
                                          default => "/etc",
                                        }
 
@@ -83,4 +83,5 @@ class orautils::params
   $wlsAdminServer = $::hostname ?  {
                                     default    => "AdminServer",
                                 }
+
 }
