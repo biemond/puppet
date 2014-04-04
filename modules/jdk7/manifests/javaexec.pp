@@ -5,13 +5,14 @@
 # set this java as default
 #
 define jdk7::javaexec (
-  $path                 = undef,
-  $fullVersion          = undef,
-  $javaHomes            = undef,
-  $jdkfile              = undef,
-  $alternativesPriority = undef,
-  $user                 = undef,
-  $group                = undef,
+  $path                      = undef,
+  $fullVersion               = undef,
+  $javaHomes                 = undef,
+  $jdkfile                   = undef,
+  $cryptographyExtensionFile = undef,
+  $alternativesPriority      = undef,
+  $user                      = undef,
+  $group                     = undef,
 ) {
 
   # set the Exec defaults
@@ -50,6 +51,17 @@ define jdk7::javaexec (
     command => "tar -xzf ${path}/${jdkfile}",
     creates => "${javaHomes}/${fullVersion}",
     require => File[$javaHomes],
+  }
+
+  # extract gz file in /usr/java
+  if ( $cryptographyExtensionFile != undef ) {
+    exec { "extract jce ${fullVersion}":
+      cwd     => "${javaHomes}/${fullVersion}/jre/lib/security",
+      command => "tar -xzf ${path}/${cryptographyExtensionFile}",
+      creates => "${javaHomes}/${fullVersion}/jre/lib/security/US_export_policy.jar",
+      require => [File[$javaHomes],Exec["extract java ${fullVersion}"]],
+      before  => Exec["chown -R root:root ${javaHomes}/${fullVersion}"],  
+    }
   }
 
   # set permissions

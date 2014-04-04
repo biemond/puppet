@@ -13,15 +13,16 @@
 #  set -Djava.security.egd=file:/dev/./urandom param
 #
 define jdk7::install7 (
-  $version              = '7u25',
-  $fullVersion          = 'jdk1.7.0_25',
-  $javaHomes            = '/usr/java/',
-  $x64                  = true,
-  $alternativesPriority = 17065,
-  $downloadDir          = '/install',
-  $urandomJavaFix       = true,
-  $rsakeySizeFix        = false,  # set true for weblogic 12.1.1 and jdk 1.7 > version 40
-  $sourcePath           = "puppet:///modules/jdk7/",
+  $version                   = '7u51',
+  $fullVersion               = 'jdk1.7.0_51',
+  $javaHomes                 = '/usr/java/',
+  $x64                       = true,
+  $alternativesPriority      = 17065,
+  $downloadDir               = '/install',
+  $cryptographyExtensionFile = undef,
+  $urandomJavaFix            = true,
+  $rsakeySizeFix             = false,  # set true for weblogic 12.1.1 and jdk 1.7 > version 40
+  $sourcePath                = "puppet:///modules/jdk7/",
 ) {
 
   if ( $x64 == true ) {
@@ -80,16 +81,27 @@ define jdk7::install7 (
     require => File[$downloadDir],
   }
 
+  if ( $cryptographyExtensionFile != undef ) {
+    file { "${downloadDir}/${cryptographyExtensionFile}":
+      ensure  => file,
+      source  => "${sourcePath}/${cryptographyExtensionFile}",
+      require => File[$downloadDir],
+      before  => File["${downloadDir}/${jdkfile}"],
+    }
+  }
+
+
   # install on client
   jdk7::javaexec { "jdkexec ${title} ${version}":
-    path                 => $downloadDir,
-    fullVersion          => $fullVersion,
-    javaHomes            => $javaHomes,    
-    jdkfile              => $jdkfile,
-    alternativesPriority => $alternativesPriority,
-    user                 => $user,
-    group                => $group,
-    require              => File["${downloadDir}/${jdkfile}"],
+    path                      => $downloadDir,
+    fullVersion               => $fullVersion,
+    javaHomes                 => $javaHomes,    
+    jdkfile                   => $jdkfile,
+    cryptographyExtensionFile => $cryptographyExtensionFile,
+    alternativesPriority      => $alternativesPriority,
+    user                      => $user,
+    group                     => $group,
+    require                   => File["${downloadDir}/${jdkfile}"],
   }
 
   if ($urandomJavaFix == true) {

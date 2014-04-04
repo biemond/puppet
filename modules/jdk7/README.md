@@ -9,7 +9,7 @@ Should work for RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 
 Version updates
 ---------------
-
+- 0.4.0 cryptography Extension (US export policy)
 - 0.3.9 JDK8 support and option to change the default java homes folder ( default = /usr/java ) 
 - 0.3.8 rsakeySizeFix parameter set true for weblogic 12.1.1 and jdk 1.7 >= version 40
 - 0.3.6 performance fix
@@ -53,7 +53,7 @@ example usage
 	    sourcePath           => "puppet:///modules/jdk7/"
 	  }
 
-or
+or Java 8 and with rsa keySize Fix
 
       jdk7::install7{ 'jdk1.8.0':
         version              => "8" , 
@@ -65,6 +65,21 @@ or
         rsakeySizeFix        => false,
         sourcePath           => "/software",
       }
+
+or with cryptography Extension File US export
+
+	  jdk7::install7{ 'jdk1.7.0_51':
+	      version                   => "7u51" , 
+	      fullVersion               => "jdk1.7.0_51",
+	      alternativesPriority      => 18000, 
+	      x64                       => true,
+	      downloadDir               => "/data/install",
+	      urandomJavaFix            => true,
+	      rsakeySizeFix             => true,
+	      cryptographyExtensionFile => "UnlimitedJCEPolicyJDK7.zip",
+	      sourcePath                => "/software",
+	  }
+
 
 	  
 	  class { 'jdk7::urandomfix' :}
