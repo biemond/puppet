@@ -83,5 +83,9 @@ class orautils::params
   $wlsAdminServer = $::hostname ?  {
                                     default    => "AdminServer",
                                 }
+  $jsseEnabled = $::hostname ?  {
+                                    default    => false,
+                                }
+
 
 }

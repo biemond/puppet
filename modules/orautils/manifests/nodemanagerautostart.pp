@@ -8,8 +8,9 @@ define orautils::nodemanagerautostart(
                         $user            = 'oracle',
                         $domain          = undef,
                         $logDir          = undef,
+                        $jsseEnabled     = false,
                        ) {
-   if $version == "1111" {
+   if ( $version == "1111" or $version == "1211" or $version == "1036" ) {
      $nodeMgrPath    = "${wlHome}/common/nodemanager"
      $nodeMgrBinPath = "${wlHome}/server/bin"
 

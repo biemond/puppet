@@ -4,6 +4,13 @@
 echo "Starting the Weblogic NodeManager...."
 echo "Checking if the Weblogic NodeManager is already started...."
 
+<% if @jsseEnabled == true %>
+export JAVA_OPTIONS='-Dweblogic.ssl.JSSEEnabled=true -Dweblogic.security.SSL.enableJSSE=true'
+<% else %>
+export JAVA_OPTIONS='-Dweblogic.ssl.JSSEEnabled=false -Dweblogic.security.SSL.enableJSSE=false'
+<% end %>
+
+
 unamestr=`uname`
 if [[ "$unamestr" == 'SunOS' ]]; then
    checkStmt='/usr/ucb/ps wwxa'

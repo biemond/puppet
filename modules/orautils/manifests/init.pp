@@ -18,6 +18,7 @@ class orautils(
   $wlsUserParam           = undef,
   $wlsPasswordParam       = undef,
   $wlsAdminServerParam    = undef,
+  $jsseEnabledParam       = undef,
 ) {
 
   include orautils::params
@@ -137,7 +138,12 @@ class orautils(
       $nodeMgrAddress = $nodeMgrAddressParam
     }
 
-
+    if ( $jsseEnabledParam == undef ) {
+      $jsseEnabled = $orautils::params::jsseEnabled
+    } else {
+      $jsseEnabled = $jsseEnabledParam
+    }
+    
     if ! defined(File['/opt/scripts']) {
      file { '/opt/scripts':
        ensure  => directory,

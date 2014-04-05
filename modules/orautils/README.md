@@ -5,6 +5,7 @@ Oracle WebLogic orautils puppet module
 
 changes
 
+- 0.2.4 JSSE option, stopWebLogicAdmin localhost bugfix and nodemanager service script fix 
 - 0.2.2 nodemanager address param for the startWebLogicAdmin script ( instead of localhost)  
 - 0.2.0 new way to overide the params , use params.pp or use the variables  
 - 0.1.8 updated license to Apache 2.0
@@ -49,6 +50,7 @@ use:
         wlsUserParam           => "weblogic",
         wlsPasswordParam       => "weblogic1",
         wlsAdminServerParam    => "AdminServer",
+        jsseEnabledParam       => false,
     } 
 
 or with hiera  ( include orautils )
@@ -71,7 +73,7 @@ or with hiera  ( include orautils )
     orautils::wlsUserParam:           "weblogic"
     orautils::wlsPasswordParam:       "weblogic1"
     orautils::wlsAdminServerParam:    "AdminServer"
-
+    orautils::jsseEnabledParam:       true
 
 
 install auto start script for the nodemanager of WebLogic ( 10.3, 11g, 12.1.1 ) or 12.1.2  
@@ -85,6 +87,7 @@ only for WebLogic 12.1.2 and higher
         user        => $user,
         domain      => $wlsDomainName,
         logDir      => $logDir,
+        jsseEnabled => false,
      }
 
 
@@ -95,10 +98,11 @@ only for WebLogic 10 or 11g
         version     => "1111",
         wlHome      => $osWlHome, 
         user        => $user,
+        jsseEnabled => false,
      }
 
 
-Generates WLS Scripts in /opt/scripts/wls
+Generates WebLogic scripts in /opt/scripts/wls
 -----------------------------------------
 
 

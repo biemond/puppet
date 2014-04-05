@@ -4,10 +4,16 @@ osWlHome=<%= @osWlHome %>
 osDomain=<%= @osDomain %>
 osDomainPath=<%= @osDomainPath %>
 nodeMgrPort=<%= @nodeMgrPort %>
-hostname=localhost
+hostname=<%= @nodeMgrAddress %>
 user=<%= @wlsUser %>
 password=<%= @wlsPassword %>
 wlsAdminServer=<%= @wlsAdminServer %>
+
+<% if @jsseEnabled == true %>
+export CONFIG_JVM_ARGS='-Dweblogic.ssl.JSSEEnabled=true -Dweblogic.security.SSL.enableJSSE=true'
+<% else %>
+export CONFIG_JVM_ARGS='-Dweblogic.ssl.JSSEEnabled=false -Dweblogic.security.SSL.enableJSSE=false'
+<% end %>
 
 echo "Stopping Weblogic ${wlsAdminServer} for domain ${osDomain}...."
 echo "Checking if Weblogic ${wlsAdminServer} for domain ${osDomain} is up...."

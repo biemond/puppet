@@ -28,7 +28,10 @@
 ### END INIT INFO
 
 # Source function library.
-. /lib/lsb/init-functions
+if test -f /lib/lsb/init-functions; then
+    . /lib/lsb/init-functions
+fi
+. /etc/init.d/functions
 
 # set NodeManager environment
 NodeManagerLockFile=<%= @nodeMgrLckFile %>
@@ -37,6 +40,13 @@ NodeManagerLockFile=<%= @nodeMgrLckFile %>
 exec=<%= @nodeMgrBinPath %>/startNodeManager.sh
 prog='nodemanager'
 user='<%= @user %>'
+
+<% if @jsseEnabled == true %>
+JSEE_OPTIONS="-Dweblogic.ssl.JSSEEnabled=true -Dweblogic.security.SSL.enableJSSE=true"
+<% else %>
+JSEE_OPTIONS="-Dweblogic.ssl.JSSEEnabled=false -Dweblogic.security.SSL.enableJSSE=false"
+<% end %>
+
 
 is_nodemgr_running() {
     local nodemgr_cnt=`ps -ef        | \
@@ -83,7 +93,7 @@ start() {
     [ -x $exec ] || exit 5
     echo -n $"Starting $prog: "
     sleep 10
-    su $user -c "$exec &"
+    su $user -c "export JAVA_OPTIONS='${JSEE_OPTIONS}';$exec &"
     retval=$?
     echo
     return $retval
