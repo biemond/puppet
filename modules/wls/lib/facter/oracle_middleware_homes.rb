@@ -54,75 +54,6 @@ def get_homes()
 
 end
 
-def get_bsu_patches(name)
-  os = Facter.value(:operatingsystem)
-
-  if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
-   if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
-    output2 = Facter::Util::Resolution.exec("su -l "+get_weblogicUser()+" -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
-    if output2.nil?
-      return "empty"
-    end
-   else
-    return nil
-   end 
-  elsif ["Solaris"].include?os
-   if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
-    output2 = Facter::Util::Resolution.exec("su - "+get_weblogicUser()+" -c \"java -Xms256m -Xmx512m -jar "+ name+"/utils/bsu/patch-client.jar -report -bea_home="+name+" -output_format=xml\"")
-    if output2.nil?
-      return "empty"
-    end
-   else
-    return nil
-   end 
-  elsif ["windows"].include?os
-   if FileTest.exists?(name+'/utils/bsu/patch-client.jar')
-    output2 = Facter::Util::Resolution.exec('java -Xms256m -Xmx512m -jar '+ name+'/utils/bsu/patch-client.jar -report -bea_home='+name+' -output_format=xml')
-    if output2.nil?
-      return nil
-    end
-   else
-    return nil
-   end 
-  else
-    return nil 
-  end
-  doc = REXML::Document.new output2
-
-  root = doc.root
-  patches = ""
-  root.elements.each("//patchDesc") do |patch|
-    patches += patch.elements['patchId'].text + ";"
-  end
-  return patches
-
-end
-
-
-def get_opatch_patches(name)
-
-    os = Facter.value(:operatingsystem)
-
-    if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?os
-      output3 = Facter::Util::Resolution.exec("su -l "+get_weblogicUser()+" -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /etc/oraInst.loc\"")
-    elsif ["Solaris"].include?os
-      output3 = Facter::Util::Resolution.exec("su - "+get_weblogicUser()+" -c \""+name+"/OPatch/opatch lsinventory -patch_id -oh "+name+" -invPtrLoc /var/opt/oraInst.loc\"")
-    elsif ["windows"].include?os
-      output3 = Facter::Util::Resolution.exec("C:\\Windows\\System32\\cmd.exe /c "+name+"/OPatch/opatch.bat lsinventory -patch_id -oh " + name)
-    end
-
-    opatches = "Patches;"
-    if output3.nil?
-      opatches = "Error;"
-    else 
-      output3.each_line do |li|
-        opatches += li[5, li.index(':')-5 ].strip + ";" if (li['Patch'] and li[': applied on'] )
-      end
-    end
-   
-    return opatches
-end  
-
 def get_middleware_1212_Home(name)
 
     elements = [] 
@@ -133,8 +64,6 @@ def get_middleware_1212_Home(name)
     } 
     return elements
 end  
-
-
 
 def get_nodemanagers()
   if ["CentOS", "RedHat","OracleLinux","Ubuntu","Debian","SLES"].include?Facter.value(:operatingsystem)
@@ -216,21 +145,6 @@ def get_orainst_products(path)
         str = element.attributes["LOC"]
         unless str.nil? 
           software += str + ";"
-          if str.include? "plugins"
-            #skip EM agent
-          elsif str.include? "agent"
-            #skip EM agent 
-          elsif str.include? "OraPlaceHolderDummyHome"
-            #skip EM agent
-          else
-            home = str.gsub("/","_").gsub("\\","_").gsub("c:","_c").gsub("d:","_d").gsub("e:","_e")
-            output = get_opatch_patches(str)
-            Facter.add("ora_inst_patches#{home}") do
-              setcode do
-                output
-              end
-            end
-          end
         end    
       end
       return software
@@ -936,19 +850,6 @@ unless mdw12gHomes.nil?
     get_domain(mdw, i,"1212")
   end 
 end
-
-
-# get bsu patches
-unless mdw11gHomes.nil?
-  mdw11gHomes.each_with_index do |mdw, i|
-     Facter.add("ora_mdw_#{i}_bsu") do
-       setcode do
-        get_bsu_patches(mdw)
-       end
-     end
-  end 
-end
-
 
 
 # all nodemanager 

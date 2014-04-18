@@ -4,7 +4,9 @@ wlsUser    = '<%= @wlsUser %>'
 password   = '<%= @password %>' 
 machine    = '<%= @address %>'  
 portNumber = '<%= @port %>'     
-                                
+                     
+fileStoreDirectory = ''
+
 #fileStoreName, fileStoreDirectory, target, targetType
 <% @params.each do |param| -%>   
 <%= param %>                    
@@ -25,7 +27,9 @@ try:
     cd('/')
     cmo.createFileStore(fileStoreName)
     cd('/FileStores/'+fileStoreName)
-    cmo.setDirectory(fileStoreDirectory)
+    if fileStoreDirectory:
+      cmo.setDirectory(fileStoreDirectory)
+
     set('Targets', jarray.array([ObjectName('com.bea:Name='+target+',Type='+targetType)], ObjectName))
     save()
     activate()          

@@ -40,8 +40,8 @@ define wls::opatch(  $oracleProductHome = undef,
                      $remoteFile              = true,
                     ) {
 
-   case $operatingsystem {
-     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
+  case $operatingsystem {
+    CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
         $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $path             = $downloadDir
@@ -60,8 +60,8 @@ define wls::opatch(  $oracleProductHome = undef,
                group   => $group,
                backup  => false,
              }
-     }
-     Solaris: {
+    }
+    Solaris: {
 
         $execPath         = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
         $path             = $downloadDir
@@ -80,9 +80,8 @@ define wls::opatch(  $oracleProductHome = undef,
                group   => $group,
                backup  => false,
              }
-     }
-
-     windows: {
+    }
+    windows: {
 
         $execPath         = "C:\\oracle\\${fullJDKName}\\bin;C:\\unxutils\\bin;C:\\unxutils\\usr\\local\\wbin;C:\\Windows\\system32;C:\\Windows"
         $checkCommand     = "C:\\Windows\\System32\\cmd.exe /c"
@@ -97,31 +96,15 @@ define wls::opatch(  $oracleProductHome = undef,
                mode    => 0555,
                backup  => false,
              }
-     }
-   }
+    }
+  }
 
 
-     # check if the opatch already is installed
-     $found = opatch_exists($oracleProductHome,$patchId)
-     if $found == undef {
-       $continue = true
-     } else {
-       if ( $found ) {
-         $continue = false
-       } else {
-         notify {"wls::opatch ${title} ${oracleProductHome} does not exists":}
-         $continue = true
-       }
-     }
-
-if ( $continue ) {
-
-   if $puppetDownloadMntPoint == undef {
+  if $puppetDownloadMntPoint == undef {
      $mountPoint =  "puppet:///modules/wls/"
-   } else {
+  } else {
      $mountPoint =  $puppetDownloadMntPoint
-   }
-
+  }
 
    # the patch used by the opatch
   if $remoteFile == true {
@@ -130,8 +113,6 @@ if ( $continue ) {
     }
   }
 
-   # opatch apply -silent -jdk %JDK_HOME% -jre %JDK_HOME%\jre  -oh C:\oracle\MiddlewarePS5\Oracle_OSB1 C:\temp\14389126
-   $oPatchCommand  = "opatch apply -silent -jre"
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
@@ -148,13 +129,34 @@ if ( $continue ) {
           creates => "${path}/${patchId}",
         }
       }
-      exec { "exec opatch ux ${title}":
-          command     => "${oracleProductHome}/OPatch/${oPatchCommand} ${JAVA_HOME}/jre -oh ${oracleProductHome} ${path}/${patchId}",
-          require     => Exec["extract opatch ${patchFile} ${title}"],
+
+      case $::kernel {
+        'Linux': {
+          $oraInstPath        = "/etc"
+        }
+        'SunOS': {
+          $oraInstPath        = "/var/opt"
+        }
+        default: {
+            fail("Unrecognized operating system ${::kernel}, please use it on a Linux host")
+        }
+      }
+
+      opatch{ $patchId:
+        ensure                  => present,
+        os_user                 => $user,
+        oracle_product_home_dir => $oracleProductHome,
+        orainst_dir             => $oraInstPath,
+        jdk_home_dir            => $JAVA_HOME,
+        extracted_patch_dir     => "${path}/${patchId}",
+        require                 => Exec["extract opatch ${patchFile} ${title}"],
       }
 
      }
      windows: {
+
+      # opatch apply -silent -jdk %JDK_HOME% -jre %JDK_HOME%\jre  -oh C:\oracle\MiddlewarePS5\Oracle_OSB1 C:\temp\14389126
+      $oPatchCommand  = "opatch apply -silent -jre"
 
       if $remoteFile == true {
         exec { "extract opatch ${patchFile} ${title}":
@@ -179,5 +181,4 @@ if ( $continue ) {
 
      }
    }
-}
 }
