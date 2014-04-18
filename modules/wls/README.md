@@ -39,6 +39,7 @@ https://github.com/biemond/biemond-wls-vagrant-wc
 Version updates
 ---------------
 
+- 1.4.0 BSU and OPatch type and provider.
 - 1.3.9 added a raise to all wlst scripts, plus queue/topic fix.
 - 1.3.8 Option to override the server arguments in the domain templates, small bugfixes.
 - 1.3.7 javaParameters param for installwls ( support for Docker -Dspace.detection=false ,thanks Jyrk )
