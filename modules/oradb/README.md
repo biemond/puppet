@@ -24,7 +24,7 @@ Should work for Puppet 2.7 & 3.0
 Version updates
 ---------------
 
-- 1.0.5 refactored installdb and support for oinstall groups
+- 1.0.5 refactored installdb/client and support for oinstall/oper groups
 - 1.0.4 db_rcu native type used in rcu.pp
 - 1.0.2 db_opatch native type used in opatch.pp
 - 1.0.1 autostart multiple databases, small fixes
