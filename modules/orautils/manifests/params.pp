@@ -35,8 +35,8 @@ class orautils::params()
   }
 
   $shell        = $::operatingsystem ? { 
-    'Solaris' => "!/usr/bin/ksh",
-    default   => "!/bin/sh",
+    'Solaris' => "/usr/bin/ksh",
+    default   => "/bin/sh",
   }
 
   $osMdwHome     = $::hostname ?  { 

@@ -47,6 +47,7 @@ JSEE_OPTIONS="-Dweblogic.ssl.JSSEEnabled=true -Dweblogic.security.SSL.enableJSSE
 JSEE_OPTIONS="-Dweblogic.ssl.JSSEEnabled=false -Dweblogic.security.SSL.enableJSSE=false"
 <% end %>
 
+TRUST_OPTIONS='<%= @trust_env %>'
 
 is_nodemgr_running() {
     local nodemgr_cnt=`ps -ef        | \
@@ -93,7 +94,7 @@ start() {
     [ -x $exec ] || exit 5
     echo -n $"Starting $prog: "
     sleep 10
-    su $user -c "export JAVA_OPTIONS='${JSEE_OPTIONS}';$exec &"
+    su $user -c "export JAVA_OPTIONS='${JSEE_OPTIONS} ${TRUST_OPTIONS}';$exec &"
     retval=$?
     echo
     return $retval

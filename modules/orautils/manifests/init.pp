@@ -2,23 +2,26 @@
 #
 #
 class orautils(
-  $osOracleHomeParam      = undef,
-  $oraInventoryParam      = undef,
-  $osDomainTypeParam      = undef,
-  $osLogFolderParam       = undef,
-  $osDownloadFolderParam  = undef,
-  $osMdwHomeParam         = undef,
-  $osWlHomeParam          = undef,
-  $oraUserParam           = undef,
-  $osDomainParam          = undef,
-  $osDomainPathParam      = undef,
-  $nodeMgrPathParam       = undef,
-  $nodeMgrPortParam       = undef,
-  $nodeMgrAddressParam    = undef,
-  $wlsUserParam           = undef,
-  $wlsPasswordParam       = undef,
-  $wlsAdminServerParam    = undef,
-  $jsseEnabledParam       = undef,
+  $osOracleHomeParam       = undef,
+  $oraInventoryParam       = undef,
+  $osDomainTypeParam       = undef,
+  $osLogFolderParam        = undef,
+  $osDownloadFolderParam   = undef,
+  $osMdwHomeParam          = undef,
+  $osWlHomeParam           = undef,
+  $oraUserParam            = undef,
+  $osDomainParam           = undef,
+  $osDomainPathParam       = undef,
+  $nodeMgrPathParam        = undef,
+  $nodeMgrPortParam        = undef,
+  $nodeMgrAddressParam     = undef,
+  $wlsUserParam            = undef,
+  $wlsPasswordParam        = undef,
+  $wlsAdminServerParam     = undef,
+  $jsseEnabledParam        = undef,
+  $customTrust             = false,
+  $trustKeystoreFile       = undef,
+  $trustKeystorePassphrase = undef,
 ) {
 
   include orautils::params
@@ -142,6 +145,11 @@ class orautils(
       $jsseEnabled = $orautils::params::jsseEnabled
     } else {
       $jsseEnabled = $jsseEnabledParam
+    }
+    if $customTrust == true {
+      $trust_env = "-Dweblogic.security.TrustKeyStore=CustomTrust -Dweblogic.security.CustomTrustKeyStoreFileName=${trustKeystoreFile} -Dweblogic.security.CustomTrustKeystorePassPhrase=${trustKeystorePassphrase}"
+    } else {
+      $trust_env = ""
     }
     
     if ! defined(File['/opt/scripts']) {

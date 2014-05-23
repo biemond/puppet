@@ -4,12 +4,15 @@
 #
 define orautils::nodemanagerautostart
 (
-  $version         = "1111",
-  $wlHome          = undef,
-  $user            = 'oracle',
-  $domain          = undef,
-  $logDir          = undef,
-  $jsseEnabled     = false,
+  $version                 = "1111",
+  $wlHome                  = undef,
+  $user                    = 'oracle',
+  $domain                  = undef,
+  $logDir                  = undef,
+  $jsseEnabled             = false,
+  $customTrust             = false,
+  $trustKeystoreFile       = undef,
+  $trustKeystorePassphrase = undef,
 ) 
 {
   if ( $version == "1111" or $version == "1211" or $version == "1036" ) {
@@ -57,6 +60,12 @@ define orautils::nodemanagerautostart
     default: {
       fail("Unrecognized operating system")
     }
+  }
+
+  if $customTrust == true {
+    $trust_env = "-Dweblogic.security.TrustKeyStore=CustomTrust -Dweblogic.security.CustomTrustKeyStoreFileName=${trustKeystoreFile} -Dweblogic.security.CustomTrustKeystorePassPhrase=${trustKeystorePassphrase}"
+  } else {
+    $trust_env = ""
   }
 
   file { "/etc/init.d/${scriptName}" :
