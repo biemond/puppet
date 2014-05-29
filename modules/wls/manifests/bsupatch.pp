@@ -2,50 +2,20 @@
 #
 # installs bsu patch for weblogic
 #
-#
-# === Examples
-#
-#    $jdkWls11gJDK = 'jdk1.7.0_09'
-#    $wls11gVersion = "1036"
-#
-#  case $operatingsystem {
-#     centos, redhat, OracleLinux, Ubuntu, Debian: {
-#       $osMdwHome    = "/opt/oracle/wls/wls11g"
-#       $osWlHome     = "/opt/oracle/wls/wls11g/wlserver_10.3"
-#       $user         = "oracle"
-#       $group        = "dba"
-#     }
-#     windows: {
-#       $osMdwHome    = "c:/oracle/wls/wls11g"
-#       $osWlHome     = "c:/oracle/wls/wls11g/wlserver_10.3"
-#       $user         = "Administrator"
-#       $group        = "Administrators"
-#     }
-#  }
-#
-#  wls::bsupatch{'p13573621':
-#    mdwHome      => $osMdwHome ,
-#    wlHome       => $osWlHome,
-#    fullJDKName  => $defaultFullJDK,
-#    patchId      => 'KZKQ',
-#    patchFile    => 'p13573621_1036_Generic.zip',
-#    user         => $user,
-#    group        => $group,
-#  }
-##
-
-
-define wls::bsupatch($mdwHome         = undef,
-                     $wlHome          = undef,
-                     $fullJDKName     = undef,
-                     $patchId         = undef,
-                     $patchFile       = undef,
-                     $user            = 'oracle',
-                     $group           = 'dba',
-                     $downloadDir     = '/install',
-                     $puppetDownloadMntPoint  = undef,
-                     $remoteFile              = true,
-                    ) {
+define wls::bsupatch(
+  $ensure                  = 'present',  #present|absent
+  $mdwHome                 = undef,
+  $wlHome                  = undef,
+  $fullJDKName             = undef,
+  $patchId                 = undef,
+  $patchFile               = undef,
+  $user                    = 'oracle',
+  $group                   = 'dba',
+  $downloadDir             = '/install',
+  $puppetDownloadMntPoint  = undef,
+  $remoteFile              = true,
+) 
+{
 
   case $operatingsystem {
     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
@@ -113,37 +83,41 @@ define wls::bsupatch($mdwHome         = undef,
     }
   }
 
-  if $remoteFile == true {
-    # the patch used by the bsu
-    file { "${path}/${patchFile}":
-     source  => "${mountPoint}/${patchFile}",
-     require => File ["${mdwHome}/utils/bsu/cache_dir"],
-    }
-  } 
-
+  if $ensure == 'present' {
+    if $remoteFile == true {
+      # the patch used by the bsu
+      file { "${path}/${patchFile}":
+       source  => "${mountPoint}/${patchFile}",
+       require => File ["${mdwHome}/utils/bsu/cache_dir"],
+      }
+    } 
+  }
 
   case $operatingsystem {
     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
-      if $remoteFile == true {
-        exec { "extract ${patchFile}":
-          command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
-          require => File ["${path}/${patchFile}"],
-          creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
-        }
-      } else {
-        exec { "extract ${patchFile}":
-          command => "unzip -n ${puppetDownloadMntPoint}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
-          creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
+      if $ensure == 'present' {
+        if $remoteFile == true {
+          exec { "extract ${patchFile}":
+            command => "unzip -n ${path}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
+            require => File ["${path}/${patchFile}"],
+            creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
+            before  => Bsu_patch[$patchId],
+          }
+        } else {
+          exec { "extract ${patchFile}":
+            command => "unzip -n ${puppetDownloadMntPoint}/${patchFile} -d ${mdwHome}/utils/bsu/cache_dir",
+            creates => "${mdwHome}/utils/bsu/cache_dir/${patchId}.jar",
+            before  => Bsu_patch[$patchId],
+          }
         }
       } 
       bsu_patch{ $patchId:
-        ensure              => present,
+        ensure              => $ensure,
         os_user             => $user,
         middleware_home_dir => $mdwHome,
         weblogic_home_dir   => $wlHome,
         jdk_home_dir        => "/usr/java/${fullJDKName}",
-        require             => Exec["extract ${patchFile}"],
       }
 
     }

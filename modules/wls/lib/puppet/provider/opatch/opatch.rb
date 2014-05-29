@@ -1,4 +1,3 @@
-require 'rexml/document' 
 
 Puppet::Type.type(:opatch).provide(:opatch) do
 
@@ -14,15 +13,14 @@ Puppet::Type.type(:opatch).provide(:opatch) do
     extracted_patch_dir     = resource[:extracted_patch_dir]
 
     if action == :present
-      opatchAction = "-install"
+      command = "#{oracle_product_home_dir}/OPatch/opatch apply -silent -jre #{jdk_home_dir}/jre -oh #{oracle_product_home_dir} #{extracted_patch_dir}"
     else 
-      opatchAction = "-remove"
+      command = "#{oracle_product_home_dir}/OPatch/opatch rollback -id #{patchName} -silent -jre #{jdk_home_dir}/jre -oh #{oracle_product_home_dir}"
     end 
 
-    command = oracle_product_home_dir+"/OPatch/opatch apply -silent -jre "+jdk_home_dir+"/jre -oh "+oracle_product_home_dir+" "+extracted_patch_dir
     Puppet.debug "opatch action: #{action} with command #{command}"
 
-    output = execute command, :failonfail => true ,:uid => user
+    output = Puppet::Util::Execution.execute command, :failonfail => true ,:uid => user
     Puppet.debug "opatch result: #{output}"
 
   end
@@ -37,7 +35,7 @@ Puppet::Type.type(:opatch).provide(:opatch) do
     command  = oracle_product_home_dir+"/OPatch/opatch lsinventory -patch_id -oh "+oracle_product_home_dir+" -invPtrLoc "+orainst_dir+"/oraInst.loc"
     Puppet.debug "opatch_status for patch #{patchName} command: #{command}"
 
-    output = execute command, :failonfail => true ,:uid => user
+    output = Puppet::Util::Execution.execute command, :failonfail => true ,:uid => user
     output.each_line do |li|
       opatch = li[5, li.index(':')-5 ].strip + ";" if (li['Patch'] and li[': applied on'] )
       unless opatch.nil?

@@ -1,4 +1,3 @@
-require 'rexml/document' 
 
 Puppet::Type.type(:bsu_patch).provide(:bsu_patch) do
 
@@ -11,6 +10,7 @@ Puppet::Type.type(:bsu_patch).provide(:bsu_patch) do
     patchName           = resource[:name]
     middleware_home_dir = resource[:middleware_home_dir]
     weblogic_home_dir   = resource[:weblogic_home_dir]
+    patch_download_dir  = resource[:patch_download_dir]
 
     if action == :present
       bsuaction = "-install"
@@ -19,13 +19,31 @@ Puppet::Type.type(:bsu_patch).provide(:bsu_patch) do
     end 
 
     Puppet.debug "bsu_patch action: #{action}"
- 
-    command     = "cd "+middleware_home_dir+"/utils/bsu;"+middleware_home_dir+"/utils/bsu/bsu.sh "+bsuaction+" -patchlist="+patchName+" -prod_dir="+weblogic_home_dir+" -verbose"
+
+    if patch_download_dir == nil
+      command = "cd "+middleware_home_dir+"/utils/bsu;"+middleware_home_dir+"/utils/bsu/bsu.sh "+bsuaction+" -patchlist="+patchName+" -prod_dir="+weblogic_home_dir+" -verbose"
+    else 
+      command = "cd "+middleware_home_dir+"/utils/bsu;"+middleware_home_dir+"/utils/bsu/bsu.sh "+bsuaction+" -patchlist="+patchName+" -prod_dir="+weblogic_home_dir+" -patch_download_dir="+patch_download_dir+" -verbose"
+    end 
     environment = ["USER="+user, "HOME=/home/"+user, "LOGNAME="+user]
     Puppet.debug "bsu_patch action: #{action} with command #{command}"
 
-    output = execute command, :failonfail => true ,:uid => user ,:custom_environment => environment
+    output = Puppet::Util::Execution.execute command, :failonfail => true ,:uid => user ,:custom_environment => environment
     Puppet.debug "bsu_patch result: #{output}"
+    
+    # Check for 'Result: Success' else raise
+
+    result = false
+    output.each_line do |li|
+      unless li.nil?
+        if li.include? "Result: Success"
+          result = true
+        end
+      end 
+    end
+    if result == false
+      fail(output)
+    end 
 
   end
 
@@ -36,18 +54,24 @@ Puppet::Type.type(:bsu_patch).provide(:bsu_patch) do
     middleware_home_dir = resource[:middleware_home_dir]
     weblogic_home_dir   = resource[:weblogic_home_dir]
     jdk_home_dir        = resource[:jdk_home_dir]
+    patch_download_dir  = resource[:patch_download_dir]
 
-    command   = jdk_home_dir+"/bin/java -Xms256m -Xmx256m -jar "+middleware_home_dir+"/utils/bsu/patch-client.jar -report -bea_home="+middleware_home_dir+" -output_format=xml"
+    if patch_download_dir == nil
+      command = "cd "+middleware_home_dir+"/utils/bsu;"+middleware_home_dir+"/utils/bsu/bsu.sh -view -status=applied -prod_dir="+weblogic_home_dir+" -verbose"
+    else 
+      command = "cd "+middleware_home_dir+"/utils/bsu;"+middleware_home_dir+"/utils/bsu/bsu.sh -view -status=applied -prod_dir="+weblogic_home_dir+" -patch_download_dir="+patch_download_dir+" -verbose"
+    end 
+
     Puppet.debug "bsu_status for patch #{patchName} command: #{command}"
+    output = Puppet::Util::Execution.execute command, :failonfail => true ,:uid => user
 
-    output = execute command, :failonfail => true ,:uid => user
-    doc = REXML::Document.new output
-     
-    root = doc.root
-    root.elements.each("//patchDesc") do |patch|
-      if patch.elements['patchId'].text == patchName
-        Puppet.debug "found patch"
-        return patchName
+    output.each_line do |li|
+      unless li.nil?
+        Puppet.debug "line #{li}" 
+        if li.include? patchName
+          Puppet.debug "found patch"
+          return patchName
+        end
       end 
     end
     return "NotFound"

@@ -2,43 +2,18 @@
 #
 # installs oracle patches for Oracle products
 #
-#
-# === Examples
-#
-#    $jdkWls11gJDK = 'jdk1.7.0_09'
-#
-#  case $operatingsystem {
-#     CentOS, RedHat, OracleLinux, Ubuntu, Debian: {
-#       $oracleHome   = "/opt/oracle/wls/wls11g/Oracle_OSB1"
-#       $user         = "oracle"
-#       $group        = "dba"
-#     }
-#     windows: {
-#       $oracleHome   = "c:/oracle/wls/wls11g/Oracle_OSB1"
-#       $user         = "Administrator"
-#       $group        = "Administrators"
-#     }
-#  }
-#
-#  wls::opatch{'14389126_osb_patch':
-#    oracleProductHome => $oracleHome ,
-#    fullJDKName       => $defaultFullJDK,
-#    patchId           => '14389126',
-#    patchFile         => 'p14389126_111160_Generic.zip',
-#    user              => $user,
-#    group             => $group,
-#  }
-##
-define wls::opatch(  $oracleProductHome = undef,
-                     $fullJDKName       = undef,
-                     $patchId           = undef,
-                     $patchFile         = undef,
-                     $user              = 'oracle',
-                     $group             = 'dba',
-                     $downloadDir       = '/install',
-                     $puppetDownloadMntPoint  = undef,
-                     $remoteFile              = true,
-                    ) {
+define wls::opatch(  
+  $ensure                  = 'present',  #present|absent
+  $oracleProductHome       = undef,
+  $fullJDKName             = undef,
+  $patchId                 = undef,
+  $patchFile               = undef,
+  $user                    = 'oracle',
+  $group                   = 'dba',
+  $downloadDir             = '/install',
+  $puppetDownloadMntPoint  = undef,
+  $remoteFile              = true,
+) {
 
   case $operatingsystem {
     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
@@ -106,27 +81,32 @@ define wls::opatch(  $oracleProductHome = undef,
      $mountPoint =  $puppetDownloadMntPoint
   }
 
-   # the patch used by the opatch
-  if $remoteFile == true {
-    file { "${path}/${patchFile}":
-     source  => "${mountPoint}/${patchFile}",
+  if $ensure == "present" {
+    # the patch used by the opatch
+    if $remoteFile == true {
+      file { "${path}/${patchFile}":
+       source  => "${mountPoint}/${patchFile}",
+      }
     }
   }
-
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
-      if $remoteFile == true {
-        exec { "extract opatch ${patchFile} ${title}":
-          command => "unzip -n ${path}/${patchFile} -d ${path}",
-          require => File ["${path}/${patchFile}"],
-          creates => "${path}/${patchId}",
-        }
-      } else {
-        exec { "extract opatch ${patchFile} ${title}":
-          command => "unzip -n ${puppetDownloadMntPoint}/${patchFile} -d ${path}",
-          creates => "${path}/${patchId}",
+      if $ensure == "present" {
+        if $remoteFile == true {
+          exec { "extract opatch ${patchFile} ${title}":
+            command => "unzip -n ${path}/${patchFile} -d ${path}",
+            require => File ["${path}/${patchFile}"],
+            creates => "${path}/${patchId}",
+            before  => Opatch[$patchId],
+          }
+        } else {
+          exec { "extract opatch ${patchFile} ${title}":
+            command => "unzip -n ${puppetDownloadMntPoint}/${patchFile} -d ${path}",
+            creates => "${path}/${patchId}",
+            before  => Opatch[$patchId],
+          }
         }
       }
 
@@ -143,13 +123,12 @@ define wls::opatch(  $oracleProductHome = undef,
       }
 
       opatch{ $patchId:
-        ensure                  => present,
+        ensure                  => $ensure,
         os_user                 => $user,
         oracle_product_home_dir => $oracleProductHome,
         orainst_dir             => $oraInstPath,
         jdk_home_dir            => $JAVA_HOME,
         extracted_patch_dir     => "${path}/${patchId}",
-        require                 => Exec["extract opatch ${patchFile} ${title}"],
       }
 
      }
