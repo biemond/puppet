@@ -39,7 +39,7 @@ WEBLOGIC_ADMINISTRATOR_USERNAME=<%= @wlsUser %>
 WEBLOGIC_ADMINISTRATOR_PASSWORD=<%= @password %>
 
 #Provide WebLogic Admin Server URL of the domain in the format t3://hostname:port.
-WEBLOGIC_ADMIN_SERVER_URL=t3://oimapp.alfa.local:7001
+WEBLOGIC_ADMIN_SERVER_URL=t3://<%= @adminServerAddress %>:<%= @adminServerport %>
 
 #Provide the password for the System Administrator(xelsysadm). Valid Passwords must contain at least 6 characters, must begin with an alphabetic character, and include at least one number, one uppercase letter and one lowercase letter. Password cannot contain firstname, lastname and loginname of OIM.
 OIM_ADMINISTRATOR_PASSWORD=<%= @oimPassword %>

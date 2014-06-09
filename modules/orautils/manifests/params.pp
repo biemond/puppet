@@ -1,8 +1,7 @@
 #
 #
 #
-class orautils::params()
-{
+class orautils::params(){
 
   $osOracleHome = $::hostname ? {
     wls12           => "/oracle/product",
@@ -51,6 +50,10 @@ class orautils::params()
 
   $oraUser      = $::hostname ? { 
     default => "oracle",
+  }
+
+  $oraGroup     = $::hostname ? { 
+    default => "dba",
   }
 
   $userHome     = $::operatingsystem ? { 

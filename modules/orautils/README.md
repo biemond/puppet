@@ -5,6 +5,7 @@ Oracle WebLogic orautils puppet module
 
 changes
 
+- 0.2.6 allow to change group param for the scripts 
 - 0.2.5 Custom Identity and Trust store support in all the scripts 
 - 0.2.4 JSSE option, stopWebLogicAdmin localhost bugfix and nodemanager service script fix 
 - 0.2.2 nodemanager address param for the startWebLogicAdmin script ( instead of localhost)  
@@ -43,6 +44,7 @@ use:
         osMdwHomeParam         => "/opt/oracle/wls/Middleware11gR1",
         osWlHomeParam          => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3",
         oraUserParam           => "oracle",
+        oraGroupParam          => "dba",
         osDomainParam          => "osbSoaDomain",
         osDomainPathParam      => "/opt/oracle/wls/Middleware11gR1/user_projects/domains/osbSoaDomain",
         nodeMgrPathParam       => "/opt/oracle/wls/Middleware11gR1/wlserver_10.3/server/bin",
@@ -64,6 +66,7 @@ or with hiera  ( include orautils )
     orautils::osMdwHomeParam:         "/opt/oracle/wls/Middleware11gR1"
     orautils::osWlHomeParam:          "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
     orautils::oraUserParam:           "oracle"
+    orautils::oraGroupParam:          "dba"
     
     orautils::osDomainParam:          "Wls1036"
     orautils::osDomainPathParam:      "/opt/oracle/wlsdomains/domains/Wls1036"
