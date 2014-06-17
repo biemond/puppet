@@ -179,22 +179,26 @@ if ( $continue ) {
          exec { "extract ${soaFile1}":
           command => "unzip -o ${path}/${soaFile1} -d ${path}/soa",
           creates => "${path}/soa/Disk1",
+          logoutput => false,
           require => [File ["${path}/${soaFile2}"],File ["${path}/${soaFile1}"]],
          }
          exec { "extract ${soaFile2}":
           command => "unzip -o ${path}/${soaFile2} -d ${path}/soa",
           creates => "${path}/soa/Disk5",
+          logoutput => false,
           require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
          }
       } else {
          exec { "extract ${soaFile1}":
           command => "unzip -o ${puppetDownloadMntPoint}/${soaFile1} -d ${path}/soa",
           creates => "${path}/soa/Disk1",
+          logoutput => false,
          }
          exec { "extract ${soaFile2}":
           command => "unzip -o ${puppetDownloadMntPoint}/${soaFile2} -d ${path}/soa",
           creates => "${path}/soa/Disk5",
           require => Exec["extract ${soaFile1}"],
+          logoutput => false,
          }
       }
       exec { "install soa ${title}":
@@ -209,22 +213,26 @@ if ( $continue ) {
          exec { "extract ${soaFile1}":
           command => "unzip ${path}/${soaFile1} -d ${path}/soa",
           creates => "${path}/soa/Disk1",
+          logoutput => false,
           require => [File ["${path}/${soaFile2}"],File ["${path}/${soaFile1}"]],
          }
          exec { "extract ${soaFile2}":
           command => "unzip ${path}/${soaFile2} -d ${path}/soa",
           creates => "${path}/soa/Disk5",
+          logoutput => false,
           require => [File ["${path}/${soaFile2}"],Exec["extract ${soaFile1}"]],
          }
       } else {
          exec { "extract ${soaFile1}":
           command => "unzip ${puppetDownloadMntPoint}/${soaFile1} -d ${path}/soa",
           creates => "${path}/soa/Disk1",
+          logoutput => false,
          }
          exec { "extract ${soaFile2}":
           command => "unzip ${puppetDownloadMntPoint}/${soaFile2} -d ${path}/soa",
           creates => "${path}/soa/Disk5",
           require => Exec["extract ${soaFile1}"],
+          logoutput => false,
          }
       }
 
@@ -248,23 +256,27 @@ if ( $continue ) {
           command => "${checkCommand} unzip ${path}/${soaFile1} -d ${path}/soa",
           require => [Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],File ["${path}/${soaFile1}"]],
           creates => "${path}/soa/Disk1",
+          logoutput => false,
          }
          exec { "extract ${soaFile2}":
           command => "${checkCommand} unzip ${path}/${soaFile2} -d ${path}/soa",
           require => [Exec["extract ${soaFile1}"],File ["${path}/${soaFile2}"]],
           creates => "${path}/soa/Disk5",
+          logoutput => false,
          }
       } else {
          exec { "extract ${soaFile1}":
           command => "${checkCommand} unzip ${puppetDownloadMntPoint}/${soaFile1} -d ${path}/soa",
           require => Registry_Value ["HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\inst_loc"],
           creates => "${path}/soa/Disk1",
+          logoutput => false,
          }
          exec { "extract ${soaFile2}":
           command => "${checkCommand} unzip ${puppetDownloadMntPoint}/${soaFile2} -d ${path}/soa",
           require => Exec["extract ${soaFile1}"],
           creates => "${path}/soa/Disk5",
-         }
+           logoutput => false,
+        }
       }
 
         exec {"icacls soa disk ${title}":

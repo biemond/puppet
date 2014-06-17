@@ -178,12 +178,14 @@ if ( $continue ) {
           require => [File ["${path}/${osbFile}"],
                       File ["${path}/${title}silent_osb.xml"]],
           creates => "${path}/osb",
+          logoutput => false,
          }
         } else {
          exec { "extract ${osbFile}":
           command => "unzip ${mountPoint}/${osbFile} -d ${path}/osb",
           require => File ["${path}/${title}silent_osb.xml"],
           creates => "${path}/osb",
+          logoutput => false,
          }
        }
 
@@ -202,12 +204,14 @@ if ( $continue ) {
           command => "unzip ${path}/${osbFile} -d ${path}/osb",
           require => [File ["${path}/${osbFile}"],File ["${path}/${title}silent_osb.xml"]],
           creates => "${path}/osb",
+          logoutput => false,
          }
         } else {
          exec { "extract ${osbFile}":
           command => "unzip ${mountPoint}/${osbFile} -d ${path}/osb",
           require => File ["${path}/${title}silent_osb.xml"],
           creates => "${path}/osb",
+          logoutput => false,
          }
        }
 
@@ -250,12 +254,14 @@ if ( $continue ) {
           require => File ["${path}/${osbFile}"],
           creates => "${path}/osb/Disk1",
           cwd     => $path,
+          logoutput => false,
          }
         } else {
          exec { "extract ${osbFile}":
           command => "${checkCommand} unzip ${mountPoint}/${osbFile} -d ${path}/osb",
           creates => "${path}/osb/Disk1",
           cwd     => $path,
+          logoutput => false,
          }
        }
 

@@ -99,6 +99,7 @@ define wls::opatch(
             command => "unzip -n ${path}/${patchFile} -d ${path}",
             require => File ["${path}/${patchFile}"],
             creates => "${path}/${patchId}",
+            logoutput => false,
             before  => Opatch[$patchId],
           }
         } else {
@@ -106,6 +107,7 @@ define wls::opatch(
             command => "unzip -n ${puppetDownloadMntPoint}/${patchFile} -d ${path}",
             creates => "${path}/${patchId}",
             before  => Opatch[$patchId],
+            logoutput => false,
           }
         }
       }
