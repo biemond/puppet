@@ -1,15 +1,15 @@
 #!<%= @shell %>
 # *************************************************************************
-osWlHome=<%= @osWlHome %>
-osDomain=<%= @osDomain %>
-osDomainPath=<%= @osDomainPath %>
-nodeMgrPort=<%= @nodeMgrPort %>
-hostname=<%= @nodeMgrAddress %>
-user=<%= @wlsUser %>
-password=<%= @wlsPassword %>
-wlsAdminServer=<%= @wlsAdminServer %>
+osWlHome=<%= @osWlHomeParam %>
+osDomain=<%= @osDomainParam %>
+osDomainPath=<%= @osDomainPathParam %>
+nodeMgrPort=<%= @nodeMgrPortParam %>
+hostname=<%= @nodeMgrAddressParam %>
+user=<%= @wlsUserParam %>
+password=<%= @wlsPasswordParam %>
+wlsAdminServer=<%= @wlsAdminServerParam %>
 
-<% if @jsseEnabled == true %>
+<% if @jsseEnabledParam == true %>
 export CONFIG_JVM_ARGS='-Dweblogic.ssl.JSSEEnabled=true -Dweblogic.security.SSL.enableJSSE=true <%= @trust_env %>'
 <% else %>
 export CONFIG_JVM_ARGS='-Dweblogic.ssl.JSSEEnabled=false -Dweblogic.security.SSL.enableJSSE=false <%= @trust_env %>'

@@ -2,152 +2,38 @@
 #
 #
 class orautils(
-  $osOracleHomeParam       = undef,
-  $oraInventoryParam       = undef,
-  $osDomainTypeParam       = undef,
-  $osLogFolderParam        = undef,
-  $osDownloadFolderParam   = undef,
-  $osMdwHomeParam          = undef,
-  $osWlHomeParam           = undef,
-  $oraUserParam            = undef,
-  $oraGroupParam           = undef,
-  $osDomainParam           = undef,
-  $osDomainPathParam       = undef,
-  $nodeMgrPathParam        = undef,
-  $nodeMgrPortParam        = undef,
-  $nodeMgrAddressParam     = undef,
-  $wlsUserParam            = undef,
-  $wlsPasswordParam        = undef,
-  $wlsAdminServerParam     = undef,
-  $jsseEnabledParam        = undef,
+  $osOracleHomeParam       = $orautils::params::osOracleHome,
+  $oraInventoryParam       = $orautils::params::oraInventory,
+  $osDomainTypeParam       = $orautils::params::osDomainType,
+  $osLogFolderParam        = $orautils::params::osLogFolder,
+  $osDownloadFolderParam   = $orautils::params::osDownloadFolder,
+  $osMdwHomeParam          = $orautils::params::osMdwHome,
+  $osWlHomeParam           = $orautils::params::osWlHome,
+  $oraUserParam            = $orautils::params::oraUser,
+  $oraGroupParam           = $orautils::params::oraGroup,
+  $osDomainParam           = $orautils::params::osDomain,
+  $osDomainPathParam       = $orautils::params::osDomainPath,
+  $nodeMgrPathParam        = $orautils::params::nodeMgrPath,
+  $nodeMgrPortParam        = $orautils::params::nodeMgrPort,
+  $nodeMgrAddressParam     = $orautils::params::nodeMgrAddress,
+  $wlsUserParam            = $orautils::params::wlsUser,
+  $wlsPasswordParam        = $orautils::params::wlsPassword,
+  $wlsAdminServerParam     = $orautils::params::wlsAdminServer,
+  $jsseEnabledParam        = $orautils::params::jsseEnabled,
   $customTrust             = false,
   $trustKeystoreFile       = undef,
   $trustKeystorePassphrase = undef,
-) {
+) inherits orautils::params  {
 
-  include orautils::params
 
   case $::kernel {
     'Linux', 'SunOS': {
-
-    if $oraUserParam == undef {
-      $user           = $orautils::params::oraUser
-    } else {
-      $user           = $oraUserParam
-    }
-    if $oraGroupParam == undef {
-      $group          = $orautils::params::oraGroup
-    } else {
-      $group          = $oraGroupParam
-    }
 
     $mode             = "0775"
 
     $shell            = $orautils::params::shell
     $userHome         = $orautils::params::userHome
     $oraInstHome      = $orautils::params::oraInstHome
-
-    if ( $osDomainTypeParam == undef ) {
-      $osDomainType = $orautils::params::osDomainType
-    } else {
-      $osDomainType = $osDomainTypeParam
-    }
-
-    if ( $osOracleHomeParam == undef ) {
-      $osOracleHome = $orautils::params::osOracleHome
-    } else {
-      $osOracleHome = $osOracleHomeParam
-    }
-
-    if ( $osDownloadFolderParam == undef ) {
-      $osDownloadFolder = $orautils::params::osDownloadFolder
-    } else {
-      $osDownloadFolder = $osDownloadFolderParam
-    }
-
-    if ( $osMdwHomeParam == undef ) {
-      $osMdwHome = $orautils::params::osMdwHome
-    } else {
-      $osMdwHome = $osMdwHomeParam
-    }
-
-    if ( $osWlHomeParam == undef ) {
-      $osWlHome = $orautils::params::osWlHome
-    } else {
-      $osWlHome = $osWlHomeParam
-    }
-
-    if ( $oraUserParam == undef ) {
-      $oraUser = $orautils::params::oraUser
-    } else {
-      $oraUser = $oraUserParam
-    }
-
-    if ( $osLogFolderParam == undef ) {
-      $osLogFolder = $orautils::params::osLogFolder
-    } else {
-      $osLogFolder = $osLogFolderParam
-    }
-
-    if ( $oraInventoryParam == undef ) {
-      $oraInventory  = $orautils::params::oraInventory
-    } else {
-      $oraInventory  = $oraInventoryParam
-    }
-
-    if ( $osDomainParam == undef ) {
-      $osDomain         = $orautils::params::osDomain
-    } else {
-      $osDomain         = $osDomainParam
-    }
-
-    if ( $osDomainPathParam == undef ) {
-      $osDomainPath     = $orautils::params::osDomainPath
-    } else {
-      $osDomainPath     = $osDomainPathParam
-    }
-
-    if ( $nodeMgrPortParam == undef ) {
-      $nodeMgrPort      = $orautils::params::nodeMgrPort
-    } else {
-      $nodeMgrPort      = $nodeMgrPortParam
-    }
-
-    if ( $nodeMgrPathParam == undef ) {
-      $nodeMgrPath  = $orautils::params::nodeMgrPath
-    } else {
-      $nodeMgrPath = $nodeMgrPathParam
-    }
-
-    if ( $wlsUserParam == undef ) {
-      $wlsUser = $orautils::params::wlsUser
-    } else {
-      $wlsUser = $wlsUserParam
-    }
-
-    if ( $wlsPasswordParam == undef ) {
-      $wlsPassword = $orautils::params::wlsPassword
-    } else {
-      $wlsPassword = $wlsPasswordParam
-    }
-
-    if ( $wlsAdminServerParam == undef ) {
-      $wlsAdminServer = $orautils::params::wlsAdminServer
-    } else {
-      $wlsAdminServer = $wlsAdminServerParam
-    }
-
-    if ( $nodeMgrAddressParam == undef ) {
-      $nodeMgrAddress = $orautils::params::nodeMgrAddress
-    } else {
-      $nodeMgrAddress = $nodeMgrAddressParam
-    }
-
-    if ( $jsseEnabledParam == undef ) {
-      $jsseEnabled = $orautils::params::jsseEnabled
-    } else {
-      $jsseEnabled = $jsseEnabledParam
-    }
 
     if $customTrust == true {
       $trust_env = "-Dweblogic.security.TrustKeyStore=CustomTrust -Dweblogic.security.CustomTrustKeyStoreFileName=${trustKeystoreFile} -Dweblogic.security.CustomTrustKeystorePassPhrase=${trustKeystorePassphrase}"
@@ -160,8 +46,8 @@ class orautils(
         ensure  => directory,
         recurse => false,
         replace => false,
-        owner   => $user,
-        group   => $group,
+        owner   => $oraUserParam,
+        group   => $oraGroupParam,
         mode    => $mode,
       }
     }
@@ -171,8 +57,8 @@ class orautils(
         ensure  => directory,
         recurse => false,
         replace => false,
-        owner   => $user,
-        group   => $group,
+        owner   => $oraUserParam,
+        group   => $oraGroupParam,
         mode    => $mode,
         require => File['/opt/scripts'],
       }
@@ -182,8 +68,8 @@ class orautils(
       ensure  => present,
       path    => "/opt/scripts/wls/showStatus.sh",
       content => template("orautils/wls/showStatus.sh.erb"),
-      owner   => $user,
-      group   => $group,
+      owner   => $oraUserParam,
+      group   => $oraGroupParam,
       mode    => $mode,
       require => File['/opt/scripts/wls'],
     }
@@ -192,8 +78,8 @@ class orautils(
       ensure  => present,
       path    => "/opt/scripts/wls/stopNodeManager.sh",
       content => template("orautils/wls/stopNodeManager.sh.erb"),
-      owner   => $user,
-      group   => $group,
+      owner   => $oraUserParam,
+      group   => $oraGroupParam,
       mode    => $mode,
       require => File['/opt/scripts/wls'],
     }
@@ -212,8 +98,8 @@ class orautils(
       ensure  => present,
       path    => "/opt/scripts/wls/startNodeManager.sh",
       content => template("orautils/startNodeManager.sh.erb"),
-      owner   => $user,
-      group   => $group,
+      owner   => $oraUserParam,
+      group   => $oraGroupParam,
       mode    => $mode,
       require => File['/opt/scripts/wls'],
     }
@@ -222,8 +108,8 @@ class orautils(
       ensure  => present,
       path    => "/opt/scripts/wls/startWeblogicAdmin.sh",
       content => template("orautils/startWeblogicAdmin.sh.erb"),
-      owner   => $user,
-      group   => $group,
+      owner   => $oraUserParam,
+      group   => $oraGroupParam,
       mode    => $mode,
       require => File['/opt/scripts/wls'],
     }
@@ -232,8 +118,8 @@ class orautils(
       ensure  => present,
       path    => "/opt/scripts/wls/stopWeblogicAdmin.sh",
       content => template("orautils/stopWeblogicAdmin.sh.erb"),
-      owner   => $user,
-      group   => $group,
+      owner   => $oraUserParam,
+      group   => $oraGroupParam,
       mode    => $mode,
       require => File['/opt/scripts/wls'],
     }
