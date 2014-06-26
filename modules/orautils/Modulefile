@@ -1,5 +1,5 @@
 name 'biemond-orautils'
-version '0.2.7'
+version '0.2.8'
 
 author 'Edwin Biemond'
 license 'Apache 2.0'

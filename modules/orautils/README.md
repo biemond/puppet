@@ -5,6 +5,7 @@ Oracle WebLogic orautils puppet module
 
 changes
 
+- 0.2.8 weblogic 12.1.3 support and cleanenv script fix
 - 0.2.7 cleanup of init.pp 
 - 0.2.6 allow to change group param for the scripts 
 - 0.2.5 Custom Identity and Trust store support in all the scripts 
