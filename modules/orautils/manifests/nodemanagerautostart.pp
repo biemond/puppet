@@ -26,7 +26,7 @@ define orautils::nodemanagerautostart
     } else {
       $nodeMgrLckFile = "${logDir}/nodemanager.log.lck"
     }
-  } elsif $version == "1212" {
+  } elsif $version == "1212" or $version == "1213" {
     $nodeMgrPath    = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
     $nodeMgrBinPath = "${wlHome}/../user_projects/domains/${domain}/bin"
     $scriptName = "nodemanager_${domain}"
