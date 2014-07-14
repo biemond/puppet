@@ -283,7 +283,7 @@ if ( $continue ) {
          }
          windows: {
             exec { "install wls ${title}":
-              command     => "${checkCommand} /c java -Xmx1024m -jar ${path}/${wlsFile} -mode=silent -silent_xml=${path}/silent${version}.xml",
+              command     => "${checkCommand} java -Xmx1024m -jar ${path}/${wlsFile} -mode=silent -silent_xml=${path}/silent${version}.xml",
               timeout     => 0,
               environment => ["JAVA_VENDOR=Sun",
                               "JAVA_HOME=C:\\oracle\\${fullJDKName}"],
