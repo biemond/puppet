@@ -1,10 +1,10 @@
-# == define: oradb::utils::structure
+# == define: oradb::utils::dbstructure
 #
 #  create directories for the download folder and oracle base home
 #
 #
 ##
-define oradb::utils::structure (
+define oradb::utils::dbstructure (
   $oracle_base_home_dir = undef,
   $ora_inventory_dir    = undef,
   $os_user              = undef,

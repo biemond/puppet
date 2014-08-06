@@ -1,0 +1,5 @@
+.bundle
+*.lock
+coverage
+spec/reports
+pkg

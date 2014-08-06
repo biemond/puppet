@@ -1,10 +1,10 @@
-# == define: oradb::utils::orainst
+# == define: oradb::utils::dborainst
 #
 #  creates oraInst.loc for oracle products
 #
 #
 ##
-define oradb::utils::orainst
+define oradb::utils::dborainst
 (
   $ora_inventory_dir = undef,
   $os_group          = undef,
