@@ -8,7 +8,7 @@ describe 'jdk7::urandomfix' , :type => :class do
     let(:facts) {{ :kernel          => 'Windows',
                    :operatingsystem => 'Windows'}}
     it do
-      expect { should contain_exec("set urandom /etc/sysconfig/rngd")
+      expect { should contain_exec('set urandom /etc/sysconfig/rngd')
              }.to raise_error(Puppet::Error, /Unrecognized operating system/)
     end       
   end
@@ -16,7 +16,7 @@ describe 'jdk7::urandomfix' , :type => :class do
     let(:facts) {{ :kernel          => 'SunOS',
                    :operatingsystem => 'Solaris'}}
     it do
-      expect { should contain_exec("set urandom /etc/sysconfig/rngd")
+      expect { should contain_exec('set urandom /etc/sysconfig/rngd')
              }.to raise_error(Puppet::Error, /Unrecognized operating system/)
     end       
   end
@@ -28,18 +28,18 @@ describe 'jdk7::urandomfix' , :type => :class do
     
     describe "on operatingsystem CentOS" do
       it do 
-        should contain_exec("set urandom /etc/sysconfig/rngd").with({
+        should contain_exec('set urandom /etc/sysconfig/rngd').with({
             'user'  => 'root',
           })    
       end
       it do
-        should contain_service("start rngd service").with({
+        should contain_service('start rngd service').with({
             'ensure'     => true,
             'enable'     => true,
           })
       end
       it do 
-        should contain_exec("chkconfig rngd").with({
+        should contain_exec('chkconfig rngd').with({
             'user'    => 'root',
             'command' => "chkconfig --add rngd",
           })    
@@ -56,12 +56,12 @@ describe 'jdk7::urandomfix' , :type => :class do
 
     describe "on operatingsystem #{system}" do
       it do 
-        should contain_exec("set urandom /etc/default/rng-tools").with({
+        should contain_exec('set urandom /etc/default/rng-tools').with({
             'user'  => 'root',
           })
       end
       it do
-        should contain_service("start rng-tools service").with({
+        should contain_service('start rng-tools service').with({
             'ensure'     => true,
             'enable'     => true,
           })

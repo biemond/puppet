@@ -22,7 +22,7 @@ define jdk7::install7 (
   $cryptographyExtensionFile = undef,
   $urandomJavaFix            = true,
   $rsakeySizeFix             = false,  # set true for weblogic 12.1.1 and jdk 1.7 > version 40
-  $sourcePath                = "puppet:///modules/jdk7/",
+  $sourcePath                = 'puppet:///modules/jdk7/',
 ) {
 
   if ( $x64 == true ) {
@@ -43,27 +43,14 @@ define jdk7::install7 (
       fail("Unrecognized operating system ${::kernel}, please use it on a Linux host")
     }
   }
-  
 
   $jdkfile = "jdk-${version}-${installVersion}-${type}${installExtension}"
-
-  # set the defaults for Exec
-  Exec {
-    path => $path,
-    user => $user,
-  }
-
-  # set the defaults for File
-  File {
-    replace => false,
-    owner   => $user,
-    group   => $group,
-    mode    => 0777,
-  }
 
   exec { "create ${$downloadDir} directory":
     command => "mkdir -p ${$downloadDir}",
     unless  => "test -d ${$downloadDir}",
+    path    => $path,
+    user    => $user,
   }
 
   # check install folder
@@ -71,6 +58,10 @@ define jdk7::install7 (
     file { $downloadDir:
       ensure  => directory,
       require => Exec["create ${$downloadDir} directory"],
+      replace => false,
+      owner   => $user,
+      group   => $group,
+      mode    => '0777',
     }
   }
 
@@ -79,6 +70,10 @@ define jdk7::install7 (
     ensure  => file,
     source  => "${sourcePath}/${jdkfile}",
     require => File[$downloadDir],
+    replace => false,
+    owner   => $user,
+    group   => $group,
+    mode    => '0777',
   }
 
   if ( $cryptographyExtensionFile != undef ) {
@@ -87,15 +82,18 @@ define jdk7::install7 (
       source  => "${sourcePath}/${cryptographyExtensionFile}",
       require => File[$downloadDir],
       before  => File["${downloadDir}/${jdkfile}"],
+      replace => false,
+      owner   => $user,
+      group   => $group,
+      mode    => '0777',
     }
   }
-
 
   # install on client
   jdk7::javaexec { "jdkexec ${title} ${version}":
     path                      => $downloadDir,
     fullVersion               => $fullVersion,
-    javaHomes                 => $javaHomes,    
+    javaHomes                 => $javaHomes,
     jdkfile                   => $jdkfile,
     cryptographyExtensionFile => $cryptographyExtensionFile,
     alternativesPriority      => $alternativesPriority,
@@ -108,20 +106,26 @@ define jdk7::install7 (
     exec { "set urandom ${fullVersion}":
       command => "sed -i -e's/securerandom.source=file:\\/dev\\/urandom/securerandom.source=file:\\/dev\\/.\\/urandom/g' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
       unless  => "grep '^securerandom.source=file:/dev/./urandom' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
-      require => Javaexec["jdkexec ${title} ${version}"],
+      require => Jdk7::Javaexec["jdkexec ${title} ${version}"],
+      path    => $path,
+      user    => $user,
     }
   }
   if ($rsakeySizeFix == true) {
     exec { "sleep 3 sec for urandomJavaFix ${fullVersion}":
-      command => "/bin/sleep 3",
+      command => '/bin/sleep 3',
       unless  => "grep 'RSA keySize < 512' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
-      require => Javaexec["jdkexec ${title} ${version}"],
-    }   
+      require => Jdk7::Javaexec["jdkexec ${title} ${version}"],
+      path    => $path,
+      user    => $user,
+    }
     exec { "set RSA keySize ${fullVersion}":
       command     => "sed -i -e's/RSA keySize < 1024/RSA keySize < 512/g' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
       unless      => "grep 'RSA keySize < 512' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
       subscribe   => Exec["sleep 3 sec for urandomJavaFix ${fullVersion}"],
       refreshonly => true,
+      path        => $path,
+      user        => $user,
     }
-  }    
+  }
 }

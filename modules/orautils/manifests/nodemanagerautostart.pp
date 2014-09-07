@@ -2,9 +2,8 @@
 #
 #  autostart of the nodemanager for linux
 #
-define orautils::nodemanagerautostart
-(
-  $version                 = "1111",
+define orautils::nodemanagerautostart(
+  $version                 = '1111',
   $wlHome                  = undef,
   $user                    = 'oracle',
   $domain                  = undef,
@@ -13,9 +12,8 @@ define orautils::nodemanagerautostart
   $customTrust             = false,
   $trustKeystoreFile       = undef,
   $trustKeystorePassphrase = undef,
-) 
-{
-  if ( $version == "1111" or $version == "1211" or $version == "1036" ) {
+){
+  if ( $version in ['1111','1211','1036']) {
     $nodeMgrPath    = "${wlHome}/common/nodemanager"
     $nodeMgrBinPath = "${wlHome}/server/bin"
 
@@ -26,7 +24,7 @@ define orautils::nodemanagerautostart
     } else {
       $nodeMgrLckFile = "${logDir}/nodemanager.log.lck"
     }
-  } elsif $version == "1212" or $version == "1213" {
+  } elsif ( $version in ['1212','1213']){
     $nodeMgrPath    = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
     $nodeMgrBinPath = "${wlHome}/../user_projects/domains/${domain}/bin"
     $scriptName = "nodemanager_${domain}"
@@ -47,38 +45,33 @@ define orautils::nodemanagerautostart
     }
   }
 
-  case $operatingsystem {
+  case $::operatingsystem {
     'CentOS', 'RedHat', 'OracleLinux', 'Ubuntu', 'Debian', 'SLES': {
-
-      $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-
-      Exec { 
-        path      => $execPath,
-        logoutput => true,
-      }
+      $execPath = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin'
     }
     default: {
-      fail("Unrecognized operating system")
+      fail('Unrecognized operating system')
     }
   }
 
   if $customTrust == true {
     $trust_env = "-Dweblogic.security.TrustKeyStore=CustomTrust -Dweblogic.security.CustomTrustKeyStoreFileName=${trustKeystoreFile} -Dweblogic.security.CustomTrustKeystorePassPhrase=${trustKeystorePassphrase}"
   } else {
-    $trust_env = ""
+    $trust_env = ''
   }
 
   file { "/etc/init.d/${scriptName}" :
     ensure  => present,
-    mode    => "0755",
-    content => template("orautils/nodemanager.erb"),
+    mode    => '0755',
+    content => template('orautils/nodemanager.erb'),
   }
 
   exec { "chkconfig ${scriptName}":
-    command => "chkconfig --add ${scriptName}",
-    require => File["/etc/init.d/${scriptName}"],
-    user    => 'root',
-    unless  => "chkconfig | /bin/grep '${scriptName}'",
+    command   => "chkconfig --add ${scriptName}",
+    require   => File["/etc/init.d/${scriptName}"],
+    user      => 'root',
+    unless    => "chkconfig | /bin/grep '${scriptName}'",
+    path      => $execPath,
+    logoutput => true,
   }
-
 }

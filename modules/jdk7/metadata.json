@@ -1,13 +1,78 @@
 {
   "name": "biemond-jdk7",
-  "version": "0.3.6",
-  "summary": "Oracle JDK7 puppet module optimized for weblogic urandom rngd entropy",
+  "version": "0.4.3",
+  "summary": "Oracle JDK7 & JDK8 puppet module optimized for weblogic urandom rngd entropy",
   "author": "Edwin Biemond",
-  "description": "Oracle JDK7 puppet module with low on entropy fix, you can use the rngd or rng-tools service or set urandom in Java",
   "dependencies": [],
-  "types": [],
-  "checksums": {},
-  "source": "https://github.com/biemond/puppet/tree/master/modules/jdk7",
-  "project_page": "http://technology.amis.nl/2012/10/13/configure-fmw-servers-with-puppet/",
-  "license": "Apache 2.0"
+  "source": "https://github.com/biemond/biemond-jdk7",
+  "project_page": "https://github.com/biemond/biemond-jdk7",
+  "license": "Apache 2.0",
+  "tags": ["jdk7", "jdk8", "oracle","java", "rngd", "rng-tools","urandom", "entropy"],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    {
+      "operatingsystem": "SLES",
+      "operatingsystemrelease": [
+        "11 SP1"
+      ]
+    },
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "10.04",
+        "12.04"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "pe",
+      "version_requirement": ">=2.7.20"
+    },
+    {
+      "name": "puppet",
+      "version_requirement": ">=2.7.20"
+    }
+  ]   
 }

@@ -1,41 +1,41 @@
 #
 #
-#
-class orautils::params(){
+class orautils::params
+{
 
   $osOracleHome = $::hostname ? {
-    wls12           => "/oracle/product",
-    soabeta2        => "/opt/oracle/wls",
-    oimapp          => "/opt/oracle",
-    default         => "/opt/wls",
+    wls12           => '/oracle/product',
+    soabeta2        => '/opt/oracle/wls',
+    oimapp          => '/opt/oracle',
+    default         => '/opt/wls',
   }
 
   $oraInventory = $::hostname ? {
-    soabeta2        => "/home/oracle/soabetainv",
-    wls12           => "/oracle/oraInventory",
-    oimapp          => "/opt/oracle/oraInventory",
-    default         => "/opt/wls/oraInventory",
+    soabeta2        => '/home/oracle/soabetainv',
+    wls12           => '/oracle/oraInventory',
+    oimapp          => '/opt/oracle/oraInventory',
+    default         => '/opt/wls/oraInventory',
   }
 
   $osDomainType = $::hostname ? {
-    devagent31      => "soa",
-    wls12           => "admin",
-    oimapp          => "oim",
-    default         => "web",
+    devagent31      => 'soa',
+    wls12           => 'admin',
+    oimapp          => 'oim',
+    default         => 'web',
   }
 
   $osLogFolder = $::hostname ? { 
-    default    => "/data/logs", 
+    default    => '/data/logs', 
   }
 
 
   $osDownloadFolder = $::hostname ? { 
-    default    => "/data/install",
+    default    => '/data/install',
   }
 
   $shell        = $::operatingsystem ? { 
-    'Solaris' => "/usr/bin/ksh",
-    default   => "/bin/sh",
+    'Solaris' => '/usr/bin/ksh',
+    default   => '/bin/sh',
   }
 
   $osMdwHome     = $::hostname ?  { 
@@ -49,27 +49,27 @@ class orautils::params(){
   }
 
   $oraUser      = $::hostname ? { 
-    default => "oracle",
+    default => 'oracle',
   }
 
   $oraGroup     = $::hostname ? { 
-    default => "dba",
+    default => 'dba',
   }
 
   $userHome     = $::operatingsystem ? { 
-    'Solaris' => "/export/home",
-    default => "/home",
+    'Solaris' => '/export/home',
+    default   => '/home',
   }
 
   $oraInstHome  = $::operatingsystem ? { 
-    'Solaris' => "/var/opt",
-    default => "/etc",
+    'Solaris' => '/var/opt',
+    default   => '/etc',
   }
 
   $osDomain     = $::hostname ? {   
-    wls12           => "Wls12c",
-    oimapp          => "oimDomain",
-    default         => "osbSoaDomain",
+    wls12           => 'Wls12c',
+    oimapp          => 'oimDomain',
+    default         => 'osbSoaDomain',
   }
 
   $osDomainPath = $::hostname ? {
@@ -82,23 +82,23 @@ class orautils::params(){
   }
 
   $nodeMgrPort = $::hostname ?  {
-    default    => "5556",
+    default    => '5556',
   }
 
   $nodeMgrAddress = $::hostname ?  {
-    default    => "localhost",
+    default    => 'localhost',
   }
 
   $wlsUser     = $::hostname ?  {
-    default    => "weblogic",
+    default    => 'weblogic',
   }
 
   $wlsPassword = $::hostname ?  {
-    default    => "weblogic1",
+    default    => 'weblogic1',
   }
 
   $wlsAdminServer = $::hostname ?  {
-    default    => "AdminServer",
+    default    => 'AdminServer',
   }
 
   $jsseEnabled = $::hostname ?  {
