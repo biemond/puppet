@@ -25,6 +25,7 @@ Should work for Puppet 2.7 & 3.0
 - Oracle Database Net configuration
 - Oracle Database Listener
 - Oracle ASM
+- Oracle RAC
 - OPatch upgrade
 - Apply OPatch
 - Create database instances
@@ -450,7 +451,21 @@ or
 
 
 ## Database configuration
-In combination with the oracle puppet module you can create a tablespace,role and oracle user   
+In combination with the oracle puppet module from hajee you can create/change a database init parameter, tablespace,role or an oracle user   
+
+
+    init_param{'processes':
+      ensure  => present,
+      value   => '800',
+      scope   => spfile,
+    }
+
+    init_param{'job_queue_processes':
+      ensure  => present,
+      value   => '2',
+      scope   => both,
+      require => init_param['processes'],
+    }
 
     tablespace {'scott_ts':
       ensure                    => present,
