@@ -65,27 +65,33 @@ install auto start script for the nodemanager of WebLogic ( 10.3, 11g, 12.1.1 ) 
 
 only for WebLogic 12.1.2 and higher
 
-
-     orautils::nodemanagerautostart{"autostart ${wlsDomainName}":
-        version     => "1212",
-        wlHome      => $osWlHome, 
-        user        => $user,
-        domain      => $wlsDomainName,
-        logDir      => $logDir,
-        jsseEnabled => false,
-     }
-
+    orautils::nodemanagerautostart{"autostart ${wlsDomainName}":
+      version     => '1212',
+      wlHome      => '/opt/oracle/middleware12c/wlserver', 
+      user        => 'oracle',
+      domain      => 'Wls1212',
+      domainPath  => ''/opt/oracle/middleware12c/user_projects/domains/Wls1212' 
+    }
 
 only for WebLogic 10 or 11g
 
+    orautils::nodemanagerautostart{"autostart weblogic 11g":
+      version     => "1111",
+      wlHome      => "/opt/oracle/middleware11g/wlserver_10.3", 
+      user        => 'wls',
+    }
 
-     orautils::nodemanagerautostart{"autostart weblogic 11g":
-        version     => "1111",
-        wlHome      => $osWlHome, 
-        user        => $user,
-        jsseEnabled => false,
-     }
+or with JSSE and custom trust
 
+    orautils::nodemanagerautostart{"autostart weblogic 11g":
+      version                 => "1111",
+      wlHome                  => "/opt/oracle/middleware11g/wlserver_10.3", 
+      user                    => 'oracle',
+      jsseEnabled             => true,
+      customTrust             => true,
+      trustKeystoreFile       => '/vagrant/truststore.jks',
+      trustKeystorePassphrase => 'XXX',
+    }
 
 ## Add WebLogic scripts to /opt/scripts/wls
 
