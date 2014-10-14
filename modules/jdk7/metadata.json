@@ -1,6 +1,6 @@
 {
   "name": "biemond-jdk7",
-  "version": "0.4.3",
+  "version": "0.4.5",
   "summary": "Oracle JDK7 & JDK8 puppet module optimized for weblogic urandom rngd entropy",
   "author": "Edwin Biemond",
   "dependencies": [],
@@ -74,5 +74,5 @@
       "name": "puppet",
       "version_requirement": ">=2.7.20"
     }
-  ]   
+  ]
 }

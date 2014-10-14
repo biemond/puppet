@@ -1,9 +1,9 @@
 module Puppet
   newtype(:db_opatch) do
-    desc "This is the Oracle Patch process called OPatch"
+    desc 'This is the Oracle Patch process called OPatch'
 
     newproperty(:ensure) do
-      desc "Whether a patch should be applied."
+      desc 'Whether a patch should be applied.'
 
       newvalue(:present, :event => :opatch_installed) do
         provider.present
@@ -14,7 +14,7 @@ module Puppet
       end
 
       aliasvalue(:installed, :present)
-      aliasvalue(:purged   , :absent)
+      aliasvalue(:purged, :absent)
 
       def retrieve
         provider.status
@@ -67,6 +67,18 @@ module Puppet
     newparam(:ocmrf_file) do
       desc <<-EOT
         The ocmrf file.
+      EOT
+    end
+
+    newparam(:clusterware) do
+      desc <<-EOT
+        clusterware bundle patch
+      EOT
+    end
+
+    newparam(:bundle_sub_patch_id) do
+      desc <<-EOT
+        One of the Sub patch number of the bundle patch
       EOT
     end
 

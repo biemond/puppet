@@ -77,7 +77,7 @@ define oradb::rcu(
         owner  => $user,
         group  => $group,
         source => "${mountPoint}/${rcuFile}",
-        before => Exec ["extract ${rcuFile}"],
+        before => Exec["extract ${rcuFile}"],
       }
     }
     $source = $downloadDir
@@ -87,12 +87,12 @@ define oradb::rcu(
 
   if ! defined(Exec["extract ${rcuFile}"]) {
     exec { "extract ${rcuFile}":
-      command    => "unzip ${source}/${rcuFile} -d ${downloadDir}/rcu_${version}",
-      creates    => "${downloadDir}/rcu_${version}/rcuHome",
-      path       => $execPath,
-      user       => $user,
-      group      => $group,
-      logoutput  => false,
+      command   => "unzip ${source}/${rcuFile} -d ${downloadDir}/rcu_${version}",
+      creates   => "${downloadDir}/rcu_${version}/rcuHome",
+      path      => $execPath,
+      user      => $user,
+      group     => $group,
+      logoutput => false,
     }
   }
 
@@ -103,7 +103,7 @@ define oradb::rcu(
       path    => "${downloadDir}/rcu_${version}/rcuHome/rcu/log",
       recurse => false,
       replace => false,
-      require => Exec ["extract ${rcuFile}"],
+      require => Exec["extract ${rcuFile}"],
       mode    => '0775',
       owner   => $user,
       group   => $group,
@@ -130,7 +130,7 @@ define oradb::rcu(
 
   file { "${downloadDir}/rcu_${version}/rcu_passwords_${title}.txt":
     ensure  => present,
-    require => Exec ["extract ${rcuFile}"],
+    require => Exec["extract ${rcuFile}"],
     content => template('oradb/rcu_passwords.txt.erb'),
     mode    => '0775',
     owner   => $user,
@@ -161,15 +161,15 @@ define oradb::rcu(
   }
 
   db_rcu{ $schemaPrefix:
-    ensure                  => $action,
-    statement               => $statement,
-    os_user                 => $user,
-    oracle_home             => $oracleHome,
-    sys_password            => $sysPassword,
-    db_server               => $dbServer,
-    db_service              => $dbService,
-    require                 => [Exec["extract ${rcuFile}"],
-                                File["${downloadDir}/rcu_${version}/rcu_passwords_${title}.txt"],],
+    ensure       => $action,
+    statement    => $statement,
+    os_user      => $user,
+    oracle_home  => $oracleHome,
+    sys_password => $sysPassword,
+    db_server    => $dbServer,
+    db_service   => $dbService,
+    require      => [Exec["extract ${rcuFile}"],
+                    File["${downloadDir}/rcu_${version}/rcu_passwords_${title}.txt"],],
   }
 
 }
