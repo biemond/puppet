@@ -7,7 +7,7 @@ Puppet::Type.type(:db_opatch).provide(:db_opatch) do
 
   def opatch(action)
     user                    = resource[:os_user]
-    patchName               = resource[:name]
+    patchName               = resource[:patch_id]
     oracle_product_home_dir = resource[:oracle_product_home_dir]
     extracted_patch_dir     = resource[:extracted_patch_dir]
     ocmrf_file              = resource[:ocmrf_file]
@@ -57,7 +57,7 @@ Puppet::Type.type(:db_opatch).provide(:db_opatch) do
 
   def opatch_status
     user                    = resource[:os_user]
-    patchName               = resource[:name]
+    patchName               = resource[:patch_id]
     oracle_product_home_dir = resource[:oracle_product_home_dir]
     orainst_dir             = resource[:orainst_dir]
     bundle_sub_patch_id     = resource[:bundle_sub_patch_id]
@@ -69,10 +69,13 @@ Puppet::Type.type(:db_opatch).provide(:db_opatch) do
       patchId = patchName
     end
 
+    Puppet.debug "search for patchid #{patchId}"
+
     command  = oracle_product_home_dir + '/OPatch/opatch lsinventory -patch_id -oh ' + oracle_product_home_dir + ' -invPtrLoc ' + orainst_dir + '/oraInst.loc'
     Puppet.debug "opatch_status for patch #{patchName} command: #{command}"
 
     output = `su - #{user} -c '#{command}'`
+    Puppet.debug "#{output}"
     # output = execute command, :failonfail => true ,:uid => user
     output.each_line do |li|
       opatch = li[5, li.index(':')-5 ].strip + ';' if (li['Patch'] and li[': applied on'])
@@ -98,7 +101,7 @@ Puppet::Type.type(:db_opatch).provide(:db_opatch) do
   def status
     output  = opatch_status
 
-    patchName               = resource[:name]
+    patchName               = resource[:patch_id]
     bundle_sub_patch_id     = resource[:bundle_sub_patch_id]
     clusterware             = resource[:clusterware]
 

@@ -12,6 +12,7 @@ define oradb::database(
   $group                    = 'dba',
   $downloadDir              = '/install',
   $action                   = 'create',
+  $template                 = undef,
   $dbName                   = 'orcl',
   $dbDomain                 = undef,
   $dbPort                   = '1521',
@@ -76,9 +77,9 @@ define oradb::database(
     $filename = "${path}/database_${sanitized_title}.rsp"
 
     if $dbDomain {
-        $globalDbName = "${dbName}.${dbDomain}"
+      $globalDbName = "${dbName}.${dbDomain}"
     } else {
-        $globalDbName = $dbName
+      $globalDbName = $dbName
     }
 
     if ! defined(File[$filename]) {
@@ -88,13 +89,30 @@ define oradb::database(
         mode    => '0775',
         owner   => $user,
         group   => $group,
+        before  => Exec["oracle database ${title}"],
+      }
+    }
+
+    if ( $template ) {
+      $templatename = "${path}/${template}_${sanitized_title}.dbt"
+      file { $templatename:
+        ensure  => present,
+        content => template("oradb/${template}.dbt.erb"),
+        mode    => '0775',
+        owner   => $user,
+        group   => $group,
+        before  => Exec["oracle database ${title}"],
       }
     }
 
     if $action == 'create' {
-      exec { "install oracle database ${title}":
-        command     => "dbca -silent -responseFile ${filename}",
-        require     => File[$filename],
+      if ( $template ) {
+        $command = "dbca -silent -createDatabase -templateName ${templatename} -gdbname ${globalDbName} -responseFile NO_VALUE -sysPassword ${sysPassword} -systemPassword ${systemPassword}"
+      } else {
+        $command = "dbca -silent -responseFile ${filename}"
+      }
+      exec { "oracle database ${title}":
+        command     => $command,
         creates     => "${oracleBase}/admin/${dbName}",
         timeout     => 0,
         path        => $execPath,
@@ -104,9 +122,8 @@ define oradb::database(
         logoutput   => true,
       }
     } elsif $action == 'delete' {
-      exec { "delete oracle database ${title}":
+      exec { "oracle database ${title}":
         command     => "dbca -silent -responseFile ${filename}",
-        require     => File[$filename],
         onlyif      => "ls ${oracleBase}/admin/${dbName}",
         timeout     => 0,
         path        => $execPath,

@@ -108,6 +108,26 @@ define jdk7::javaexec (
         user      => $user,
         group     => $group,
       }
+      # set the javac default
+      exec { "default javac alternatives ${fullVersion}":
+        command   => "alternatives --install /usr/bin/javac javac ${javaHomes}/${fullVersion}/bin/javac ${alternativesPriority}",
+        require   => File['/usr/java/default'],
+        unless    => "alternatives --display javac | /bin/grep ${fullVersion}",
+        path      => '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:',
+        logoutput => true,
+        user      => $user,
+        group     => $group,
+      }
+      # set the keytool default
+      exec { "default keytool alternatives ${fullVersion}":
+        command   => "alternatives --install /usr/bin/keytool keytool ${javaHomes}/${fullVersion}/bin/keytool ${alternativesPriority}",
+        require   => File['/usr/java/default'],
+        unless    => "alternatives --display keytool | /bin/grep ${fullVersion}",
+        path      => '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:',
+        logoutput => true,
+        user      => $user,
+        group     => $group,
+      }
     }
     'Debian', 'Suse':{
       # set the java default
@@ -115,6 +135,25 @@ define jdk7::javaexec (
         command   => "update-alternatives --install /usr/bin/java java ${javaHomes}/${fullVersion}/bin/java ${alternativesPriority}",
         require   => File['/usr/java/default'],
         unless    => "update-alternatives --list java | /bin/grep ${fullVersion}",
+        path      => '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:',
+        logoutput => true,
+        user      => $user,
+        group     => $group,
+      }
+      # set the javac default
+      exec { "default javac alternatives ${fullVersion}":
+        command   => "update-alternatives --install /usr/bin/javac javac ${javaHomes}/${fullVersion}/bin/javac ${alternativesPriority}",
+        require   => File['/usr/java/default'],
+        unless    => "update-alternatives --list javac | /bin/grep ${fullVersion}",
+        path      => '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:',
+        logoutput => true,
+        user      => $user,
+        group     => $group,
+      }
+      exec { "default keytool alternatives ${fullVersion}":
+        command   => "update-alternatives --install /usr/bin/keytool keytool ${javaHomes}/${fullVersion}/bin/keytool ${alternativesPriority}",
+        require   => File['/usr/java/default'],
+        unless    => "update-alternatives --list keytool | /bin/grep ${fullVersion}",
         path      => '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:',
         logoutput => true,
         user      => $user,

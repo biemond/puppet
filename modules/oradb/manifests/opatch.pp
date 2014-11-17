@@ -79,7 +79,7 @@ define oradb::opatch(
             user      => $user,
             group     => $group,
             logoutput => false,
-            before    => Db_opatch[$patchId],
+            before    => Db_opatch["${patchId} ${title}"],
           }
         } else {
           exec { "extract opatch ${patchFile} ${title}":
@@ -89,14 +89,15 @@ define oradb::opatch(
             user      => $user,
             group     => $group,
             logoutput => false,
-            before    => Db_opatch[$patchId],
+            before    => Db_opatch["${patchId} ${title}"],
           }
         }
       }
       if $ocmrf == true {
 
-        db_opatch{ $patchId:
+        db_opatch{ "${patchId} ${title}":
           ensure                  => $ensure,
+          patch_id                => $patchId,
           os_user                 => $user,
           oracle_product_home_dir => $oracleProductHome,
           orainst_dir             => $oraInstPath,
@@ -108,8 +109,9 @@ define oradb::opatch(
 
       } else {
 
-        db_opatch{ $patchId:
+        db_opatch{ "${patchId} ${title}":
           ensure                  => $ensure,
+          patch_id                => $patchId,
           os_user                 => $user,
           oracle_product_home_dir => $oracleProductHome,
           orainst_dir             => $oraInstPath,

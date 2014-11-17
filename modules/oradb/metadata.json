@@ -1,6 +1,11 @@
 {
   "author": "Edwin Biemond",
-  "dependencies": [],
+  "dependencies": [
+    {
+      "name": "puppetlabs/concat",
+      "version_requirement": ">= 1.0.0"
+    }
+  ],
   "license": "Apache 2.0",
   "name": "biemond-oradb",
   "project_page": "https://github.com/biemond/biemond-oradb",
@@ -81,5 +86,5 @@
       "version_requirement": ">=2.7.20"
     }
   ],
-  "version": "1.0.20"
+  "version": "1.0.22"
 }

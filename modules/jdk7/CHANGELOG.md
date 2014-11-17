@@ -1,6 +1,10 @@
 # History
 
+## 0.4.6
+- sets keytool as defaultsss
+
 ## 0.4.5
+- sets javac as default
 
 ## 0.4.4
 - another typo in urandomfix
@@ -44,4 +48,3 @@
 
 ## 0.2.0
 - Puppet 3.0 compatible, creates download folder
-

@@ -16,7 +16,7 @@ add the jdk-7u25-linux-x64.tar.gz (downloaded from Oracle website) to the files 
 - download the tar.gz to the download folder of the puppet agent server
 - unpack the java tar.gz
 - set the java links in /usr/java ( latest and default ) 
-- set this java as default
+- set this java and javac as default
 - optional updates urandom device for weblogic performance in java.security
 
 urandomfix class for lack of entropy this rngd or or rng-tools service add extra random number  

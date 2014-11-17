@@ -1,7 +1,16 @@
 # Version updates
 
+## 1.0.22
+
+## 1.0.21
+- fix for windows/unix linefeed when oradb is used in combination with vagrant on a windows host
+- opatch check bug when run it twice
+- Add a tnsnames entry support
+
 ## 1.0.20
+- Create a Database instance based on a template
 - Be able to change the default listener port 1521 in net.pp & database.pp
+- Opatch fix to apply same the patch twice on different oracle homes
 
 ## 1.0.19
 - OPatch support for clusterware (GRID)
