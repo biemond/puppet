@@ -35,7 +35,7 @@ use:
         wlsPasswordParam       => "weblogic1",
         wlsAdminServerParam    => "AdminServer",
         jsseEnabledParam       => false,
-    } 
+    }
 
 or with hiera  ( include orautils )
 
@@ -48,11 +48,11 @@ or with hiera  ( include orautils )
     orautils::osWlHomeParam:          "/opt/oracle/wls/Middleware11gR1/wlserver_10.3"
     orautils::oraUserParam:           "oracle"
     orautils::oraGroupParam:          "dba"
-    
+
     orautils::osDomainParam:          "Wls1036"
     orautils::osDomainPathParam:      "/opt/oracle/wlsdomains/domains/Wls1036"
     orautils::nodeMgrPathParam:       "/opt/oracle/middleware11g/wlserver_10.3/server/bin"
-    
+
     orautils::nodeMgrPortParam:       5556
     orautils::nodeMgrAddressParam:    'localhost'
     orautils::wlsUserParam:           "weblogic"
@@ -61,23 +61,23 @@ or with hiera  ( include orautils )
     orautils::jsseEnabledParam:       true
 
 
-install auto start script for the nodemanager of WebLogic ( 10.3, 11g, 12.1.1 ) or 12.1.2  
+install auto start script for the nodemanager of WebLogic ( 10.3, 11g, 12.1.1 ) or 12.1.2
 
 only for WebLogic 12.1.2 and higher
 
     orautils::nodemanagerautostart{"autostart ${wlsDomainName}":
       version     => '1212',
-      wlHome      => '/opt/oracle/middleware12c/wlserver', 
+      wlHome      => '/opt/oracle/middleware12c/wlserver',
       user        => 'oracle',
       domain      => 'Wls1212',
-      domainPath  => ''/opt/oracle/middleware12c/user_projects/domains/Wls1212' 
+      domainPath  => '/opt/oracle/middleware12c/user_projects/domains/Wls1212'
     }
 
 only for WebLogic 10 or 11g
 
     orautils::nodemanagerautostart{"autostart weblogic 11g":
       version     => "1111",
-      wlHome      => "/opt/oracle/middleware11g/wlserver_10.3", 
+      wlHome      => "/opt/oracle/middleware11g/wlserver_10.3",
       user        => 'wls',
     }
 
@@ -85,7 +85,7 @@ or with JSSE and custom trust
 
     orautils::nodemanagerautostart{"autostart weblogic 11g":
       version                 => "1111",
-      wlHome                  => "/opt/oracle/middleware11g/wlserver_10.3", 
+      wlHome                  => "/opt/oracle/middleware11g/wlserver_10.3",
       user                    => 'oracle',
       jsseEnabled             => true,
       customTrust             => true,
@@ -95,34 +95,33 @@ or with JSSE and custom trust
 
 ## Add WebLogic scripts to /opt/scripts/wls
 
-**cleanOracleEnvironment.sh**  
-Remove all Oracle WebLogic existence so you can deploy again  
-Actions  
-1. Remove domain pack files, ${osDownloadFolder}/domain_*.*  
-2. Remove mdwhome, $osOracleHome  
-3. Remove beahome list of user $oraUser  
-4. Remove /etc/oraInst.loc  
-5. Remove ${osDownloadFolder}/osb  
-6. Remove ${osDownloadFolder}/soa  
-7  Remove ${osDownloadFolder}/*.xml  
+**cleanOracleEnvironment.sh**
+Remove all Oracle WebLogic existence so you can deploy again
+Actions
+1. Remove domain pack files, ${osDownloadFolder}/domain_*.*
+2. Remove mdwhome, $osOracleHome
+3. Remove beahome list of user $oraUser
+4. Remove /etc/oraInst.loc
+5. Remove ${osDownloadFolder}/osb
+6. Remove ${osDownloadFolder}/soa
+7  Remove ${osDownloadFolder}/*.xml
 
-**showStatus.sh**  
-1. Shows if the AdminServer, Soa and OSB server is running plus the PIDs  
-2. Shows if the NodeManager is running plus the PID  
+**showStatus.sh**
+1. Shows if the AdminServer, Soa and OSB server is running plus the PIDs
+2. Shows if the NodeManager is running plus the PID
 
-**startNodeManager.sh**  
+**startNodeManager.sh**
 Starts the nodemanager
 
-**stopNodeManager.sh**  
+**stopNodeManager.sh**
 Stops the nodemanager
 
-**startWeblogicAdmin.sh**  
-1. Checks first if the nodemanager is running  
-2. Check if the AdminServer is already started  
-3. Start the WebLogic Adminserver from the nodemanager   
+**startWeblogicAdmin.sh**
+1. Checks first if the nodemanager is running
+2. Check if the AdminServer is already started
+3. Start the WebLogic Adminserver from the nodemanager
 
-**stopWeblogicAdmin.sh**  
-1. Checks first if the nodemanager is running  
-2. Check if the AdminServer is running  
-3. Stops the WebLogic Adminserver from the nodemanager  
-     
+**stopWeblogicAdmin.sh**
+1. Checks first if the nodemanager is running
+2. Check if the AdminServer is running
+3. Stops the WebLogic Adminserver from the nodemanager

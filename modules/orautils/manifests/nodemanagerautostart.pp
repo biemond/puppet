@@ -64,7 +64,8 @@ define orautils::nodemanagerautostart(
   file { "/etc/init.d/${scriptName}" :
     ensure  => present,
     mode    => '0755',
-    content => template('orautils/nodemanager.erb'),
+    # content => template('orautils/nodemanager.erb'),
+    content => regsubst(template('orautils/nodemanager.erb'), '\r\n', "\n", 'EMG'),
   }
 
   exec { "chkconfig ${scriptName}":

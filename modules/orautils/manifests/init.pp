@@ -67,7 +67,8 @@ class orautils(
     file { 'showStatus.sh':
       ensure  => present,
       path    => '/opt/scripts/wls/showStatus.sh',
-      content => template('orautils/wls/showStatus.sh.erb'),
+      content => regsubst(template('orautils/wls/showStatus.sh.erb'), '\r\n', "\n", 'EMG'),
+      # content => template('orautils/wls/showStatus.sh.erb'),
       owner   => $oraUserParam,
       group   => $oraGroupParam,
       mode    => $mode,
@@ -77,7 +78,8 @@ class orautils(
     file { 'stopNodeManager.sh':
       ensure  => present,
       path    => '/opt/scripts/wls/stopNodeManager.sh',
-      content => template('orautils/wls/stopNodeManager.sh.erb'),
+      content => regsubst(template('orautils/wls/stopNodeManager.sh.erb'), '\r\n', "\n", 'EMG'),
+      # content => template('orautils/wls/stopNodeManager.sh.erb'),
       owner   => $oraUserParam,
       group   => $oraGroupParam,
       mode    => $mode,
@@ -87,7 +89,8 @@ class orautils(
     file { 'cleanOracleEnvironment.sh':
       ensure  => present,
       path    => '/opt/scripts/wls/cleanOracleEnvironment.sh',
-      content => template('orautils/cleanOracleEnvironment.sh.erb'),
+      content => regsubst(template('orautils/cleanOracleEnvironment.sh.erb'), '\r\n', "\n", 'EMG'),
+      # content => template('orautils/cleanOracleEnvironment.sh.erb'),
       owner   => 'root',
       group   => 'root',
       mode    => '0770',
@@ -97,7 +100,8 @@ class orautils(
     file { 'startNodeManager.sh':
       ensure  => present,
       path    => '/opt/scripts/wls/startNodeManager.sh',
-      content => template('orautils/startNodeManager.sh.erb'),
+      content => regsubst(template('orautils/startNodeManager.sh.erb'), '\r\n', "\n", 'EMG'),
+      # content => template('orautils/startNodeManager.sh.erb'),
       owner   => $oraUserParam,
       group   => $oraGroupParam,
       mode    => $mode,
@@ -107,7 +111,8 @@ class orautils(
     file { 'startWeblogicAdmin.sh':
       ensure  => present,
       path    => '/opt/scripts/wls/startWeblogicAdmin.sh',
-      content => template('orautils/startWeblogicAdmin.sh.erb'),
+      content => regsubst(template('orautils/startWeblogicAdmin.sh.erb'), '\r\n', "\n", 'EMG'),
+      # content => template('orautils/startWeblogicAdmin.sh.erb'),
       owner   => $oraUserParam,
       group   => $oraGroupParam,
       mode    => $mode,
@@ -117,7 +122,8 @@ class orautils(
     file { 'stopWeblogicAdmin.sh':
       ensure  => present,
       path    => '/opt/scripts/wls/stopWeblogicAdmin.sh',
-      content => template('orautils/stopWeblogicAdmin.sh.erb'),
+      content => regsubst(template('orautils/stopWeblogicAdmin.sh.erb'), '\r\n', "\n", 'EMG'),
+      # content => template('orautils/stopWeblogicAdmin.sh.erb'),
       owner   => $oraUserParam,
       group   => $oraGroupParam,
       mode    => $mode,
