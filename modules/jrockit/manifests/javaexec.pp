@@ -8,6 +8,7 @@ define javaexec ($path        = undef,
                  $jdkfile     = undef,
                  $setDefault  = undef,
                  $user        = undef,
+		 $jreInstallDir = undef,
                  $group       = undef,) {
 
   # install jdk
@@ -15,8 +16,8 @@ define javaexec ($path        = undef,
     CentOS, RedHat, OracleLinux, Ubuntu, Debian: { 
 
       $execPath     = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
-			$javaInstall  = "/usr/java/"
-      $silentfile   = "${path}silent${version}.xml"
+      $javaInstall  = "${jreInstallDir}"
+      $silentfile   = "${path}/silent${version}.xml"
 
       Exec {
         logoutput   => true,
@@ -49,24 +50,24 @@ define javaexec ($path        = undef,
         cwd         => "${path}",
         path        => "${path}",
         logoutput   => true,
-        require     => File["${silentfile}"],
-        creates     => "/usr/java/${fullversion}",
+        require     => File["silent.xml ${version}"],
+        creates     => "${jreInstallDir}/${fullversion}",
       }
       
     	# java link to latest
-      file { '/usr/java/latest':
+      file { "${jreInstallDir}/latest":
         ensure      => link,
-        target      => "/usr/java/${fullversion}",
+        target      => "${jreInstallDir}/${fullversion}",
         mode        => 0755,
         require     => Exec["installjrockit"],
       }
 
 			# java link to default
-      file { '/usr/java/default':
+      file { "${jreInstallDir}/default":
         ensure      => link,
-        target      => "/usr/java/latest",
+        target      => "${jreInstallDir}/latest",
         mode        => 0755,
-        require     => File['/usr/java/latest'],
+        require     => File["${jreInstallDir}/latest"],
       }
 
       # Add to alternatives and set as the default if required
@@ -74,13 +75,13 @@ define javaexec ($path        = undef,
         CentOS, RedHat, OracleLinux: {
 			    # set the java default
           exec { "install alternatives":
-            command => "alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
-            require => File['/usr/java/default'],
+            command => "alternatives --install /usr/bin/java java ${jreInstallDir}/${fullversion}/bin/java 17065",
+            require => File["${jreInstallDir}/default"],
           }
 
           if $setDefault == 'true' {
             exec { "default alternatives":
-              command => "alternatives --set java /usr/java/${fullversion}/bin/java",
+              command => "alternatives --set java ${jreInstallDir}/${fullversion}/bin/java",
               require => Exec['install alternatives'],
             }
           }
@@ -90,13 +91,13 @@ define javaexec ($path        = undef,
         Ubuntu, Debian:{
 			    # set the java default
           exec { "install alternatives":
-            command => "update-alternatives --install /usr/bin/java java /usr/java/${fullversion}/bin/java 17065",
-            require => File['/usr/java/default'],
+            command => "update-alternatives --install /usr/bin/java java ${jreInstallDir}/${fullversion}/bin/java 17065",
+            require => File["${jreInstallDir}/default"],
           }
 
           if $setDefault == 'true' {
             exec { "default alternatives":
-              command => "update-alternatives --set java /usr/java/${fullversion}/bin/java",
+              command => "update-alternatives --set java ${jreInstallDir}/${fullversion}/bin/java",
               require => Exec['install alternatives'],
             }
           }
