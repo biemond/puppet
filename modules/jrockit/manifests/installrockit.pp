@@ -12,7 +12,7 @@ define jrockit::installrockit(
 	$jreInstallDir  =  '/usr/java',) {
 
 	$fullVersion   =  "jrockit-jdk${version}"
-	$installDir    =  "/usr/java/${fullVersion}"
+	$installDir    =  "${jreInstallDir}/${fullVersion}"
 
 	notify {"installrockit.pp ${title} ${version}":}
 
@@ -62,9 +62,9 @@ define jrockit::installrockit(
 
 
 	# download jdk to client
-	if ! defined(File["${downloadDir}${jdkfile}"]) {
-		file {"${downloadDir}${jdkfile}":
-			path    => "${downloadDir}${jdkfile}",
+	if ! defined(File["${downloadDir}/${jdkfile}"]) {
+		file {"${downloadDir}/${jdkfile}":
+			path    => "${downloadDir}/${jdkfile}",
 			ensure  => present,
 			source  => "${mountDir}${jdkfile}",
 			require => File[$downloadDir],
@@ -80,6 +80,7 @@ define jrockit::installrockit(
 		setDefault  => $setDefault,
 		user        => $user,
 		group       => $group,
-		require     => File["${downloadDir}${jdkfile}"],
+		jreInstallDir => $jreInstallDir,
+		require     => File["${downloadDir}/${jdkfile}"],
 	}
 }
