@@ -71,6 +71,44 @@ The databaseType value should contain only one of these choices.
 - SE = Standard Edition
 - SEONE = Standard Edition One
 
+## Installation, Disk or memory issues
+
+    # hiera
+    hosts:
+      'emdb.example.com':
+        ip:                "10.10.10.15"
+        host_aliases:      'emdb'
+      'localhost':
+        ip:                "127.0.0.1"
+        host_aliases:      'localhost.localdomain,localhost4,localhost4.localdomain4'
+
+    $host_instances = hiera('hosts', {})
+    create_resources('host',$host_instances)
+
+    # disable the firewall
+    service { iptables:
+      enable    => false,
+      ensure    => false,
+      hasstatus => true,
+    }
+
+    # set the swap ,forge puppet module petems-swap_file
+    class { 'swap_file':
+      swapfile     => '/var/swap.1',
+      swapfilesize => '8192000000'
+    }
+
+    # set the tmpfs
+    mount { '/dev/shm':
+      ensure      => present,
+      atboot      => true,
+      device      => 'tmpfs',
+      fstype      => 'tmpfs',
+      options     => 'size=3500m',
+    }
+
+see this chapter "Linux kernel, ulimits and required packages" for more important information
+
 ## Database install
 
     $puppetDownloadMntPoint = "puppet:///modules/oradb/"
@@ -323,6 +361,21 @@ or delete a database
 
 Database instance actions
 
+    db_control{'emrepos start':
+      ensure                  => 'running', #running|start|abort|stop
+      instance_name           => 'test',
+      oracle_product_home_dir => '/oracle/product/11.2/db',
+      os_user                 => 'oracle',
+    }
+
+    db_control{'emrepos stop':
+      ensure                  => 'stop', #running|start|abort|stop
+      instance_name           => 'test',
+      oracle_product_home_dir => '/oracle/product/11.2/db',
+      os_user                 => 'oracle',
+    }
+
+    # the old way
     oradb::dbactions{ 'stop testDb':
       oracleHome              => '/oracle/product/11.2/db',
       user                    => 'oracle',
@@ -341,6 +394,16 @@ Database instance actions
       require                 => Oradb::Dbactions['stop testDb'],
     }
 
+    # subscribe to changes
+    db_control{'emrepos restart':
+      ensure                  => 'running', #running|start|abort|stop
+      instance_name           => 'test',
+      oracle_product_home_dir => '/oracle/product/11.2/db',
+      os_user                 => 'oracle',
+      refreshonly             => true,
+      subscribe               => Init_param['emrepos/memory_target'],
+    }
+
     oradb::autostartdatabase{ 'autostart oracle':
       oracleHome              => '/oracle/product/12.1/db',
       user                    => 'oracle',
@@ -354,7 +417,7 @@ Tnsnames.ora
       oracleHome         => '/oracle/product/11.2/db',
       user               => 'oracle',
       group              => 'dba',
-      host               => 'soadb.example.nl',
+      server             => { myserver => { host => soadb.example.nl, port => '1521', protocol => 'TCP' }},
       connectServiceName => 'soarepos.example.nl',
       require            => Oradb::Dbactions['start oraDb'],
     }
@@ -363,9 +426,7 @@ Tnsnames.ora
       oracleHome         => '/oracle/product/11.2/db',
       user               => 'oracle',
       group              => 'dba',
-      host               => 'soadb.example.nl',
-      port               => 1525,
-      protocol           => 'TCP',
+      server             => { myserver => { host => soadb.example.nl, port => '1525', protocol => 'TCP' }, { host => soadb2.example.nl, port => '1526', protocol => 'TCP' }},
       connectServiceName => 'soarepos.example.nl',
       connectServer      => 'DEDICATED',
       require            => Oradb::Dbactions['start oraDb'],
@@ -405,6 +466,79 @@ Tnsnames.ora
         require     => Group[$all_groups],
         managehome  => true,
       }
+
+      ####### NFS example
+
+      file { '/nfs_server_data':
+        ensure  => directory,
+        recurse => false,
+        replace => false,
+        mode    => '0775',
+        owner   => 'grid',
+        group   => 'asmadmin',
+        require =>  User['grid'],
+      }
+
+      class { 'nfs::server':
+        package => latest,
+        service => running,
+        enable  => true,
+      }
+
+      nfs::export { '/nfs_server_data':
+        options => [ 'rw', 'sync', 'no_wdelay','insecure_locks','no_root_squash' ],
+        clients => [ "*" ],
+        require => File['/nfs_server_data']
+      }
+
+      file { '/nfs_client':
+        ensure  => directory,
+        recurse => false,
+        replace => false,
+        mode    => '0775',
+        owner   => 'grid',
+        group   => 'asmadmin',
+        require =>  User['grid'],
+      }
+
+      mounts { 'Mount point for NFS data':
+        ensure => present,
+        source => 'soadbasm:/nfs_server_data',
+        dest   => '/nfs_client',
+        type   => 'nfs',
+        opts   => 'rw,bg,hard,nointr,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0  0 0',
+      }
+
+      exec { "/bin/dd if=/dev/zero of=/nfs_client/asm_sda_nfs_b1 bs=1M count=7520":
+        user      => 'grid',
+        group     => 'asmadmin',
+        logoutput => true,
+        unless    => "/usr/bin/test -f /nfs_client/asm_sda_nfs_b1",
+        require   => Mounts['Mount point for NFS data'],
+      }
+      exec { "/bin/dd if=/dev/zero of=/nfs_client/asm_sda_nfs_b2 bs=1M count=7520":
+        user      => 'grid',
+        group     => 'asmadmin',
+        logoutput => true,
+        unless    => "/usr/bin/test -f /nfs_client/asm_sda_nfs_b2",
+        require   => [Mounts['Mount point for NFS data'],
+                      Exec["/bin/dd if=/dev/zero of=/nfs_client/asm_sda_nfs_b1 bs=1M count=7520"]],
+      }
+
+      exec { "/bin/chown grid:asmadmin /nfs_client/*":
+        user      => 'root',
+        group     => 'root',
+        logoutput => true,
+        require   => Exec["/bin/dd if=/dev/zero of=/nfs_client/asm_sda_nfs_b2 bs=1M count=7520"],
+      }
+      exec { "/bin/chmod 664 /nfs_client/*":
+        user      => 'root',
+        group     => 'root',
+        logoutput => true,
+        require   => Exec["/bin/dd if=/dev/zero of=/nfs_client/asm_sda_nfs_b2 bs=1M count=7520"],
+      }
+      ###### end of NFS example
+
 
       // oradb::installasm{ '12.1_linux-x64':
       //  version                => '12.1.0.1',
@@ -561,8 +695,46 @@ In combination with the oracle puppet module from hajee you can create/change a 
       ensure  => present,
       value   => '2',
       scope   => both,
-      require => init_param['processes'],
     }
+
+    init_param{'test/memory_target':
+      ensure  => present,
+      value   => '2800M',
+      scope   => spfile,
+      require => [Init_param['test/sga_target'],
+                  Init_param['test/shared_pool_size'],
+                  Init_param['test/sga_target'],
+                  Init_param['test/pga_aggregate_target'],]
+    }
+
+    init_param{'test/sga_target':
+      ensure  => present,
+      value   => '1200M',
+      scope   => spfile,
+    }
+
+    init_param{'test/shared_pool_size':
+      ensure  => present,
+      value   => '600M',
+      scope   => spfile,
+    }
+
+    init_param{'test/pga_aggregate_target':
+      ensure  => present,
+      value   => '1G',
+      scope   => spfile,
+    }
+
+    # subscribe to changes
+    db_control{'test restart':
+      ensure                  => 'running', #running|start|abort|stop
+      instance_name           => 'test',
+      oracle_product_home_dir => '/oracle/product/11.2/db',
+      os_user                 => 'oracle',
+      refreshonly             => true,
+      subscribe               => Init_param['test/memory_target'],
+    }
+
 
     tablespace {'scott_ts':
       ensure                    => present,
@@ -828,13 +1000,13 @@ install the following module to set the database user limits parameters
       $install = [ 'binutils.x86_64', 'compat-libstdc++-33.x86_64', 'glibc.x86_64','ksh.x86_64','libaio.x86_64',
                     'libgcc.x86_64', 'libstdc++.x86_64', 'make.x86_64','compat-libcap1.x86_64', 'gcc.x86_64',
                     'gcc-c++.x86_64','glibc-devel.x86_64','libaio-devel.x86_64','libstdc++-devel.x86_64',
-                    'sysstat.x86_64','unixODBC-devel','glibc.i686','libXext.i686','libXtst.i686']
+                    'sysstat.x86_64','unixODBC-devel','glibc.i686','libXext.x86_64','libXtst.x86_64']
 
       package { $install:
         ensure  => present,
       }
 
-## Solaris 10 kernel, ulimits and required packages
+## Solaris 10/11 kernel, ulimits and required packages
 
     exec { "create /cdrom/unnamed_cdrom":
       command => "/usr/bin/mkdir -p /cdrom/unnamed_cdrom",
@@ -875,6 +1047,11 @@ install the following module to set the database user limits parameters
       require   => Package[$install],
     }
 
+    ##### Needed by solaris 11
+    package { ['shell/ksh', 'developer/assembler']:
+      ensure => present,
+    }
+    #####
 
     # pkginfo -i SUNWarc SUNWbtool SUNWhea SUNWlibC SUNWlibm SUNWlibms SUNWsprot SUNWtoo SUNWi1of SUNWi1cs SUNWi15cs SUNWxwfnt SUNWcsl SUNWdtrc
     # pkgadd -d /cdrom/unnamed_cdrom/Solaris_10/Product/ -r response -a response SUNWarc SUNWbtool SUNWhea SUNWlibC SUNWlibm SUNWlibms SUNWsprot SUNWtoo SUNWi1of SUNWi1cs SUNWi15cs SUNWxwfnt SUNWcsl SUNWdtrc
