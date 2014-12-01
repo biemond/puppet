@@ -6,12 +6,11 @@ created by Edwin Biemond
 [Github homepage](https://github.com/biemond/puppet)
 
 Should work on Docker, for Solaris and on all Linux version like RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
-
-Docker image of Oracle Database 12.1 SE [Docker Oracle Database 12.1.0.1](https://github.com/biemond/docker-database-puppet)
-
-Here you can test the solaris 10 vagrant box with Oracle Database 12.1 [solaris vagrant box](https://github.com/biemond/biemond-orawls-vagrant-solaris-soa)
-
-Here you can test the CentOS 6.5 vagrant box with Oracle Database 11.2.0.4 and GoldenGate 12.1.2 [coherence goldengate vagrant box]( https://github.com/biemond/vagrant-wls12.1.2-coherence-goldengate)
+- Docker image of Oracle Database 12.1 SE [Docker Oracle Database 12.1.0.1](https://github.com/biemond/docker-database-puppet)
+- CentOS 6.5 vagrant box with Oracle Database 12.1 and Enterprise Manager 12.1.0.4 [Enterprise vagrant box](https://github.com/biemond/biemond-em-12c)
+- Solaris 11.2 vagrant box with Oracle Database 12.1 [solaris 11.2 vagrant box](https://github.com/biemond/biemond-oradb-vagrant-12.1-solaris11.2)
+- Solaris 10 vagrant box with Oracle Database 12.1 [solaris 10 vagrant box](https://github.com/biemond/biemond-orawls-vagrant-solaris-soa)
+- CentOS 6.5 vagrant box with Oracle Database 11.2.0.4 and GoldenGate 12.1.2 [coherence goldengate vagrant box]( https://github.com/biemond/vagrant-wls12.1.2-coherence-goldengate)
 
 Example of Opensource Puppet 3.4.3 Puppet master configuration in a vagrant box [puppet master](https://github.com/biemond/vagrant-puppetmaster)
 - oradb (oracle database 11.2.0.1 ) with GoldenGate 12.1.2
@@ -33,20 +32,32 @@ Should work for Puppet 2.7 & 3.0
 - OPatch upgrade
 - Apply OPatch also for Clusterware
 - Create database instances
-- Stop/Start database instances
+- Stop/Start database instances with db_control puppet resource type
+
+## Enterprise Manager
+- Enterprise Manager Server 12.1.0.4 12c cloud installation / configuration
+
+## GoldenGate
 - GoldenGate 12.1.2, 11.2.1
+
+## Repository Creation Utility (RCU)
 - Installs RCU repositoy for Oracle SOA Suite / Webcenter ( 11.1.1.6.0 and 11.1.1.7.0 ) / Oracle Identity Management ( 11.1.2.1 )
 
 ## Oracle RAC
 In combination with the [ora_rac](https://forge.puppetlabs.com/hajee/ora_rac) module of Bert Hajee (https://forge.puppetlabs.com/hajee/ora_rac)
 
-## Oracle Database types
+## Oracle Database resource types
+- db_control, start stop or a restart a database instance also used by dbactions manifest.pp
+- db_opatch, used by the opatch.pp manifest
+- db_rcu, used by the rcu.pp manifest
+
+
 In combination with the [oracle](http://forge.puppetlabs.com/hajee/oracle) module of Bert Hajee (http://forge.puppetlabs.com/hajee/oracle) you can also create
 - create a tablespace
 - create a user with the required grants and quota's
 - create one or more roles
 - create one or more services
-- change a database init parameter
+- change a database init parameter (Memory or SPFILE)
 
 
 Some manifests like installdb.pp, opatch.pp or rcusoa.pp supports an alternative mountpoint for the big oracle files.
@@ -680,59 +691,98 @@ or
       logoutput              => true,
     }
 
+## Enteprise Mananager
+
+    oradb::installem{ 'em12104':
+      version                     => '12.1.0.4',
+      file                        => 'em12104_linux64',
+      oracle_base_dir             => '/oracle',
+      oracle_home_dir             => '/oracle/product/12.1/em',
+      agent_base_dir              => '/oracle/product/12.1/agent',
+      software_library_dir        => '/oracle/product/12.1/swlib',
+      weblogic_user               => 'weblogic',
+      weblogic_password           => 'Welcome01',
+      database_hostname           => 'emdb.example.com',
+      database_listener_port      => 1521,
+      database_service_sid_name   => 'emrepos.example.com',
+      database_sys_password       => 'Welcome01',
+      sysman_password             => 'Welcome01',
+      agent_registration_password => 'Welcome01',
+      deployment_size             => 'SMALL',
+      user                        => 'oracle',
+      group                       => 'oinstall',
+      download_dir                => '/install',
+      zip_extract                 => true,
+      puppet_download_mnt_point   => '/software',
+      remote_file                 => false,
+      log_output                  => true,
+    }
 
 ## Database configuration
 In combination with the oracle puppet module from hajee you can create/change a database init parameter, tablespace,role or an oracle user
 
-
-    init_param{'processes':
-      ensure  => present,
-      value   => '800',
-      scope   => spfile,
+    init_param { 'SPFILE/OPEN_CURSORS:emrepos':
+      ensure => 'present',
+      value  => '600',
     }
 
-    init_param{'job_queue_processes':
-      ensure  => present,
-      value   => '2',
-      scope   => both,
+    init_param { 'SPFILE/processes:emrepos':
+      ensure => 'present',
+      value  => '1000',
     }
 
-    init_param{'test/memory_target':
+    init_param{'SPFILE/job_queue_processes:emrepos':
       ensure  => present,
-      value   => '2800M',
-      scope   => spfile,
-      require => [Init_param['test/sga_target'],
-                  Init_param['test/shared_pool_size'],
-                  Init_param['test/sga_target'],
-                  Init_param['test/pga_aggregate_target'],]
+      value   => '20',
     }
 
-    init_param{'test/sga_target':
+    init_param{'SPFILE/session_cached_cursors:emrepos':
       ensure  => present,
-      value   => '1200M',
-      scope   => spfile,
+      value   => '200',
     }
 
-    init_param{'test/shared_pool_size':
+    init_param{'SPFILE/db_securefile:emrepos':
       ensure  => present,
-      value   => '600M',
-      scope   => spfile,
+      value   => 'PERMITTED',
     }
 
-    init_param{'test/pga_aggregate_target':
+    init_param{'SPFILE/memory_target:emrepos':
       ensure  => present,
-      value   => '1G',
-      scope   => spfile,
+      value   => '3000M',
     }
 
-    # subscribe to changes
-    db_control{'test restart':
+    init_param { 'SPFILE/PGA_AGGREGATE_TARGET:emrepos':
+      ensure => 'present',
+      value  => '1G',
+      require => Init_param['SPFILE/memory_target:emrepos'],
+    }
+
+    init_param { 'SPFILE/SGA_TARGET:emrepos':
+      ensure => 'present',
+      value  => '1200M',
+      require => Init_param['SPFILE/memory_target:emrepos'],
+    }
+    init_param { 'SPFILE/SHARED_POOL_SIZE:emrepos':
+      ensure => 'present',
+      value  => '600M',
+      require => Init_param['SPFILE/memory_target:emrepos'],
+    }
+
+    db_control{'emrepos restart':
       ensure                  => 'running', #running|start|abort|stop
-      instance_name           => 'test',
-      oracle_product_home_dir => '/oracle/product/11.2/db',
-      os_user                 => 'oracle',
+      instance_name           => hiera('oracle_database_name'),
+      oracle_product_home_dir => hiera('oracle_home_dir'),
+      os_user                 => hiera('oracle_os_user'),
       refreshonly             => true,
-      subscribe               => Init_param['test/memory_target'],
+      subscribe               => [Init_param['SPFILE/OPEN_CURSORS:emrepos'],
+                                  Init_param['SPFILE/processes:emrepos'],
+                                  Init_param['SPFILE/job_queue_processes:emrepos'],
+                                  Init_param['SPFILE/session_cached_cursors:emrepos'],
+                                  Init_param['SPFILE/db_securefile:emrepos'],
+                                  Init_param['SPFILE/SGA_TARGET:emrepos'],
+                                  Init_param['SPFILE/SHARED_POOL_SIZE:emrepos'],
+                                  Init_param['SPFILE/PGA_AGGREGATE_TARGET:emrepos'],
+                                  Init_param['SPFILE/memory_target:emrepos'],],
     }
 
 
