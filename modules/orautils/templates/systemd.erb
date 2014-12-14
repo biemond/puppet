@@ -1,0 +1,14 @@
+[Unit]
+Description=WebLogic <%= @scriptName %> service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/home/<%= @user %>/<%= @scriptName %> start
+ExecStop=/home/<%= @user %>/<%= @scriptName %> stop
+TimeoutSec=30
+KillMode=process
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

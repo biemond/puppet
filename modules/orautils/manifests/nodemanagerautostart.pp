@@ -46,34 +46,76 @@ define orautils::nodemanagerautostart(
     }
   }
 
-  case $::operatingsystem {
-    'CentOS', 'RedHat', 'OracleLinux', 'Ubuntu', 'Debian', 'SLES': {
-      $execPath = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin'
-    }
-    default: {
-      fail('Unrecognized operating system')
-    }
-  }
-
   if $customTrust == true {
     $trust_env = "-Dweblogic.security.TrustKeyStore=CustomTrust -Dweblogic.security.CustomTrustKeyStoreFileName=${trustKeystoreFile} -Dweblogic.security.CustomTrustKeystorePassPhrase=${trustKeystorePassphrase}"
   } else {
     $trust_env = ''
   }
 
-  file { "/etc/init.d/${scriptName}" :
+  if ($::operatingsystem in ['CentOS','RedHat','OracleLinux'] and $::operatingsystemmajrelease == '7') {
+    $location = "/home/${user}/${scriptName}"
+  } else {
+    $location = "/etc/init.d/${scriptName}"
+  }
+
+  file { $location :
     ensure  => present,
     mode    => '0755',
-    # content => template('orautils/nodemanager.erb'),
     content => regsubst(template('orautils/nodemanager.erb'), '\r\n', "\n", 'EMG'),
   }
 
-  exec { "chkconfig ${scriptName}":
-    command   => "chkconfig --add ${scriptName}",
-    require   => File["/etc/init.d/${scriptName}"],
-    user      => 'root',
-    unless    => "chkconfig | /bin/grep '${scriptName}'",
-    path      => $execPath,
-    logoutput => true,
+  $execPath = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin'
+
+  case $::operatingsystem {
+    'CentOS', 'RedHat', 'OracleLinux': {
+      if ( $::operatingsystemmajrelease == '7') {
+        file { "/lib/systemd/system/${scriptName}.service" :
+          ensure  => present,
+          mode    => '0755',
+          content => regsubst(template('orautils/systemd.erb'), '\r\n', "\n", 'EMG'),
+          require => File[$location],
+        }
+        exec { "systemctl daemon-reload ${title}":
+          command     => 'systemctl daemon-reload',
+          subscribe   => File["/lib/systemd/system/${scriptName}.service"],
+          refreshonly => true,
+          user        => 'root',
+          path        => $execPath,
+          logoutput   => true,
+        }
+        exec { "systemctl enable ${title}":
+          command   => "systemctl enable ${scriptName}.service",
+          require   => [Exec["systemctl daemon-reload ${title}"],
+                        File["/lib/systemd/system/${scriptName}.service"],],
+          user      => 'root',
+          unless    => "systemctl list-units --type service --all | /bin/grep '${scriptName}.service'",
+          path      => $execPath,
+          logoutput => true,
+        }
+      }
+      else {
+        exec { "chkconfig ${scriptName}":
+          command   => "chkconfig --add ${scriptName}",
+          require   => File[$location],
+          user      => 'root',
+          unless    => "chkconfig | /bin/grep '${scriptName}'",
+          path      => $execPath,
+          logoutput => true,
+        }
+      }
+    }
+    'Ubuntu', 'Debian', 'SLES':{
+      exec { "update-rc.d ${scriptName}":
+        command   => "update-rc.d ${scriptName} defaults",
+        require   => File[$location],
+        user      => 'root',
+        unless    => "ls /etc/rc3.d/*${scriptName} | /bin/grep '${scriptName}'",
+        path      => $execPath,
+        logoutput => true,
+      }
+    }
+    default: {
+      fail('Unrecognized operating system')
+    }
   }
 }

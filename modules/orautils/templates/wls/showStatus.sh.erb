@@ -6,10 +6,15 @@
 domainType=<%= @osDomainTypeParam %>
  
 unamestr=`uname`
+unamestrversion=`uname -r`
 if [[ "$unamestr" == 'SunOS' ]]; then
-   checkStmt='/usr/ucb/ps wwxa'
+  if [[ "$unamestrversion" == '5.11' ]]; then
+     checkStmt='/bin/ps wwxa'
+  else
+     checkStmt='/usr/ucb/ps wwxa'
+  fi
 else
-   checkStmt='/bin/ps -eo pid,cmd'
+  checkStmt='/bin/ps -eo pid,cmd'
 fi
  
 AdminStatus=`${checkStmt} | /bin/grep -i AdminServer | /bin/grep -v grep | awk '{print $1}'`

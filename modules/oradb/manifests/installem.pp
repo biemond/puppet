@@ -66,7 +66,7 @@ define oradb::installem(
       $oraInventory = "${ora_inventory_dir}/oraInventory"
     }
 
-    oradb::utils::dbstructure{"oracle structure ${version}":
+    oradb::utils::dbstructure{"oracle em structure ${version}":
       oracle_base_home_dir => $oracle_base_dir,
       ora_inventory_dir    => $oraInventory,
       os_user              => $user,
@@ -98,7 +98,7 @@ define oradb::installem(
           mode    => '0775',
           owner   => $user,
           group   => $group,
-          require => Oradb::Utils::Dbstructure["oracle structure ${version}"],
+          require => Oradb::Utils::Dbstructure["oracle em structure ${version}"],
           before  => Exec["extract ${download_dir}/${file1}"],
         }
         # db file 2 installer zip
@@ -134,7 +134,7 @@ define oradb::installem(
         path      => $execPath,
         user      => $user,
         group     => $group,
-        require   => Oradb::Utils::Dbstructure["oracle structure ${version}"],
+        require   => Oradb::Utils::Dbstructure["oracle em structure ${version}"],
         # before    => Exec["install oracle em ${title}"],
       }
       exec { "extract ${download_dir}/${file2}":
@@ -219,8 +219,46 @@ define oradb::installem(
       group     => 'root',
       path      => $execPath,
       cwd       => $oracle_base_dir,
-      logoutput => true,
+      logoutput => $log_output,
       require   => Exec["install oracle em ${title}"],
     }
+
+    # cleanup
+    if ( $zip_extract ) {
+      exec { "remove oracle em extract folder ${title}":
+        command => "rm -rf ${download_dir}/${file}",
+        user    => 'root',
+        group   => 'root',
+        path    => $execPath,
+        require => [Exec["install oracle em ${title}"],
+                    Exec["run root.sh script ${title}"],],
+      }
+
+      if ( $remote_file == true ){
+        exec { "remove oracle em file1 ${file1} ${title}":
+          command => "rm -rf ${download_dir}/${file1}",
+          user    => 'root',
+          group   => 'root',
+          path    => $execPath,
+          require => Exec["install oracle em ${title}"],
+        }
+        exec { "remove oracle em file2 ${file2} ${title}":
+          command => "rm -rf ${download_dir}/${file2}",
+          user    => 'root',
+          group   => 'root',
+          path    => $execPath,
+          require => Exec["install oracle em ${title}"],
+        }
+        exec { "remove oracle em file3 ${file3} ${title}":
+          command => "rm -rf ${download_dir}/${file3}",
+          user    => 'root',
+          group   => 'root',
+          path    => $execPath,
+          require => Exec["install oracle em ${title}"],
+        }
+
+      }
+    }
+
   }
 }

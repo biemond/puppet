@@ -36,6 +36,7 @@ Should work for Puppet 2.7 & 3.0
 
 ## Enterprise Manager
 - Enterprise Manager Server 12.1.0.4 12c cloud installation / configuration
+- Agent installation via AgentPull.sh & AgentDeploy.sh
 
 ## GoldenGate
 - GoldenGate 12.1.2, 11.2.1
@@ -718,107 +719,96 @@ or
       log_output                  => true,
     }
 
+    oradb::installem_agent{ 'em12104_agent':
+      version                     => '12.1.0.4',
+      source                      => 'https://10.10.10.25:7802/em/install/getAgentImage',
+      install_type                => 'agentPull',
+      install_platform            => 'Linux x86-64',
+      oracle_base_dir             => '/oracle',
+      agent_base_dir              => '/oracle/product/12.1/agent',
+      agent_instance_home_dir     => '/oracle/product/12.1/agent/agent_inst',
+      sysman_user                 => 'sysman',
+      sysman_password             => 'Welcome01',
+      agent_registration_password => 'Welcome01',
+      agent_port                  => 1830,
+      oms_host                    => '10.10.10.25',
+      oms_port                    => 7802,
+      em_upload_port              => 4903,
+      user                        => 'oracle',
+      group                       => 'dba',
+      download_dir                => '/var/tmp/install',
+      log_output                  => true,
+    }
+
+    oradb::installem_agent{ 'em12104_agent2':
+      version                     => '12.1.0.4',
+      source                      => '/var/tmp/install/agent.zip',
+      install_type                => 'agentDeploy',
+      oracle_base_dir             => '/oracle',
+      agent_base_dir              => '/oracle/product/12.1/agent2',
+      agent_instance_home_dir     => '/oracle/product/12.1/agent2/agent_inst',
+      agent_registration_password => 'Welcome01',
+      agent_port                  => 1832,
+      oms_host                    => '10.10.10.25',
+      em_upload_port              => 4903,
+      user                        => 'oracle',
+      group                       => 'dba',
+      download_dir                => '/var/tmp/install',
+      log_output                  => true,
+    }
+
 ## Database configuration
 In combination with the oracle puppet module from hajee you can create/change a database init parameter, tablespace,role or an oracle user
 
-    init_param { 'SPFILE/OPEN_CURSORS:emrepos':
-      ensure => 'present',
-      value  => '600',
-    }
-
-    init_param { 'SPFILE/processes:emrepos':
+    ora_init_param{'SPFILE/processes@soarepos':
       ensure => 'present',
       value  => '1000',
     }
 
-    init_param{'SPFILE/job_queue_processes:emrepos':
+    ora_init_param{'SPFILE/job_queue_processes@soarepos':
       ensure  => present,
-      value   => '20',
+      value   => '4',
     }
 
-    init_param{'SPFILE/session_cached_cursors:emrepos':
-      ensure  => present,
-      value   => '200',
-    }
-
-    init_param{'SPFILE/db_securefile:emrepos':
-      ensure  => present,
-      value   => 'PERMITTED',
-    }
-
-    init_param{'SPFILE/memory_target:emrepos':
-      ensure  => present,
-      value   => '3000M',
-    }
-
-    init_param { 'SPFILE/PGA_AGGREGATE_TARGET:emrepos':
-      ensure => 'present',
-      value  => '1G',
-      require => Init_param['SPFILE/memory_target:emrepos'],
-    }
-
-    init_param { 'SPFILE/SGA_TARGET:emrepos':
-      ensure => 'present',
-      value  => '1200M',
-      require => Init_param['SPFILE/memory_target:emrepos'],
-    }
-    init_param { 'SPFILE/SHARED_POOL_SIZE:emrepos':
-      ensure => 'present',
-      value  => '600M',
-      require => Init_param['SPFILE/memory_target:emrepos'],
-    }
-
-    db_control{'emrepos restart':
+    db_control{'soarepos restart':
       ensure                  => 'running', #running|start|abort|stop
       instance_name           => hiera('oracle_database_name'),
       oracle_product_home_dir => hiera('oracle_home_dir'),
       os_user                 => hiera('oracle_os_user'),
       refreshonly             => true,
-      subscribe               => [Init_param['SPFILE/OPEN_CURSORS:emrepos'],
-                                  Init_param['SPFILE/processes:emrepos'],
-                                  Init_param['SPFILE/job_queue_processes:emrepos'],
-                                  Init_param['SPFILE/session_cached_cursors:emrepos'],
-                                  Init_param['SPFILE/db_securefile:emrepos'],
-                                  Init_param['SPFILE/SGA_TARGET:emrepos'],
-                                  Init_param['SPFILE/SHARED_POOL_SIZE:emrepos'],
-                                  Init_param['SPFILE/PGA_AGGREGATE_TARGET:emrepos'],
-                                  Init_param['SPFILE/memory_target:emrepos'],],
+      subscribe               => [Ora_init_param['SPFILE/processes@soarepos'],
+                                  Ora_init_param['SPFILE/job_queue_processes@soarepos'],],
     }
 
-
-    tablespace {'scott_ts':
+    ora_tablespace {'JMS_TS@soarepos':
       ensure                    => present,
+      datafile                  => 'jms_ts.dbf',
       size                      => 100M,
-      datafile                  => 'scott_ts.dbf',
       logging                   => yes,
       autoextend                => on,
       next                      => 100M,
-      max_size                  => 12288M,
+      max_size                  => 1G,
       extent_management         => local,
       segment_space_management  => auto,
     }
 
-    role {'apps':
+    ora_role {'APPS@soarepos':
       ensure    => present,
     }
 
-    oracle_user{'scott':
+    ora_user{'JMS@soarepos':
+      ensure                    => present,
       temporary_tablespace      => temp,
-      default_tablespace        => 'scott_ts',
-      password                  => 'tiger',
-      grants                    => ['SELECT ANY TABLE',
-                                    'CONNECT',
-                                    'RESOURCE',
-                                    'apps'],
-      quotas                    => { "scott_ts" => 'unlimited'},
-      require                   => [Tablespace['scott_ts'],
-                                    Role['apps']],
+      default_tablespace        => 'JMS_TS',
+      password                  => 'jms',
+      require                   => [Ora_tablespace['JMS_TS@soarepos'],
+                                    Ora_role['APPS@soarepos']],
+      grants                    => ['SELECT ANY TABLE', 'CONNECT', 'CREATE TABLE', 'CREATE TRIGGER','APPS'],
+      quotas                    => {
+                                      "JMS_TS"  => 'unlimited'
+                                    },
     }
 
-    init_param{'sid/parameter/instance':
-      ensure  => present,
-      value   => 'the_value'
-    }
 
 ## Oracle GoldenGate 12.1.2 and 11.2.1
 
@@ -1056,7 +1046,7 @@ install the following module to set the database user limits parameters
         ensure  => present,
       }
 
-## Solaris 10/11 kernel, ulimits and required packages
+## Solaris 10 kernel, ulimits and required packages
 
     exec { "create /cdrom/unnamed_cdrom":
       command => "/usr/bin/mkdir -p /cdrom/unnamed_cdrom",
@@ -1097,11 +1087,6 @@ install the following module to set the database user limits parameters
       require   => Package[$install],
     }
 
-    ##### Needed by solaris 11
-    package { ['shell/ksh', 'developer/assembler']:
-      ensure => present,
-    }
-    #####
 
     # pkginfo -i SUNWarc SUNWbtool SUNWhea SUNWlibC SUNWlibm SUNWlibms SUNWsprot SUNWtoo SUNWi1of SUNWi1cs SUNWi15cs SUNWxwfnt SUNWcsl SUNWdtrc
     # pkgadd -d /cdrom/unnamed_cdrom/Solaris_10/Product/ -r response -a response SUNWarc SUNWbtool SUNWhea SUNWlibC SUNWlibm SUNWlibms SUNWsprot SUNWtoo SUNWi1of SUNWi1cs SUNWi15cs SUNWxwfnt SUNWcsl SUNWdtrc
@@ -1218,5 +1203,114 @@ install the following module to set the database user limits parameters
     exec { "ulimit -H":
       command => "ulimit -H -n 65536",
       require => Exec["ulimit -S"],
+      path    => $execPath,
+    }
+
+## Solaris 11 kernel, ulimits and required packages
+
+    package { ['shell/ksh', 'developer/assembler']:
+      ensure => present,
+    }
+
+    $install  = "pkg:/group/prerequisite/oracle/oracle-rdbms-server-12-1-preinstall"
+
+    package { $install:
+      ensure  => present,
+    }
+
+    $groups = ['oinstall','dba' ,'oper' ]
+
+    group { $groups :
+      ensure      => present,
+    }
+
+    user { 'oracle' :
+      ensure      => present,
+      uid         => 500,
+      gid         => 'dba',
+      groups      => $groups,
+      shell       => '/bin/bash',
+      password    => '$1$DSJ51vh6$4XzzwyIOk6Bi/54kglGk3.',
+      home        => "/export/home/oracle",
+      comment     => "This user oracle was created by Puppet",
+      require     => Group[$groups],
+      managehome  => true,
+    }
+
+    $execPath     = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:"
+
+    exec { "projadd group.dba":
+      command => "projadd -U oracle -G dba -p 104 group.dba",
+      require => User["oracle"],
+      unless  => "projects -l | grep -c group.dba",
+      path    => $execPath,
+    }
+
+    exec { "usermod oracle":
+      command => "usermod -K project=group.dba oracle",
+      require => [User["oracle"],Exec["projadd group.dba"],],
+      path    => $execPath,
+    }
+
+    exec { "projmod max-shm-memory":
+      command => "projmod -sK 'project.max-shm-memory=(privileged,4G,deny)' group.dba",
+      require => [User["oracle"],Exec["projadd group.dba"],],
+      path    => $execPath,
+    }
+
+    exec { "projmod max-sem-ids":
+      command     => "projmod -sK 'project.max-sem-ids=(privileged,100,deny)' group.dba",
+      require     => Exec["projadd group.dba"],
+      path        => $execPath,
+    }
+
+    exec { "projmod max-shm-ids":
+      command     => "projmod -s -K 'project.max-shm-ids=(privileged,100,deny)' group.dba",
+      require     => Exec["projadd group.dba"],
+      path        => $execPath,
+    }
+
+    exec { "projmod max-sem-nsems":
+      command     => "projmod -sK 'process.max-sem-nsems=(privileged,256,deny)' group.dba",
+      require     => Exec["projadd group.dba"],
+      path        => $execPath,
+    }
+
+    exec { "projmod max-file-descriptor":
+      command     => "projmod -sK 'process.max-file-descriptor=(basic,65536,deny)' group.dba",
+      require     => Exec["projadd group.dba"],
+      path        => $execPath,
+    }
+
+    exec { "projmod max-stack-size":
+      command     => "projmod -sK 'process.max-stack-size=(privileged,32MB,deny)' group.dba",
+      require     => Exec["projadd group.dba"],
+      path        => $execPath,
+    }
+
+    exec { "ipadm smallest_anon_port tcp":
+      command     => "ipadm set-prop -p smallest_anon_port=9000 tcp",
+      path        => $execPath,
+    }
+    exec { "ipadm smallest_anon_port udp":
+      command     => "ipadm set-prop -p smallest_anon_port=9000 udp",
+      path        => $execPath,
+    }
+    exec { "ipadm largest_anon_port tcp":
+      command     => "ipadm set-prop -p largest_anon_port=65500 tcp",
+      path        => $execPath,
+    }
+    exec { "ipadm largest_anon_port udp":
+      command     => "ipadm set-prop -p largest_anon_port=65500 udp",
+      path        => $execPath,
+    }
+
+    exec { "ulimit -S":
+      command => "ulimit -S -n 4096",
+      path    => $execPath,
+    }
+
+    exec { "ulimit -H":
+      command => "ulimit -H -n 65536",
       path    => $execPath,
     }

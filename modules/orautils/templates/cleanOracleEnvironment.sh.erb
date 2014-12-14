@@ -14,12 +14,16 @@ oraInventory=<%= @oraInventoryParam  %>
 
 echo "vars=${osOracleHome} ${osDownloadFolder} ${osMdwHome} ${osWlHome} ${oraUser}"
 
-
 unamestr=`uname`
+unamestrversion=`uname -r`
 if [[ "$unamestr" == 'SunOS' ]]; then
-   checkStmt='/usr/ucb/ps wwxa'
-else 
-   checkStmt='/bin/ps -eo pid,cmd'
+  if [[ "$unamestrversion" == '5.11' ]]; then
+     checkStmt='/bin/ps wwxa'
+  else
+     checkStmt='/usr/ucb/ps wwxa'
+  fi
+else
+  checkStmt='/bin/ps -eo pid,cmd'
 fi
 
 PID=`${checkStmt} | /bin/grep -i nodemanager.javahome | /bin/grep -v grep | awk '{print $1}'`

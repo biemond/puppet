@@ -19,12 +19,16 @@ echo "Starting Weblogic ${wlsAdminServer} for domain ${osDomain}...."
 echo "Checking if Weblogic ${wlsAdminServer} for domain ${osDomain} is already started...."
 echo "CONFIG_JVM_ARGS ${CONFIG_JVM_ARGS}"
 
-
 unamestr=`uname`
+unamestrversion=`uname -r`
 if [[ "$unamestr" == 'SunOS' ]]; then
-   checkStmt='/usr/ucb/ps wwxa'
-else 
-   checkStmt='/bin/ps -eo pid,cmd'
+  if [[ "$unamestrversion" == '5.11' ]]; then
+     checkStmt='/bin/ps wwxa'
+  else
+     checkStmt='/usr/ucb/ps wwxa'
+  fi
+else
+  checkStmt='/bin/ps -eo pid,cmd'
 fi
 
 pid=`${checkStmt} | /bin/grep -i ${wlsAdminServer} | /bin/grep -i ${osDomain} | /bin/grep -v grep | awk '{print $1}'`
