@@ -50,6 +50,20 @@ define oradb::installem(
     }
   }
 
+  if $ora_inventory_dir == undef {
+    $oraInventory = "${oracle_base_dir}/oraInventory"
+  } else {
+    $oraInventory = "${ora_inventory_dir}/oraInventory"
+  }
+
+  oradb::utils::dbstructure{"oracle em structure ${version}":
+    oracle_base_home_dir => $oracle_base_dir,
+    ora_inventory_dir    => $oraInventory,
+    os_user              => $user,
+    os_group_install     => $group,
+    download_dir         => $download_dir,
+  }
+
   if ( $continue ) {
 
     $execPath     = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
@@ -59,26 +73,6 @@ define oradb::installem(
     } else {
       $mountPoint     = $puppet_download_mnt_point
     }
-
-    if $ora_inventory_dir == undef {
-      $oraInventory = "${oracle_base_dir}/oraInventory"
-    } else {
-      $oraInventory = "${ora_inventory_dir}/oraInventory"
-    }
-
-    oradb::utils::dbstructure{"oracle em structure ${version}":
-      oracle_base_home_dir => $oracle_base_dir,
-      ora_inventory_dir    => $oraInventory,
-      os_user              => $user,
-      os_group             => $group,
-      os_group_install     => undef,
-      os_group_oper        => undef,
-      download_dir         => $download_dir,
-      log_output           => $log_output,
-      user_base_dir        => undef,
-      create_user          => false,
-    }
-
 
     if ( $zip_extract ) {
       # In $download_dir, will Puppet extract the ZIP files or is this a pre-extracted directory structure.
@@ -186,31 +180,19 @@ define oradb::installem(
       }
     }
 
-    if ( $version in ['12.1.0.4']){
-      exec { "install oracle em ${title}":
-        command   => "/bin/sh -c 'unset DISPLAY;${download_dir}/${file}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -ignorePrereq -responseFile ${download_dir}/em_install_${version}.rsp'",
-        creates   => $oracle_home_dir,
-        timeout   => 0,
-        returns   => [6,0],
-        path      => $execPath,
-        user      => $user,
-        group     => $group,
-        cwd       => $oracle_base_dir,
-        logoutput => true,
-        require   => [Oradb::Utils::Dborainst["em orainst ${version}"],
-                      File["${download_dir}/em_install_${version}.rsp"],
-                      File["${download_dir}/em_install_static_${version}.ini"],],
-      }
-
-      file { $oracle_home_dir:
-        ensure  => directory,
-        recurse => false,
-        replace => false,
-        mode    => '0775',
-        owner   => $user,
-        group   => $group,
-        require => Exec["install oracle em ${title}"],
-      }
+    exec { "install oracle em ${title}":
+      command   => "/bin/sh -c 'unset DISPLAY;${download_dir}/${file}/runInstaller -silent -waitforcompletion -ignoreSysPrereqs -ignorePrereq -responseFile ${download_dir}/em_install_${version}.rsp'",
+      creates   => $oracle_home_dir,
+      timeout   => 0,
+      returns   => [6,0],
+      path      => $execPath,
+      user      => $user,
+      group     => $group,
+      cwd       => $oracle_base_dir,
+      logoutput => true,
+      require   => [Oradb::Utils::Dborainst["em orainst ${version}"],
+                    File["${download_dir}/em_install_${version}.rsp"],
+                    File["${download_dir}/em_install_static_${version}.ini"],],
     }
 
     exec { "run root.sh script ${title}":
@@ -221,6 +203,16 @@ define oradb::installem(
       cwd       => $oracle_base_dir,
       logoutput => $log_output,
       require   => Exec["install oracle em ${title}"],
+    }
+
+    file { $oracle_home_dir:
+      ensure  => directory,
+      recurse => false,
+      replace => false,
+      mode    => '0775',
+      owner   => $user,
+      group   => $group,
+      require => Exec["install oracle em ${title}","run root.sh script ${title}"],
     }
 
     # cleanup

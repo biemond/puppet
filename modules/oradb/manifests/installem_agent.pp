@@ -43,29 +43,24 @@ define oradb::installem_agent(
     }
   }
 
+  if $ora_inventory_dir == undef {
+    $oraInventory = "${oracle_base_dir}/oraInventory"
+  } else {
+    $oraInventory = "${ora_inventory_dir}/oraInventory"
+  }
+
+  # setup oracle base with the right permissions
+  oradb::utils::dbstructure{"oracle em agent structure ${version}":
+    oracle_base_home_dir => $oracle_base_dir,
+    ora_inventory_dir    => $oraInventory,
+    os_user              => $user,
+    os_group_install     => $group,
+    download_dir         => $download_dir,
+  }
+
   if ( $continue ) {
 
     $execPath = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-
-    if $ora_inventory_dir == undef {
-      $oraInventory = "${oracle_base_dir}/oraInventory"
-    } else {
-      $oraInventory = "${ora_inventory_dir}/oraInventory"
-    }
-
-    # setup oracle base with the right permissions
-    oradb::utils::dbstructure{"oracle em agent structure ${version}":
-      oracle_base_home_dir => $oracle_base_dir,
-      ora_inventory_dir    => $oraInventory,
-      os_user              => $user,
-      os_group             => $group,
-      os_group_install     => undef,
-      os_group_oper        => undef,
-      download_dir         => $download_dir,
-      log_output           => $log_output,
-      user_base_dir        => undef,
-      create_user          => false,
-    }
 
     # check oraInst
     oradb::utils::dborainst{"em agent orainst ${version}":
@@ -73,13 +68,13 @@ define oradb::installem_agent(
       os_group          => $group,
     }
 
-    unless is_string($source) {fail('You must specify source') }
-    unless is_string($agent_base_dir) {fail('You must specify agent_base_dir') }
-    unless is_string($sysman_user) {fail('You must specify sysman_user') }
-    unless is_string($sysman_password) {fail('You must specify sysman_password') }
-    unless is_string($oracle_base_dir) {fail('You must specify oracle_base_dir') }
-    unless is_string($agent_registration_password) {fail('You must specify agent_registration_password') }
-    unless is_integer($em_upload_port) {fail('You must specify em_upload_port') }
+    if ( $source == undef or is_string($source) == false) {fail('You must specify source') }
+    if ( $agent_base_dir == undef or is_string($agent_base_dir) == false) {fail('You must specify agent_base_dir') }
+    if ( $sysman_user == undef or is_string($sysman_user) == false) {fail('You must specify sysman_user') }
+    if ( $sysman_password == undef or is_string($sysman_password) == false) {fail('You must specify sysman_password') }
+    if ( $oracle_base_dir == undef or is_string($oracle_base_dir) == false) {fail('You must specify oracle_base_dir') }
+    if ( $agent_registration_password == undef or is_string($agent_registration_password) == false) {fail('You must specify agent_registration_password') }
+    if ( $em_upload_port == undef or is_string($em_upload_port) == false) {fail('You must specify em_upload_port') }
 
     # chmod +x /tmp/AgentPull.sh
     if ( $install_type  == 'agentPull') {
@@ -152,7 +147,7 @@ define oradb::installem_agent(
         }
       }
 
-      exec { "extract ${download_dir}/${file1}":
+      exec { "extract ${source} ${title}":
         command   => "unzip -o ${source} -d ${download_dir}/em_agent_${version}",
         timeout   => 0,
         logoutput => false,
@@ -176,7 +171,7 @@ define oradb::installem_agent(
         path      => $execPath,
         user      => $user,
         group     => $group,
-        require   => [Exec["extract ${download_dir}/${file1}"],
+        require   => [Exec["extract ${source} ${title}"],
                       Oradb::Utils::Dbstructure["oracle em agent structure ${version}"],
                       Oradb::Utils::Dborainst["em agent orainst ${version}"],],
       }

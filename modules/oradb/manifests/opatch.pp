@@ -21,8 +21,9 @@ define oradb::opatch(
   $oracleProductHome       = undef,
   $patchId                 = undef,
   $patchFile               = undef,
-  $clusterWare             = false,
+  $clusterWare             = false, # opatch auto or opatch apply
   $bundleSubPatchId        = undef,
+  $bundleSubFolder         = undef,
   $user                    = 'oracle',
   $group                   = 'dba',
   $downloadDir             = '/install',
@@ -30,7 +31,6 @@ define oradb::opatch(
   $puppetDownloadMntPoint  = undef,
   $remoteFile              = true,
 )
-
 {
   $execPath = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
 
@@ -57,11 +57,12 @@ define oradb::opatch(
       # the patch used by the opatch
       if ! defined(File["${downloadDir}/${patchFile}"]) {
         file { "${downloadDir}/${patchFile}":
-          ensure => present,
-          source => "${mountPoint}/${patchFile}",
-          mode   => '0775',
-          owner  => $user,
-          group  => $group,
+          ensure  => present,
+          source  => "${mountPoint}/${patchFile}",
+          mode    => '0775',
+          owner   => $user,
+          group   => $group,
+          require => File[$downloadDir],
         }
       }
     }
@@ -93,6 +94,14 @@ define oradb::opatch(
           }
         }
       }
+
+      # sometimes the bundle patch inside an other folder
+      if ( $bundleSubFolder ) {
+        $extracted_patch_dir = "${downloadDir}/${patchId}/${bundleSubFolder}"
+      } else {
+        $extracted_patch_dir = "${downloadDir}/${patchId}"
+      }
+
       if $ocmrf == true {
 
         db_opatch{ "${patchId} ${title}":
@@ -101,10 +110,10 @@ define oradb::opatch(
           os_user                 => $user,
           oracle_product_home_dir => $oracleProductHome,
           orainst_dir             => $oraInstPath,
-          extracted_patch_dir     => "${downloadDir}/${patchId}",
+          extracted_patch_dir     => $extracted_patch_dir,
           ocmrf_file              => "${oracleProductHome}/OPatch/ocm.rsp",
           bundle_sub_patch_id     => $bundleSubPatchId,
-          clusterware             => $clusterWare,
+          opatch_auto             => $clusterWare,
         }
 
       } else {
@@ -115,9 +124,9 @@ define oradb::opatch(
           os_user                 => $user,
           oracle_product_home_dir => $oracleProductHome,
           orainst_dir             => $oraInstPath,
-          extracted_patch_dir     => "${downloadDir}/${patchId}",
+          extracted_patch_dir     => $extracted_patch_dir,
           bundle_sub_patch_id     => $bundleSubPatchId,
-          clusterware             => $clusterWare,
+          opatch_auto             => $clusterWare,
         }
 
       }
