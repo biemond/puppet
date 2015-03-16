@@ -1,4 +1,4 @@
- == Class: oradb::listener
+# == Class: oradb::listener
 #
 #
 define oradb::listener( $oracleBase    = undef,
@@ -6,6 +6,7 @@ define oradb::listener( $oracleBase    = undef,
                         $user          = 'oracle',
                         $group         = 'dba',
                         $action        = 'start',
+                        $listenername  = 'listener',
 )
 {
   if (!( $action in ['running','start','abort','stop'])){
@@ -17,5 +18,7 @@ define oradb::listener( $oracleBase    = undef,
     oracle_base_dir => $oracleBase,
     oracle_home_dir => $oracleHome,
     os_user         => $user,
+    listener_name   => $listenername,
   }
 }
+

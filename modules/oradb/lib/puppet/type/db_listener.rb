@@ -40,7 +40,7 @@ module Puppet
       desc <<-EOT
         The title.
       EOT
-      isnamevar
+      #isnamevar
     end
 
     newparam(:oracle_base_dir) do
@@ -63,6 +63,14 @@ module Puppet
       defaultto 'oracle'
     end
 
+    newparam(:listener_name) do
+      desc <<-EOT
+        Listener name.
+      EOT
+
+      defaultto 'listener'
+    end
+
     newparam(:refreshonly) do
       desc <<-EOT
         The command should only be run as a
@@ -81,3 +89,4 @@ module Puppet
 
   end
 end
+
