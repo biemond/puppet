@@ -21,4 +21,3 @@ define oradb::listener( $oracleBase    = undef,
     listener_name   => $listenername,
   }
 }
-

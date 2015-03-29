@@ -5,6 +5,7 @@ define oradb::installasm(
   $version                 = undef,
   $file                    = undef,
   $gridType                = 'HA_CONFIG', #CRS_CONFIG|HA_CONFIG|UPGRADE|CRS_SWONLY
+  $stand_alone             = true, # in case of 'CRS_SWONLY' and used as stand alone or in RAC
   $gridBase                = undef,
   $gridHome                = undef,
   $oraInventoryDir         = undef,
@@ -60,11 +61,6 @@ define oradb::installasm(
   if ( $gridBase == undef or is_string($gridBase) == false) {fail('You must specify an gridBase') }
   if ( $gridHome == undef or is_string($gridHome) == false) {fail('You must specify an gridHome') }
 
-  if ( $gridBase in $gridHome == false ){
-    fail('gridHome folder should be under the gridBase folder')
-  }
-
-
   # check if the oracle software already exists
   $found = oracle_exists( $gridHome )
 
@@ -85,12 +81,13 @@ define oradb::installasm(
     $oraInventory = "${oraInventoryDir}/oraInventory"
   }
 
-  oradb::utils::dbstructure{"grid structure ${version}":
-    oracle_base_home_dir => $gridBase,
-    ora_inventory_dir    => $oraInventory,
-    os_user              => $user,
-    os_group_install     => $group_install,
-    download_dir         => $downloadDir,
+  db_directory_structure{"grid structure ${version}":
+    ensure            => present,
+    oracle_base_dir   => $gridBase,
+    ora_inventory_dir => $oraInventory,
+    download_dir      => $downloadDir,
+    os_user           => $user,
+    os_group          => $group_install,
   }
 
   if ( $continue ) {
@@ -122,7 +119,7 @@ define oradb::installasm(
           mode    => '0775',
           owner   => $user,
           group   => $group,
-          require => Oradb::Utils::Dbstructure["grid structure ${version}"],
+          require => Db_directory_structure["grid structure ${version}"],
           before  => Exec["extract ${downloadDir}/${file1}"],
         }
 
@@ -151,7 +148,7 @@ define oradb::installasm(
         user      => $user,
         group     => $group,
         creates   => "${downloadDir}/${file_without_ext}",
-        require   => Oradb::Utils::Dbstructure["grid structure ${version}"],
+        require   => Db_directory_structure["grid structure ${version}"],
         before    => Exec["install oracle grid ${title}"],
       }
       if ( $version == '12.1.0.1' ) {
@@ -180,7 +177,8 @@ define oradb::installasm(
         mode    => '0775',
         owner   => $user,
         group   => $group,
-        require => Oradb::Utils::Dborainst["grid orainst ${version}"],
+        require => [Oradb::Utils::Dborainst["grid orainst ${version}"],
+                    Db_directory_structure["grid structure ${version}"],],
       }
     }
 
@@ -207,7 +205,6 @@ define oradb::installasm(
         mode    => '0775',
         owner   => $user,
         group   => $group,
-        require => Oradb::Utils::Dbstructure["grid structure ${version}"],
       }
     }
 
@@ -264,14 +261,17 @@ define oradb::installasm(
     }
 
     if ( $gridType == 'CRS_SWONLY' ) {
-      exec { 'Configuring Grid Infrastructure for a Stand-Alone Server':
-        command   => "${gridHome}/perl/bin/perl -I${gridHome}/perl/lib -I${gridHome}/crs/install ${gridHome}/crs/install/roothas.pl",
-        user      => 'root',
-        group     => 'root',
-        path      => $execPath,
-        cwd       => $gridBase,
-        logoutput => true,
-        require   => [Exec["run root.sh grid script ${title}"],File[$gridHome],],
+      if ( $stand_alone == true ) {
+        exec { 'Configuring Grid Infrastructure for a Stand-Alone Server':
+          command   => "${gridHome}/perl/bin/perl -I${gridHome}/perl/lib -I${gridHome}/crs/install ${gridHome}/crs/install/roothas.pl",
+          user      => 'root',
+          group     => 'root',
+          path      => $execPath,
+          cwd       => $gridBase,
+          logoutput => true,
+          require   => [Exec["run root.sh grid script ${title}"],
+                        File[$gridHome],],
+        }
       }
     } else {
       file { "${downloadDir}/cfgrsp.properties":
@@ -280,7 +280,8 @@ define oradb::installasm(
         mode    => '0600',
         owner   => $user,
         group   => $group,
-        require => [Exec["run root.sh grid script ${title}"],File[$gridHome],],
+        require => [Exec["run root.sh grid script ${title}"],
+                    File[$gridHome],],
       }
 
       exec { "run configToolAllCommands grid tool ${title}":

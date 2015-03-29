@@ -8,7 +8,6 @@ created by Edwin Biemond
 Dependency with
 - puppetlabs/concat >= 1.0.0
 - puppetlabs/stdlib >= 3.2.0
-- AlexCline/dirtree >= 0.2.1
 
 Should work on Docker, for Solaris and on all Linux version like RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux
 - Docker image of Oracle Database 12.1 SE [Docker Oracle Database 12.1.0.1](https://github.com/biemond/docker-database-puppet)
@@ -58,6 +57,7 @@ In combination with the [ora_rac](https://forge.puppetlabs.com/hajee/ora_rac) mo
 - db_control, start stop or a restart a database instance also used by dbactions manifest.pp
 - db_opatch, used by the opatch.pp manifest
 - db_rcu, used by the rcu.pp manifest
+- db_listener, start stop or a restart the oracle listener ( supports refreshonly )
 
 
 In combination with the [oracle](http://forge.puppetlabs.com/hajee/oracle) module of Bert Hajee (http://forge.puppetlabs.com/hajee/oracle) you can also create
@@ -410,6 +410,7 @@ Listener
       oracle_base_dir => '/oracle',
       oracle_home_dir => '/oracle/product/11.2/db',
       os_user         => 'oracle',
+      listener_name   => 'listener' # which is the default and optional
     }
 
     # subscribe to changes
@@ -418,6 +419,7 @@ Listener
       oracle_base_dir => '/oracle',
       oracle_home_dir => '/oracle/product/11.2/db',
       os_user         => 'oracle',
+      listener_name   => 'listener' # which is the default and optional
       refreshonly     => true,
       subscribe       => XXXXX,
     }
@@ -429,6 +431,7 @@ Listener
       oracleHome   => '/oracle/product/11.2/db',
       user         => 'oracle',
       group        => 'dba',
+      listenername => 'listener' # which is the default and optional
     }
 
 Database instance

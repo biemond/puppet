@@ -33,18 +33,18 @@ define jdk7::install7 (
 
   case $::kernel {
     'Linux': {
-      $installVersion   = 'linux'
-      $installExtension = '.tar.gz'
-      $path             = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
-      $user             = 'root'
-      $group            = 'root'
+      $install_version   = 'linux'
+      $install_extension = '.tar.gz'
+      $path              = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:'
+      $user              = 'root'
+      $group             = 'root'
     }
     default: {
       fail("Unrecognized operating system ${::kernel}, please use it on a Linux host")
     }
   }
 
-  $jdkfile = "jdk-${version}-${installVersion}-${type}${installExtension}"
+  $jdk_file = "jdk-${version}-${install_version}-${type}${install_extension}"
 
   exec { "create ${$downloadDir} directory":
     command => "mkdir -p ${$downloadDir}",
@@ -66,9 +66,9 @@ define jdk7::install7 (
   }
 
   # download jdk to client
-  file { "${downloadDir}/${jdkfile}":
+  file { "${downloadDir}/${jdk_file}":
     ensure  => file,
-    source  => "${sourcePath}/${jdkfile}",
+    source  => "${sourcePath}/${jdk_file}",
     require => File[$downloadDir],
     replace => false,
     owner   => $user,
@@ -81,7 +81,7 @@ define jdk7::install7 (
       ensure  => file,
       source  => "${sourcePath}/${cryptographyExtensionFile}",
       require => File[$downloadDir],
-      before  => File["${downloadDir}/${jdkfile}"],
+      before  => File["${downloadDir}/${jdk_file}"],
       replace => false,
       owner   => $user,
       group   => $group,
@@ -90,23 +90,23 @@ define jdk7::install7 (
   }
 
   # install on client
-  jdk7::javaexec { "jdkexec ${title} ${version}":
-    path                      => $downloadDir,
-    fullVersion               => $fullVersion,
-    javaHomes                 => $javaHomes,
-    jdkfile                   => $jdkfile,
-    cryptographyExtensionFile => $cryptographyExtensionFile,
-    alternativesPriority      => $alternativesPriority,
-    user                      => $user,
-    group                     => $group,
-    require                   => File["${downloadDir}/${jdkfile}"],
+  jdk7::config::javaexec { "jdkexec ${title} ${version}":
+    download_dir                => $downloadDir,
+    full_version                => $fullVersion,
+    java_homes_dir              => $javaHomes,
+    jdk_file                    => $jdk_file,
+    cryptography_extension_file => $cryptographyExtensionFile,
+    alternatives_priority       => $alternativesPriority,
+    user                        => $user,
+    group                       => $group,
+    require                     => File["${downloadDir}/${jdk_file}"],
   }
 
   if ($urandomJavaFix == true) {
     exec { "set urandom ${fullVersion}":
       command => "sed -i -e's/securerandom.source=file:\\/dev\\/urandom/securerandom.source=file:\\/dev\\/.\\/urandom/g' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
       unless  => "grep '^securerandom.source=file:/dev/./urandom' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
-      require => Jdk7::Javaexec["jdkexec ${title} ${version}"],
+      require => Jdk7::Config::Javaexec["jdkexec ${title} ${version}"],
       path    => $path,
       user    => $user,
     }
@@ -115,7 +115,7 @@ define jdk7::install7 (
     exec { "sleep 3 sec for urandomJavaFix ${fullVersion}":
       command => '/bin/sleep 3',
       unless  => "grep 'RSA keySize < 512' ${javaHomes}/${fullVersion}/jre/lib/security/java.security",
-      require => Jdk7::Javaexec["jdkexec ${title} ${version}"],
+      require => Jdk7::Config::Javaexec["jdkexec ${title} ${version}"],
       path    => $path,
       user    => $user,
     }

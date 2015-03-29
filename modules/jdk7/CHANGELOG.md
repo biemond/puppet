@@ -1,6 +1,7 @@
 # History
 
 ## 0.4.8
+- refact the alternatives code
 
 ## 0.4.7
 - urandom fix for (rngd.service ) RedHat Family >= 7

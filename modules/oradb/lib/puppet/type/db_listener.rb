@@ -40,7 +40,7 @@ module Puppet
       desc <<-EOT
         The title.
       EOT
-      #isnamevar
+      isnamevar
     end
 
     newparam(:oracle_base_dir) do
@@ -89,4 +89,3 @@ module Puppet
 
   end
 end
-

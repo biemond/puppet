@@ -6,7 +6,7 @@
   "dependencies": [],
   "source": "https://github.com/biemond/biemond-jdk7",
   "project_page": "https://github.com/biemond/biemond-jdk7",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "tags": ["jdk7", "jdk8", "oracle","java", "rngd", "rng-tools","urandom", "entropy"],
   "operatingsystem_support": [
     {
