@@ -26,7 +26,7 @@ define oradb::client(
     if ( $found ) {
       $continue = false
     } else {
-      notify {"oradb::installdb ${oracleHome} does not exists":}
+      notify {"oradb::client ${oracleHome} does not exists":}
       $continue = true
     }
   }
