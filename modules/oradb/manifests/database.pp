@@ -107,12 +107,14 @@ define oradb::database(
 
   if ! defined(File["${downloadDir}/database_${sanitized_title}.rsp"]) {
     file { "${downloadDir}/database_${sanitized_title}.rsp":
-      ensure  => present,
-      content => template("oradb/dbca_${version}.rsp.erb"),
-      mode    => '0775',
-      owner   => $user,
-      group   => $group,
-      before  => Exec["oracle database ${title}"],
+      ensure    => present,
+      content   => template("oradb/dbca_${version}.rsp.erb"),
+      mode      => '0775',
+      owner     => $user,
+      group     => $group,
+      before    => Exec["oracle database ${title}"],
+      replace   => false,
+      show_diff => false,
     }
   }
 
